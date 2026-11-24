@@ -1,17 +1,24 @@
 import { useState } from "react"
 
-import { useNavigate } from "@tanstack/react-router"
+import { getRouteApi, useNavigate } from "@tanstack/react-router"
 import { Swords } from "lucide-react"
 
 import { PlayerCombobox } from "@/features/scout/components/PlayerCombobox"
 import { useLeaderboard } from "@/features/scout/hooks/use-leaderboard"
 import type { ScoredPlayer } from "@/features/scout/types/player.types"
 
+const routeApi = getRouteApi("/vs/")
+
 /** İki oyuncu seçilince kapışma sayfasına geçer. */
 export function DuelPicker() {
   const { data } = useLeaderboard()
+  const search = routeApi.useSearch()
   const navigate = useNavigate()
-  const [left, setLeft] = useState<ScoredPlayer | null>(null)
+  const [left, setLeft] = useState<ScoredPlayer | null>(
+    () =>
+      data.players.find((player) => player.login.toLowerCase() === search.left?.toLowerCase()) ??
+      null
+  )
   const [right, setRight] = useState<ScoredPlayer | null>(null)
 
   const choose = (side: "left" | "right", player: ScoredPlayer | null) => {
@@ -60,6 +67,7 @@ export function DuelPicker() {
             players={data.players.filter((player) => player.login !== left?.login)}
             value={right}
             onChange={(player) => choose("right", player)}
+            autoFocus={left !== null}
             placeholder="Ad ya da kullanıcı adı"
           />
         </div>

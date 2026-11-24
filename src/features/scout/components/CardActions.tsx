@@ -1,4 +1,5 @@
-import { Download, Share2 } from "lucide-react"
+import { Link } from "@tanstack/react-router"
+import { Download, Share2, Swords } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -49,6 +50,14 @@ export function CardActions({ player, onDownload, isDownloading }: CardActionsPr
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
+      <Link
+        to="/vs"
+        search={{ left: player.login }}
+        className={buttonVariants({ variant: "outline", size: "sm" })}
+      >
+        <Swords aria-hidden />
+        Kapıştır
+      </Link>
     </div>
   )
 }

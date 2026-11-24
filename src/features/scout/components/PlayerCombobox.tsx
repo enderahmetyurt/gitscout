@@ -15,12 +15,20 @@ type PlayerComboboxProps = {
   value: ScoredPlayer | null
   onChange: (player: ScoredPlayer | null) => void
   placeholder: string
+  autoFocus?: boolean
 }
 
 const normalize = (text: string) => text.toLocaleLowerCase("tr-TR")
 
 /** Kayıtlı oyuncular arasında ad ve kullanıcı adıyla arar. */
-export function PlayerCombobox({ id, players, value, onChange, placeholder }: PlayerComboboxProps) {
+export function PlayerCombobox({
+  id,
+  players,
+  value,
+  onChange,
+  placeholder,
+  autoFocus = false
+}: PlayerComboboxProps) {
   return (
     <Combobox
       items={players}
@@ -34,7 +42,8 @@ export function PlayerCombobox({ id, players, value, onChange, placeholder }: Pl
         return normalize(player.name).includes(q) || normalize(player.login).includes(q)
       }}
     >
-      <ComboboxInput id={id} placeholder={placeholder} showClear />
+      {/* Ev sahibi önceden seçiliyse kullanıcı doğrudan rakibi aramaya başlar. */}
+      <ComboboxInput id={id} placeholder={placeholder} showClear autoFocus={autoFocus} />
       <ComboboxContent>
         <ComboboxEmpty>Bu adla bir oyuncu yok.</ComboboxEmpty>
         <ComboboxList>
