@@ -11,6 +11,12 @@ export const SCORE_VERSION = 3
 /** Saatte en fazla bu kadar yeni oyuncu eklenir: GitHub token limitini ve veritabanını korur. */
 export const NEW_PLAYERS_PER_HOUR = 120
 
+/**
+ * Otomatik yenileme: verisi `maxAgeDays` günden eski kartlar, en eskiden başlayarak her çalışmada
+ * `perRun` tane yenilenir. Saatlik çalışmada haftada ~500 kart; kota gün içine yayılır.
+ */
+export const REFRESH = { maxAgeDays: 7, perRun: 3 }
+
 export const STAT_WEIGHTS: Record<StatKey, number> = {
   act: 0.2,
   imp: 0.2,

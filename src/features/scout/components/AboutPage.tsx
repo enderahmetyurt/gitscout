@@ -13,6 +13,7 @@ import {
   CON,
   EXP,
   IMP,
+  REFRESH,
   REP,
   STAT_ORDER,
   STAT_WEIGHTS
@@ -143,6 +144,7 @@ export function AboutPage() {
       <Section id="about-privacy" title={m.about_privacy_title()}>
         <ul className={cn("flex list-disc flex-col gap-2 pl-5", bodyClass)}>
           <li>{m.about_privacy_source()}</li>
+          <li>{m.about_privacy_refresh({ days: REFRESH.maxAgeDays })}</li>
           <li>{m.about_privacy_private()}</li>
         </ul>
         {/* "Kartının kaldırılmasını mı istiyorsun?" bağlantıları buraya iner; aynı kırmızıyla eşleşir. */}

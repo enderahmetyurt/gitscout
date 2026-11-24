@@ -20,3 +20,4 @@ data/
 src/paraglide
 project.inlang/*
 !project.inlang/settings.json
+.vercel

@@ -16,6 +16,8 @@ import { Route as Char123LangChar125RouteImport } from './routes/{-$lang}'
 import { Route as Char123LangChar125IndexRouteImport } from './routes/{-$lang}/index'
 import { Route as Char123LangChar125AboutRouteImport } from './routes/{-$lang}/about'
 import { Route as Char123LangChar125LeaderboardRouteImport } from './routes/{-$lang}/leaderboard'
+import { Route as ApiCronRefreshRouteImport } from './routes/api/cron/refresh'
+import { Route as Char123LangChar125OgUsernameRouteImport } from './routes/{-$lang}/og/$username'
 import { Route as Char123LangChar125UUsernameRouteImport } from './routes/{-$lang}/u/$username'
 import { Route as Char123LangChar125VsIndexRouteImport } from './routes/{-$lang}/vs/index'
 import { Route as Char123LangChar125VsLeftRightRouteImport } from './routes/{-$lang}/vs/$left.$right'
@@ -56,6 +58,17 @@ const Char123LangChar125LeaderboardRoute =
     path: '/leaderboard',
     getParentRoute: () => Char123LangChar125Route,
   } as any)
+const ApiCronRefreshRoute = ApiCronRefreshRouteImport.update({
+  id: '/api/cron/refresh',
+  path: '/api/cron/refresh',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Char123LangChar125OgUsernameRoute =
+  Char123LangChar125OgUsernameRouteImport.update({
+    id: '/og/$username',
+    path: '/og/$username',
+    getParentRoute: () => Char123LangChar125Route,
+  } as any)
 const Char123LangChar125UUsernameRoute =
   Char123LangChar125UUsernameRouteImport.update({
     id: '/u/$username',
@@ -83,6 +96,8 @@ export interface FileRoutesByFullPath {
   '/{-$lang}/about': typeof Char123LangChar125AboutRoute
   '/{-$lang}/leaderboard': typeof Char123LangChar125LeaderboardRoute
   '/{-$lang}/': typeof Char123LangChar125IndexRoute
+  '/api/cron/refresh': typeof ApiCronRefreshRoute
+  '/{-$lang}/og/$username': typeof Char123LangChar125OgUsernameRoute
   '/{-$lang}/u/$username': typeof Char123LangChar125UUsernameRoute
   '/{-$lang}/vs/': typeof Char123LangChar125VsIndexRoute
   '/{-$lang}/vs/$left/$right': typeof Char123LangChar125VsLeftRightRoute
@@ -94,6 +109,8 @@ export interface FileRoutesByTo {
   '/{-$lang}/about': typeof Char123LangChar125AboutRoute
   '/{-$lang}/leaderboard': typeof Char123LangChar125LeaderboardRoute
   '/{-$lang}': typeof Char123LangChar125IndexRoute
+  '/api/cron/refresh': typeof ApiCronRefreshRoute
+  '/{-$lang}/og/$username': typeof Char123LangChar125OgUsernameRoute
   '/{-$lang}/u/$username': typeof Char123LangChar125UUsernameRoute
   '/{-$lang}/vs': typeof Char123LangChar125VsIndexRoute
   '/{-$lang}/vs/$left/$right': typeof Char123LangChar125VsLeftRightRoute
@@ -107,6 +124,8 @@ export interface FileRoutesById {
   '/{-$lang}/about': typeof Char123LangChar125AboutRoute
   '/{-$lang}/leaderboard': typeof Char123LangChar125LeaderboardRoute
   '/{-$lang}/': typeof Char123LangChar125IndexRoute
+  '/api/cron/refresh': typeof ApiCronRefreshRoute
+  '/{-$lang}/og/$username': typeof Char123LangChar125OgUsernameRoute
   '/{-$lang}/u/$username': typeof Char123LangChar125UUsernameRoute
   '/{-$lang}/vs/': typeof Char123LangChar125VsIndexRoute
   '/{-$lang}/vs/$left/$right': typeof Char123LangChar125VsLeftRightRoute
@@ -121,6 +140,8 @@ export interface FileRouteTypes {
     | '/{-$lang}/about'
     | '/{-$lang}/leaderboard'
     | '/{-$lang}/'
+    | '/api/cron/refresh'
+    | '/{-$lang}/og/$username'
     | '/{-$lang}/u/$username'
     | '/{-$lang}/vs/'
     | '/{-$lang}/vs/$left/$right'
@@ -132,6 +153,8 @@ export interface FileRouteTypes {
     | '/{-$lang}/about'
     | '/{-$lang}/leaderboard'
     | '/{-$lang}'
+    | '/api/cron/refresh'
+    | '/{-$lang}/og/$username'
     | '/{-$lang}/u/$username'
     | '/{-$lang}/vs'
     | '/{-$lang}/vs/$left/$right'
@@ -144,6 +167,8 @@ export interface FileRouteTypes {
     | '/{-$lang}/about'
     | '/{-$lang}/leaderboard'
     | '/{-$lang}/'
+    | '/api/cron/refresh'
+    | '/{-$lang}/og/$username'
     | '/{-$lang}/u/$username'
     | '/{-$lang}/vs/'
     | '/{-$lang}/vs/$left/$right'
@@ -154,6 +179,7 @@ export interface RootRouteChildren {
   SiteDotwebmanifestRoute: typeof SiteDotwebmanifestRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   Char123LangChar125Route: typeof Char123LangChar125RouteWithChildren
+  ApiCronRefreshRoute: typeof ApiCronRefreshRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -207,6 +233,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LangChar125LeaderboardRouteImport
       parentRoute: typeof Char123LangChar125Route
     }
+    '/api/cron/refresh': {
+      id: '/api/cron/refresh'
+      path: '/api/cron/refresh'
+      fullPath: '/api/cron/refresh'
+      preLoaderRoute: typeof ApiCronRefreshRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/{-$lang}/og/$username': {
+      id: '/{-$lang}/og/$username'
+      path: '/og/$username'
+      fullPath: '/{-$lang}/og/$username'
+      preLoaderRoute: typeof Char123LangChar125OgUsernameRouteImport
+      parentRoute: typeof Char123LangChar125Route
+    }
     '/{-$lang}/u/$username': {
       id: '/{-$lang}/u/$username'
       path: '/u/$username'
@@ -235,6 +275,7 @@ interface Char123LangChar125RouteChildren {
   Char123LangChar125AboutRoute: typeof Char123LangChar125AboutRoute
   Char123LangChar125LeaderboardRoute: typeof Char123LangChar125LeaderboardRoute
   Char123LangChar125IndexRoute: typeof Char123LangChar125IndexRoute
+  Char123LangChar125OgUsernameRoute: typeof Char123LangChar125OgUsernameRoute
   Char123LangChar125UUsernameRoute: typeof Char123LangChar125UUsernameRoute
   Char123LangChar125VsIndexRoute: typeof Char123LangChar125VsIndexRoute
   Char123LangChar125VsLeftRightRoute: typeof Char123LangChar125VsLeftRightRoute
@@ -244,6 +285,7 @@ const Char123LangChar125RouteChildren: Char123LangChar125RouteChildren = {
   Char123LangChar125AboutRoute: Char123LangChar125AboutRoute,
   Char123LangChar125LeaderboardRoute: Char123LangChar125LeaderboardRoute,
   Char123LangChar125IndexRoute: Char123LangChar125IndexRoute,
+  Char123LangChar125OgUsernameRoute: Char123LangChar125OgUsernameRoute,
   Char123LangChar125UUsernameRoute: Char123LangChar125UUsernameRoute,
   Char123LangChar125VsIndexRoute: Char123LangChar125VsIndexRoute,
   Char123LangChar125VsLeftRightRoute: Char123LangChar125VsLeftRightRoute,
@@ -257,6 +299,7 @@ const rootRouteChildren: RootRouteChildren = {
   SiteDotwebmanifestRoute: SiteDotwebmanifestRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   Char123LangChar125Route: Char123LangChar125RouteWithChildren,
+  ApiCronRefreshRoute: ApiCronRefreshRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

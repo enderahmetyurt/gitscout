@@ -25,7 +25,7 @@
   "username_too_long": "Kullanıcı adı en fazla 39 karakter olabilir",
   "username_invalid": "Geçersiz GitHub kullanıcı adı",
   "home_title": "GitHub'ın scout raporu",
-  "home_lead": "GitHub kullanıcı adını yaz; altı istatistikli bir koleksiyon kartı çıkaralım, liderlik tablosundaki yerini görelim.",
+  "home_lead": "GitHub kullanıcı adını yaz, koleksiyon kartını çıkar ve liderlik tablosundaki yerini gör.",
   "home_stats_label": "İstatistikler",
   "home_top": "İlk {count}",
   "home_full_table": "Tüm tablo ({count})",
@@ -312,6 +312,7 @@
   "about_badges_body": "Rozetler uzun seri ya da çok sayıda review gibi başarıları gösterir; puanı değiştirmez.",
   "about_privacy_title": "Veri ve gizlilik",
   "about_privacy_source": "Bütün veriler GitHub'ın herkese açık API'sinden gelir.",
+  "about_privacy_refresh": "Kartlar {days} günde bir GitHub'dan otomatik olarak yenilenir.",
   "about_privacy_private": "Private repoların içeriği okunmaz; e-posta ya da başka bir iletişim bilgisi saklanmaz. Siteyi geliştirmek için çerezsiz, anonim ziyaret istatistikleri tutulur.",
   "about_privacy_removal": "Herkes herhangi bir kullanıcı adını ekleyebilir. Liderlik tablosunda yer almak istemiyorsan bir issue aç, kartın kaldırılır.",
   "about_privacy_issue": "Issue aç",
@@ -342,5 +343,8 @@
   "compare_behind_all": "Bu alanda diğer geliştiriciler önde",
   "duel_change_placeholder": "Başka bir geliştirici ara",
   "duel_add_new": "@{username} için kart çıkar ve kapıştır",
-  "remove_card_link": "Kartının kaldırılmasını mı istiyorsun?"
+  "remove_card_link": "Kartının kaldırılmasını mı istiyorsun?",
+  "og_rating": "Genel puan:",
+  "og_meta": "{rarity} kart · {position}",
+  "og_description": "{name} Gitscout'ta {ovr} puan aldı. Senin kartın kaç puan?"
 }

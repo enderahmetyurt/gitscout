@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 
+import { siteConfig } from "@/config/site.config"
+
 import { hreflangLinks } from "@/helpers/localized-url"
 
 import { Pending } from "@/components/shared/Pending"
@@ -11,10 +13,34 @@ import * as m from "@/paraglide/messages.js"
 export const Route = createFileRoute("/{-$lang}/u/$username")({
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(playerQueryOptions(params.username)),
-  head: ({ params }) => ({
-    meta: [{ title: `${params.username} · Gitscout` }],
-    links: hreflangLinks(`/u/${params.username}`)
-  }),
+  head: ({ params, loaderData }) => {
+    const title = loaderData ? `${loaderData.name} · Gitscout` : `${params.username} · Gitscout`
+    if (!loaderData) return { meta: [{ title }], links: hreflangLinks(`/u/${params.username}`) }
+
+    // Görsel adresi kartın yenilenme tarihini taşır: kart yenilenince platformlar yeni görseli çeker.
+    const prefix = params.lang ? `/${params.lang}` : ""
+    const version = Date.parse(loaderData.fetchedAt)
+    const image = `${siteConfig.url}${prefix}/og/${loaderData.login}?v=${version}`
+    const description = m.og_description({ name: loaderData.name, ovr: loaderData.ovr })
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "profile" },
+        { property: "og:url", content: `${siteConfig.url}${prefix}/u/${loaderData.login}` },
+        { property: "og:image", content: image },
+        { property: "og:image:width", content: "1200" },
+        { property: "og:image:height", content: "630" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: image }
+      ],
+      links: hreflangLinks(`/u/${params.username}`)
+    }
+  },
   pendingComponent: Pending,
   notFoundComponent: PlayerNotFound,
   component: PlayerPage

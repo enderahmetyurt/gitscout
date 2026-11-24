@@ -25,7 +25,7 @@
   "username_too_long": "A username can be at most 39 characters",
   "username_invalid": "Not a valid GitHub username",
   "home_title": "GitHub's scout report",
-  "home_lead": "Type a GitHub username and get a collectible card with six stats and a spot on the leaderboard.",
+  "home_lead": "Type a GitHub username, get a collectible card and see where you rank on the leaderboard.",
   "home_stats_label": "Stats",
   "home_top": "Top {count}",
   "home_full_table": "Full table ({count})",
@@ -312,6 +312,7 @@
   "about_badges_body": "Badges reward things like long streaks or lots of reviews; they don't change your rating.",
   "about_privacy_title": "Data and privacy",
   "about_privacy_source": "All data comes from GitHub's public API.",
+  "about_privacy_refresh": "Cards are refreshed from GitHub automatically every {days} days.",
   "about_privacy_private": "Private repos are never read, and no email or other contact details are stored. Anonymous, cookie-free visit statistics help improve the site.",
   "about_privacy_removal": "Anyone can add any username. If you'd rather not be on the leaderboard, open an issue and your card will be removed.",
   "about_privacy_issue": "Open an issue",
@@ -342,5 +343,8 @@
   "compare_behind_all": "Other developers are ahead here",
   "duel_change_placeholder": "Search another developer",
   "duel_add_new": "Get a card for @{username} and compare",
-  "remove_card_link": "Want your card removed?"
+  "remove_card_link": "Want your card removed?",
+  "og_rating": "Overall:",
+  "og_meta": "{rarity} card · {position}",
+  "og_description": "{name} got a {ovr} rating on Gitscout. What's yours?"
 }

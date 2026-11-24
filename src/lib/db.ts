@@ -19,3 +19,20 @@ export function getDb(): postgres.Sql {
   })
   return client
 }
+
+let refreshClient: postgres.Sql | null = null
+
+/**
+ * Yalnızca haftalık yenileme işi kullanır. `gitscout_refresher` rolü okuyup ham veriyi güncelleyebilir;
+ * ekleme ve silme yetkisi yoktur. Sitenin normal istekleri bu bağlantıya hiç dokunmaz.
+ */
+export function getRefreshDb(): postgres.Sql {
+  if (!serverEnv.REFRESH_DATABASE_URL) throw new Error("REFRESH_DATABASE_URL tanımlı değil")
+  refreshClient ??= postgres(serverEnv.REFRESH_DATABASE_URL, {
+    prepare: false,
+    max: 1,
+    idle_timeout: 20,
+    connect_timeout: 10
+  })
+  return refreshClient
+}

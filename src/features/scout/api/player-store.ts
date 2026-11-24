@@ -1,8 +1,8 @@
 import { z } from "zod"
 
-import { getDb } from "@/lib/db"
+import { getDb, getRefreshDb } from "@/lib/db"
 
-import { SCORE_VERSION } from "@/features/scout/constants/scoring.constants"
+import { REFRESH, SCORE_VERSION } from "@/features/scout/constants/scoring.constants"
 import { scorePlayer } from "@/features/scout/helpers/score-player"
 import { scoredPlayerSchema, storedPlayerSchema } from "@/features/scout/schemas/player.schema"
 import type { ScoredPlayer, StoredPlayer } from "@/features/scout/types/player.types"
@@ -121,4 +121,42 @@ export async function insertPlayer(input: StoredPlayer): Promise<ScoredPlayer> {
     on conflict (login) do nothing
   `
   return (await getScoredPlayer(stored.facts.login)) ?? player
+}
+
+/* ---------- Haftalık yenileme (yalnızca gitscout_refresher rolüyle) ---------- */
+
+/** Verisi en eski olan ve `maxAgeDays` günü geçmiş kartlar. */
+export async function getStaleLogins(limit: number): Promise<string[]> {
+  const sql = getRefreshDb()
+  const rows = z.array(z.object({ login: z.string() })).parse(
+    await sql`
+      select login from players
+      where fetched_at < now() - make_interval(days => ${REFRESH.maxAgeDays})
+      order by fetched_at asc
+      limit ${limit}
+    `
+  )
+  return rows.map((row) => row.login)
+}
+
+/** Kartın ham verisini ve puan özetini GitHub'dan yeni çekilen veriyle değiştirir. */
+export async function replacePlayerFacts(login: string, input: StoredPlayer): Promise<void> {
+  const stored = storedPlayerSchema.parse(input)
+  const player = scoreStored(stored)
+  const sql = getRefreshDb()
+  await sql`
+    update players
+    set facts = ${sql.json(stored.facts)},
+        scored = ${sql.json(player)},
+        score_version = ${SCORE_VERSION},
+        ovr = ${player.ovr},
+        fetched_at = ${stored.fetchedAt}
+    where login = ${keyOf(login)}
+  `
+}
+
+/** GitHub'da artık bulunamayan hesap sıranın sonuna alınır; veri olduğu gibi kalır. */
+export async function postponePlayer(login: string): Promise<void> {
+  const sql = getRefreshDb()
+  await sql`update players set fetched_at = now() where login = ${keyOf(login)}`
 }

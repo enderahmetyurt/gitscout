@@ -99,7 +99,8 @@ export default [
       "src/paraglide/**",
       "dist/**",
       ".tanstack/**",
-      ".output/**"
+      ".output/**",
+      ".vercel/**"
     ]
   }
 ]
