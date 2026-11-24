@@ -1,21 +1,22 @@
 import { createFileRoute, stripSearchParams } from "@tanstack/react-router"
 
-import { siteConfig } from "@/config/site.config"
+import { hreflangLinks } from "@/helpers/localized-url"
 
 import { Pending } from "@/components/shared/Pending"
 import { leaderboardQueryOptions } from "@/features/scout/api/players.queries"
-import { ScoutHome } from "@/features/scout/components/ScoutHome"
+import { LeaderboardPage } from "@/features/scout/components/LeaderboardPage"
 import {
   leaderboardSearchDefaults,
   leaderboardSearchSchema
 } from "@/features/scout/schemas/leaderboard-search.schema"
+import * as m from "@/paraglide/messages.js"
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/{-$lang}/leaderboard")({
   validateSearch: leaderboardSearchSchema,
   search: { middlewares: [stripSearchParams(leaderboardSearchDefaults)] },
   loader: ({ context }) =>
     context.queryClient.ensureQueryData({ ...leaderboardQueryOptions(), staleTime: 0 }),
-  head: () => ({ links: [{ rel: "canonical", href: siteConfig.url }] }),
+  head: () => ({ meta: [{ title: m.meta_leaderboard() }], links: hreflangLinks("/leaderboard") }),
   pendingComponent: Pending,
-  component: ScoutHome
+  component: LeaderboardPage
 })

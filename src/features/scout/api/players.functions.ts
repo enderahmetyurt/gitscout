@@ -3,6 +3,7 @@ import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
 
 import { fetchPlayerFacts } from "@/features/scout/api/fetch-player-facts.api"
+import { GithubError } from "@/features/scout/api/get-github-data.api"
 import {
   getPlayers,
   getStaleCount,
@@ -33,8 +34,21 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(
   }
 )
 
+/**
+ * GitHub hataları istemciye sabit bir kodla gider (`github:not-found`); mesaj arayüzde dile göre yazılır.
+ * Sunucu tarafındaki ayrıntı `cause` içinde ve logda kalır.
+ */
+async function fetchFacts(login: string) {
+  try {
+    return await fetchPlayerFacts(login)
+  } catch (error) {
+    if (error instanceof GithubError) throw new Error(`github:${error.kind}`, { cause: error })
+    throw error
+  }
+}
+
 async function fetchAndSave(login: string, previous: StoredPlayer | null) {
-  const facts = await fetchPlayerFacts(login)
+  const facts = await fetchFacts(login)
   const stored: StoredPlayer = {
     login: facts.login,
     fetchedAt: new Date().toISOString(),

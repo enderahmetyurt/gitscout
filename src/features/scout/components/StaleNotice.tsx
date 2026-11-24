@@ -1,5 +1,7 @@
 import { TriangleAlert } from "lucide-react"
 
+import * as m from "@/paraglide/messages.js"
+
 type StaleNoticeProps = {
   count: number
 }
@@ -10,8 +12,7 @@ export function StaleNotice({ count }: StaleNoticeProps) {
   return (
     <p role="status" className="surface flex items-start gap-2 px-4 py-3 text-sm">
       <TriangleAlert aria-hidden className="mt-0.5 size-4 shrink-0 text-warning" />
-      {count} oyuncunun verisi eski biçimde kaydedilmiş ve tabloda görünmüyor. Kullanıcı adını forma
-      yazınca GitHub'dan yeniden çekilir.
+      {m.stale_notice({ count })}
     </p>
   )
 }

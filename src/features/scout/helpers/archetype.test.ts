@@ -5,11 +5,9 @@ import type { Stat, StatKey } from "@/features/scout/types/player.types"
 
 const stat = (key: StatKey, value: number): Stat => ({
   key,
-  short: key.toUpperCase(),
-  label: key,
   value,
   raw: value,
-  summary: "",
+  summary: { key: "com", followers: 0 },
   parts: []
 })
 
@@ -23,22 +21,20 @@ const stats = (values: Record<StatKey, number>) => ({
 })
 
 describe("computeArchetype", () => {
-  it("en güçlü iki statı ve gerçekten düşük olanı anlatır", () => {
-    const text = computeArchetype(
+  it("en güçlü iki statı ve gerçekten düşük olanı seçer", () => {
+    const archetype = computeArchetype(
       stats({ act: 90, imp: 78, com: 77, rep: 62, con: 87, exp: 85 }),
       "gold"
     )
-    expect(text).toBe(
-      "Seçkin profil: yıl boyu yüksek tempoda üretiyor ve neredeyse her hafta sahada; başka projelere katkısı henüz az."
-    )
+    expect(archetype).toEqual({ rarity: "gold", strengths: ["act", "con"], weakness: "rep" })
   })
 
   it("en düşük stat da yüksekse zayıf yan söylemez", () => {
-    const text = computeArchetype(
+    const archetype = computeArchetype(
       stats({ act: 93, imp: 94, com: 92, rep: 88, con: 95, exp: 95 }),
       "icon"
     )
-    expect(text).not.toContain(";")
-    expect(text.startsWith("Efsane profil:")).toBe(true)
+    expect(archetype.weakness).toBeNull()
+    expect(archetype.strengths).toHaveLength(2)
   })
 })

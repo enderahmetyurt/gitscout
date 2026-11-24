@@ -44,6 +44,8 @@ export const leaderboardSearchDefaults = { sort: "ovr", dir: "desc" } as const
  * Filtreler virgülle ayrılmış düz metin; geçersiz parçalar okunurken atlanır.
  */
 export const leaderboardSearchSchema = z.object({
+  // Router `?q=123` gibi değerleri sayı olarak okur; metne çevrilir.
+  q: z.coerce.string().optional().catch(undefined),
   pos: z.string().optional().catch(undefined),
   rarity: z.string().optional().catch(undefined),
   sort: z

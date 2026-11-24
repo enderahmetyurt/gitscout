@@ -3,10 +3,18 @@ import type { Ref } from "react"
 import { cn } from "cn"
 
 import { BadgeIcon } from "@/features/scout/components/BadgeIcon"
-import { RARITY_LABELS, STAT_ORDER } from "@/features/scout/constants/scoring.constants"
+import { STAT_ORDER } from "@/features/scout/constants/scoring.constants"
 import { STAT_TIER_TEXT } from "@/features/scout/constants/stat-tier.constants"
+import {
+  badgeName,
+  clubLabel,
+  rarityLabel,
+  statShort,
+  titleText
+} from "@/features/scout/helpers/player-text"
 import { statTier } from "@/features/scout/helpers/stat-tier"
 import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import * as m from "@/paraglide/messages.js"
 
 type PlayerCardProps = {
   player: ScoredPlayer
@@ -24,7 +32,12 @@ export function PlayerCard({ player, ref }: PlayerCardProps) {
       className="scout-card relative flex h-120 w-80 shrink-0 flex-col overflow-hidden rounded-[28px] p-2"
     >
       <figcaption className="sr-only">
-        {player.name}: genel {player.ovr}, {player.position}, {player.title}
+        {m.card_caption({
+          name: player.name,
+          ovr: player.ovr,
+          position: player.position,
+          title: titleText(player.title)
+        })}
       </figcaption>
 
       {/* İç çerçeve: dış radius = iç radius (20px) + padding (8px). */}
@@ -44,7 +57,7 @@ export function PlayerCard({ player, ref }: PlayerCardProps) {
             </span>
           </div>
           <span className="scout-card-chip rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide uppercase">
-            {RARITY_LABELS[player.rarity]}
+            {rarityLabel(player.rarity)}
           </span>
         </div>
 
@@ -53,9 +66,9 @@ export function PlayerCard({ player, ref }: PlayerCardProps) {
             src={player.avatarUrl}
             alt=""
             crossOrigin="anonymous"
-            width={128}
-            height={128}
-            className="scout-card-avatar size-32 rounded-full object-cover"
+            width={152}
+            height={152}
+            className="scout-card-avatar size-38 rounded-full object-cover"
           />
         </div>
 
@@ -66,7 +79,7 @@ export function PlayerCard({ player, ref }: PlayerCardProps) {
           >
             {player.name}
           </p>
-          <p className="scout-card-muted mt-1 line-clamp-1 text-xs">{player.title}</p>
+          <p className="scout-card-muted mt-1 line-clamp-1 text-xs">{titleText(player.title)}</p>
         </div>
 
         <div aria-hidden className="scout-card-rule relative mx-auto mt-4 w-full border-t" />
@@ -76,12 +89,12 @@ export function PlayerCard({ player, ref }: PlayerCardProps) {
             const stat = player.stats[key]
             return (
               <div key={key} className="flex flex-col items-center gap-0.5 py-1">
-                <dt lang="en" className="scout-card-muted text-[10px] font-semibold tracking-wider">
-                  {stat.short}
+                <dt className="scout-card-muted text-[10px] font-semibold tracking-wider">
+                  {statShort(key)}
                 </dt>
                 <dd
                   className={cn(
-                    "text-lg leading-none font-semibold tabular-nums",
+                    "text-xl leading-none font-bold tabular-nums",
                     STAT_TIER_TEXT[statTier(stat.value)]
                   )}
                 >
@@ -97,19 +110,19 @@ export function PlayerCard({ player, ref }: PlayerCardProps) {
             lang="en"
             className="scout-card-muted truncate font-semibold tracking-wide uppercase"
           >
-            {player.club}
+            {clubLabel(player.club)}
           </span>
           {player.badges.length > 0 ? (
-            <ul className="flex shrink-0 gap-1" aria-label="Rozetler">
+            <ul className="flex shrink-0 gap-1" aria-label={m.badges_heading()}>
               {player.badges.slice(0, 4).map((badge) => (
                 <li
                   key={badge.id}
-                  title={badge.name}
+                  title={badgeName(badge.id)}
                   data-badge={badge.id}
                   className="badge-tint grid size-6 place-items-center rounded-full"
                 >
                   <BadgeIcon id={badge.id} className="size-3.5" />
-                  <span className="sr-only">{badge.name}</span>
+                  <span className="sr-only">{badgeName(badge.id)}</span>
                 </li>
               ))}
             </ul>

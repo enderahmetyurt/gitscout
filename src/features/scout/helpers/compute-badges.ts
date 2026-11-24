@@ -8,7 +8,8 @@ import {
 } from "@/features/scout/helpers/compute-stats"
 import type { Badge, PlayerFacts } from "@/features/scout/types/player.types"
 
-const pct = (value: number) => `%${Math.round(value * 100)}`
+/** 0-1 oranını 0-100 tam sayıya çevirir; biçimi (`%45` ya da `45%`) arayüz seçer. */
+const percent = (value: number) => Math.round(value * 100)
 const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000
 const TEAM_MIN_COMMITS = 10
 const DOCUMENTED_README_BYTES = 1000
@@ -37,7 +38,7 @@ function localTime(date: string, clock: BadgeClock): LocalTime {
 }
 
 /**
- * Kural tabanlı rozetler; yalnızca başarıları ödüllendirir, genel puanı etkilemez. Sıra önemlidir: unvanın ön eki ilk kazanılan rozetten seçilir.
+ * Kural tabanlı rozetler; yalnızca başarıları ödüllendirir, genel puanı etkilemez. Metinler arayüzde dile göre yazılır.
  * Saat bazlı rozetler oyuncunun saat dilimine göre hesaplanır.
  */
 export function computeBadges(facts: PlayerFacts, clock: BadgeClock | null, now: Date): Badge[] {
@@ -50,24 +51,21 @@ export function computeBadges(facts: PlayerFacts, clock: BadgeClock | null, now:
     if (night >= 0.2) {
       badges.push({
         id: "night-owl",
-        name: "Gece Kuşu",
-        detail: `Commit'lerin ${pct(night)}'i gece 00:00–06:00 arası (yerel saat)`
+        values: { pct: percent(night) }
       })
     }
     const early = times.filter((time) => time.hour >= 5 && time.hour < 9).length / n
     if (early >= 0.2) {
       badges.push({
         id: "early-bird",
-        name: "Erkenci",
-        detail: `Commit'lerin ${pct(early)}'i sabah 05:00–09:00 arası (yerel saat)`
+        values: { pct: percent(early) }
       })
     }
     const weekend = times.filter((time) => time.weekday === 0 || time.weekday === 6).length / n
     if (weekend >= 0.3) {
       badges.push({
         id: "weekend-warrior",
-        name: "Hafta Sonu Savaşçısı",
-        detail: `Commit'lerin ${pct(weekend)}'i hafta sonu`
+        values: { pct: percent(weekend) }
       })
     }
   }
@@ -76,8 +74,7 @@ export function computeBadges(facts: PlayerFacts, clock: BadgeClock | null, now:
   if (streak >= 30) {
     badges.push({
       id: "marathon",
-      name: "Maratoncu",
-      detail: `${streak} gün üst üste katkı`
+      values: { days: streak }
     })
   }
 
@@ -85,8 +82,7 @@ export function computeBadges(facts: PlayerFacts, clock: BadgeClock | null, now:
   if (checks.total >= 10 && checks.rate >= 0.9) {
     badges.push({
       id: "green-tick",
-      name: "Yeşil Tik",
-      detail: `Son ${checks.total} CI sonucunun ${pct(checks.rate)}'i başarılı`
+      values: { total: checks.total, pct: percent(checks.rate) }
     })
   }
 
@@ -94,8 +90,10 @@ export function computeBadges(facts: PlayerFacts, clock: BadgeClock | null, now:
   if (languages.length >= 5) {
     badges.push({
       id: "polyglot",
-      name: "Çok Dilli",
-      detail: `Kodunun %5'ten fazlasını oluşturan ${languages.length} dil: ${languages.map((language) => language.name).join(", ")}`
+      values: {
+        count: languages.length,
+        languages: languages.map((language) => language.name).join(", ")
+      }
     })
   }
 
@@ -104,8 +102,7 @@ export function computeBadges(facts: PlayerFacts, clock: BadgeClock | null, now:
     if (conventional >= 0.8) {
       badges.push({
         id: "conventional-disciple",
-        name: "Conventional Disiplini",
-        detail: `Commit'lerin ${pct(conventional)}'i conventional`
+        values: { pct: percent(conventional) }
       })
     }
   }
@@ -114,16 +111,14 @@ export function computeBadges(facts: PlayerFacts, clock: BadgeClock | null, now:
   if (stars >= 1000) {
     badges.push({
       id: "star-collector",
-      name: "Yıldız Toplayıcı",
-      detail: `Toplam ${stars.toLocaleString("tr-TR")} yıldız`
+      values: { stars }
     })
   }
 
   if (facts.mergedExternalPrs >= 20) {
     badges.push({
       id: "oss-ambassador",
-      name: "Açık Kaynak Elçisi",
-      detail: `Başka repolara ${facts.mergedExternalPrs} merge edilmiş PR`
+      values: { prs: facts.mergedExternalPrs }
     })
   }
 
@@ -132,40 +127,35 @@ export function computeBadges(facts: PlayerFacts, clock: BadgeClock | null, now:
   if (active >= 3 && tested / active >= 0.9) {
     badges.push({
       id: "test-obsessed",
-      name: "Test Takıntılı",
-      detail: `${active} aktif reponun ${tested}'inde test var`
+      values: { active, tested }
     })
   }
 
   if (facts.lastYear.commits >= 1000) {
     badges.push({
       id: "commit-machine",
-      name: "Commit Makinesi",
-      detail: `Son 1 yılda ${facts.lastYear.commits.toLocaleString("tr-TR")} commit`
+      values: { commits: facts.lastYear.commits }
     })
   }
 
   if (facts.lastYear.prs >= 100) {
     badges.push({
       id: "pr-machine",
-      name: "PR Ustası",
-      detail: `Son 1 yılda ${facts.lastYear.prs} pull request`
+      values: { prs: facts.lastYear.prs }
     })
   }
 
   if (facts.lastYear.reviews >= 100) {
     badges.push({
       id: "code-reviewer",
-      name: "Kod Gözcüsü",
-      detail: `Son 1 yılda ${facts.lastYear.reviews} kod incelemesi`
+      values: { reviews: facts.lastYear.reviews }
     })
   }
 
   if (facts.followers >= 1000) {
     badges.push({
       id: "community-leader",
-      name: "Topluluk Lideri",
-      detail: `${facts.followers.toLocaleString("tr-TR")} takipçi`
+      values: { followers: facts.followers }
     })
   }
 
@@ -175,8 +165,7 @@ export function computeBadges(facts: PlayerFacts, clock: BadgeClock | null, now:
   if (orgRepos >= 2) {
     badges.push({
       id: "team-player",
-      name: "Takım Oyuncusu",
-      detail: `Son 1 yılda ${orgRepos} organizasyon reposuna ${TEAM_MIN_COMMITS}+ commit`
+      values: { repos: orgRepos, min: TEAM_MIN_COMMITS }
     })
   }
 
@@ -187,8 +176,7 @@ export function computeBadges(facts: PlayerFacts, clock: BadgeClock | null, now:
   if (liveRepos.length >= 5 && documented / liveRepos.length >= 0.8) {
     badges.push({
       id: "documenter",
-      name: "Dokümantasyon Ustası",
-      detail: `${liveRepos.length} reponun ${documented}'inde açıklama ve dolu bir README var`
+      values: { total: liveRepos.length, documented }
     })
   }
 
@@ -196,8 +184,7 @@ export function computeBadges(facts: PlayerFacts, clock: BadgeClock | null, now:
   if (years >= 10) {
     badges.push({
       id: "veteran",
-      name: "Emektar",
-      detail: `${years} yıldır GitHub'da`
+      values: { years }
     })
   }
 
@@ -205,8 +192,7 @@ export function computeBadges(facts: PlayerFacts, clock: BadgeClock | null, now:
   if (weeks >= 40) {
     badges.push({
       id: "regular",
-      name: "Düzenli Oyuncu",
-      detail: `Son 52 haftanın ${weeks}'inde aktif`
+      values: { weeks }
     })
   }
 

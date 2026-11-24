@@ -9,25 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SiteDotwebmanifestRouteImport } from './routes/site[.]webmanifest'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as UUsernameRouteImport } from './routes/u/$username'
-import { Route as VsIndexRouteImport } from './routes/vs/index'
-import { Route as VsLeftRightRouteImport } from './routes/vs/$left.$right'
+import { Route as Char123LangChar125RouteImport } from './routes/{-$lang}'
+import { Route as Char123LangChar125IndexRouteImport } from './routes/{-$lang}/index'
+import { Route as Char123LangChar125AboutRouteImport } from './routes/{-$lang}/about'
+import { Route as Char123LangChar125LeaderboardRouteImport } from './routes/{-$lang}/leaderboard'
+import { Route as Char123LangChar125UUsernameRouteImport } from './routes/{-$lang}/u/$username'
+import { Route as Char123LangChar125VsIndexRouteImport } from './routes/{-$lang}/vs/index'
+import { Route as Char123LangChar125VsLeftRightRouteImport } from './routes/{-$lang}/vs/$left.$right'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LeaderboardRoute = LeaderboardRouteImport.update({
-  id: '/leaderboard',
-  path: '/leaderboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
@@ -43,113 +35,129 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UUsernameRoute = UUsernameRouteImport.update({
-  id: '/u/$username',
-  path: '/u/$username',
+const Char123LangChar125Route = Char123LangChar125RouteImport.update({
+  id: '/{-$lang}',
+  path: '/{-$lang}',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VsIndexRoute = VsIndexRouteImport.update({
-  id: '/vs/',
-  path: '/vs/',
-  getParentRoute: () => rootRouteImport,
+const Char123LangChar125IndexRoute = Char123LangChar125IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => Char123LangChar125Route,
 } as any)
-const VsLeftRightRoute = VsLeftRightRouteImport.update({
-  id: '/vs/$left/$right',
-  path: '/vs/$left/$right',
-  getParentRoute: () => rootRouteImport,
+const Char123LangChar125AboutRoute = Char123LangChar125AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => Char123LangChar125Route,
 } as any)
+const Char123LangChar125LeaderboardRoute =
+  Char123LangChar125LeaderboardRouteImport.update({
+    id: '/leaderboard',
+    path: '/leaderboard',
+    getParentRoute: () => Char123LangChar125Route,
+  } as any)
+const Char123LangChar125UUsernameRoute =
+  Char123LangChar125UUsernameRouteImport.update({
+    id: '/u/$username',
+    path: '/u/$username',
+    getParentRoute: () => Char123LangChar125Route,
+  } as any)
+const Char123LangChar125VsIndexRoute =
+  Char123LangChar125VsIndexRouteImport.update({
+    id: '/vs/',
+    path: '/vs/',
+    getParentRoute: () => Char123LangChar125Route,
+  } as any)
+const Char123LangChar125VsLeftRightRoute =
+  Char123LangChar125VsLeftRightRouteImport.update({
+    id: '/vs/$left/$right',
+    path: '/vs/$left/$right',
+    getParentRoute: () => Char123LangChar125Route,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/leaderboard': typeof LeaderboardRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/u/$username': typeof UUsernameRoute
-  '/vs/': typeof VsIndexRoute
-  '/vs/$left/$right': typeof VsLeftRightRoute
+  '/{-$lang}': typeof Char123LangChar125RouteWithChildren
+  '/{-$lang}/about': typeof Char123LangChar125AboutRoute
+  '/{-$lang}/leaderboard': typeof Char123LangChar125LeaderboardRoute
+  '/{-$lang}/': typeof Char123LangChar125IndexRoute
+  '/{-$lang}/u/$username': typeof Char123LangChar125UUsernameRoute
+  '/{-$lang}/vs/': typeof Char123LangChar125VsIndexRoute
+  '/{-$lang}/vs/$left/$right': typeof Char123LangChar125VsLeftRightRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/leaderboard': typeof LeaderboardRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/u/$username': typeof UUsernameRoute
-  '/vs': typeof VsIndexRoute
-  '/vs/$left/$right': typeof VsLeftRightRoute
+  '/{-$lang}/about': typeof Char123LangChar125AboutRoute
+  '/{-$lang}/leaderboard': typeof Char123LangChar125LeaderboardRoute
+  '/{-$lang}': typeof Char123LangChar125IndexRoute
+  '/{-$lang}/u/$username': typeof Char123LangChar125UUsernameRoute
+  '/{-$lang}/vs': typeof Char123LangChar125VsIndexRoute
+  '/{-$lang}/vs/$left/$right': typeof Char123LangChar125VsLeftRightRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/leaderboard': typeof LeaderboardRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/u/$username': typeof UUsernameRoute
-  '/vs/': typeof VsIndexRoute
-  '/vs/$left/$right': typeof VsLeftRightRoute
+  '/{-$lang}': typeof Char123LangChar125RouteWithChildren
+  '/{-$lang}/about': typeof Char123LangChar125AboutRoute
+  '/{-$lang}/leaderboard': typeof Char123LangChar125LeaderboardRoute
+  '/{-$lang}/': typeof Char123LangChar125IndexRoute
+  '/{-$lang}/u/$username': typeof Char123LangChar125UUsernameRoute
+  '/{-$lang}/vs/': typeof Char123LangChar125VsIndexRoute
+  '/{-$lang}/vs/$left/$right': typeof Char123LangChar125VsLeftRightRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
-    | '/leaderboard'
     | '/robots.txt'
     | '/site.webmanifest'
     | '/sitemap.xml'
-    | '/u/$username'
-    | '/vs/'
-    | '/vs/$left/$right'
+    | '/{-$lang}'
+    | '/{-$lang}/about'
+    | '/{-$lang}/leaderboard'
+    | '/{-$lang}/'
+    | '/{-$lang}/u/$username'
+    | '/{-$lang}/vs/'
+    | '/{-$lang}/vs/$left/$right'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
-    | '/leaderboard'
     | '/robots.txt'
     | '/site.webmanifest'
     | '/sitemap.xml'
-    | '/u/$username'
-    | '/vs'
-    | '/vs/$left/$right'
+    | '/{-$lang}/about'
+    | '/{-$lang}/leaderboard'
+    | '/{-$lang}'
+    | '/{-$lang}/u/$username'
+    | '/{-$lang}/vs'
+    | '/{-$lang}/vs/$left/$right'
   id:
     | '__root__'
-    | '/'
-    | '/leaderboard'
     | '/robots.txt'
     | '/site.webmanifest'
     | '/sitemap.xml'
-    | '/u/$username'
-    | '/vs/'
-    | '/vs/$left/$right'
+    | '/{-$lang}'
+    | '/{-$lang}/about'
+    | '/{-$lang}/leaderboard'
+    | '/{-$lang}/'
+    | '/{-$lang}/u/$username'
+    | '/{-$lang}/vs/'
+    | '/{-$lang}/vs/$left/$right'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  LeaderboardRoute: typeof LeaderboardRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SiteDotwebmanifestRoute: typeof SiteDotwebmanifestRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  UUsernameRoute: typeof UUsernameRoute
-  VsIndexRoute: typeof VsIndexRoute
-  VsLeftRightRoute: typeof VsLeftRightRoute
+  Char123LangChar125Route: typeof Char123LangChar125RouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/leaderboard': {
-      id: '/leaderboard'
-      path: '/leaderboard'
-      fullPath: '/leaderboard'
-      preLoaderRoute: typeof LeaderboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/robots.txt': {
       id: '/robots.txt'
       path: '/robots.txt'
@@ -171,39 +179,84 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/u/$username': {
-      id: '/u/$username'
+    '/{-$lang}': {
+      id: '/{-$lang}'
+      path: '/{-$lang}'
+      fullPath: '/{-$lang}'
+      preLoaderRoute: typeof Char123LangChar125RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/{-$lang}/': {
+      id: '/{-$lang}/'
+      path: '/'
+      fullPath: '/{-$lang}/'
+      preLoaderRoute: typeof Char123LangChar125IndexRouteImport
+      parentRoute: typeof Char123LangChar125Route
+    }
+    '/{-$lang}/about': {
+      id: '/{-$lang}/about'
+      path: '/about'
+      fullPath: '/{-$lang}/about'
+      preLoaderRoute: typeof Char123LangChar125AboutRouteImport
+      parentRoute: typeof Char123LangChar125Route
+    }
+    '/{-$lang}/leaderboard': {
+      id: '/{-$lang}/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/{-$lang}/leaderboard'
+      preLoaderRoute: typeof Char123LangChar125LeaderboardRouteImport
+      parentRoute: typeof Char123LangChar125Route
+    }
+    '/{-$lang}/u/$username': {
+      id: '/{-$lang}/u/$username'
       path: '/u/$username'
-      fullPath: '/u/$username'
-      preLoaderRoute: typeof UUsernameRouteImport
-      parentRoute: typeof rootRouteImport
+      fullPath: '/{-$lang}/u/$username'
+      preLoaderRoute: typeof Char123LangChar125UUsernameRouteImport
+      parentRoute: typeof Char123LangChar125Route
     }
-    '/vs/': {
-      id: '/vs/'
+    '/{-$lang}/vs/': {
+      id: '/{-$lang}/vs/'
       path: '/vs'
-      fullPath: '/vs/'
-      preLoaderRoute: typeof VsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      fullPath: '/{-$lang}/vs/'
+      preLoaderRoute: typeof Char123LangChar125VsIndexRouteImport
+      parentRoute: typeof Char123LangChar125Route
     }
-    '/vs/$left/$right': {
-      id: '/vs/$left/$right'
+    '/{-$lang}/vs/$left/$right': {
+      id: '/{-$lang}/vs/$left/$right'
       path: '/vs/$left/$right'
-      fullPath: '/vs/$left/$right'
-      preLoaderRoute: typeof VsLeftRightRouteImport
-      parentRoute: typeof rootRouteImport
+      fullPath: '/{-$lang}/vs/$left/$right'
+      preLoaderRoute: typeof Char123LangChar125VsLeftRightRouteImport
+      parentRoute: typeof Char123LangChar125Route
     }
   }
 }
 
+interface Char123LangChar125RouteChildren {
+  Char123LangChar125AboutRoute: typeof Char123LangChar125AboutRoute
+  Char123LangChar125LeaderboardRoute: typeof Char123LangChar125LeaderboardRoute
+  Char123LangChar125IndexRoute: typeof Char123LangChar125IndexRoute
+  Char123LangChar125UUsernameRoute: typeof Char123LangChar125UUsernameRoute
+  Char123LangChar125VsIndexRoute: typeof Char123LangChar125VsIndexRoute
+  Char123LangChar125VsLeftRightRoute: typeof Char123LangChar125VsLeftRightRoute
+}
+
+const Char123LangChar125RouteChildren: Char123LangChar125RouteChildren = {
+  Char123LangChar125AboutRoute: Char123LangChar125AboutRoute,
+  Char123LangChar125LeaderboardRoute: Char123LangChar125LeaderboardRoute,
+  Char123LangChar125IndexRoute: Char123LangChar125IndexRoute,
+  Char123LangChar125UUsernameRoute: Char123LangChar125UUsernameRoute,
+  Char123LangChar125VsIndexRoute: Char123LangChar125VsIndexRoute,
+  Char123LangChar125VsLeftRightRoute: Char123LangChar125VsLeftRightRoute,
+}
+
+const Char123LangChar125RouteWithChildren =
+  Char123LangChar125Route._addFileChildren(Char123LangChar125RouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  LeaderboardRoute: LeaderboardRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SiteDotwebmanifestRoute: SiteDotwebmanifestRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  UUsernameRoute: UUsernameRoute,
-  VsIndexRoute: VsIndexRoute,
-  VsLeftRightRoute: VsLeftRightRoute,
+  Char123LangChar125Route: Char123LangChar125RouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

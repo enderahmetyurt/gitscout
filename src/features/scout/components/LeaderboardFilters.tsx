@@ -11,21 +11,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { RARITY_LABELS, RARITY_THRESHOLDS } from "@/features/scout/constants/scoring.constants"
+import { rarityLabel } from "@/features/scout/helpers/player-text"
+import { rarityRange } from "@/features/scout/helpers/rarity-range"
 import { useLeaderboardSearch } from "@/features/scout/hooks/use-leaderboard-search"
 import { POSITIONS, RARITIES } from "@/features/scout/schemas/leaderboard-search.schema"
-import type { Rarity, ScoredPlayer } from "@/features/scout/types/player.types"
+import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import * as m from "@/paraglide/messages.js"
 
 type LeaderboardFiltersProps = {
   players: ScoredPlayer[]
-}
-
-/** Eşiklerden okunabilir aralık: "90+", "80–89", "0–64". */
-function rarityRange(rarity: Rarity): string {
-  const index = RARITY_THRESHOLDS.findIndex((threshold) => threshold.rarity === rarity)
-  const min = RARITY_THRESHOLDS[index]?.min ?? 0
-  const above = RARITY_THRESHOLDS[index - 1]
-  return above ? `${min}–${above.min - 1}` : `${min}+`
 }
 
 /** Seçili değeri listeye ekler ya da çıkarır. */
@@ -46,17 +40,17 @@ export function LeaderboardFilters({ players }: LeaderboardFiltersProps) {
     <DropdownMenu>
       <DropdownMenuTrigger className={buttonVariants({ variant: "outline", size: "sm" })}>
         <ListFilter aria-hidden />
-        Filtrele
+        {m.filter_button()}
         {activeCount > 0 ? (
           <span className="rounded-sm bg-foreground px-1.5 text-xs text-background">
             {activeCount}
-            <span className="sr-only"> filtre seçili</span>
+            <span className="sr-only"> {m.filter_selected()}</span>
           </span>
         ) : null}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-48 overscroll-contain">
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Mevki</DropdownMenuLabel>
+          <DropdownMenuLabel>{m.filter_position()}</DropdownMenuLabel>
           {positions.map((position) => (
             <DropdownMenuCheckboxItem
               key={position}
@@ -72,7 +66,7 @@ export function LeaderboardFilters({ players }: LeaderboardFiltersProps) {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Kart</DropdownMenuLabel>
+          <DropdownMenuLabel>{m.filter_card()}</DropdownMenuLabel>
           {rarities.map((rarity) => (
             <DropdownMenuCheckboxItem
               key={rarity}
@@ -82,7 +76,7 @@ export function LeaderboardFilters({ players }: LeaderboardFiltersProps) {
               }
             >
               <span aria-hidden data-rarity={rarity} className="rarity-dot size-2.5 rounded-full" />
-              {RARITY_LABELS[rarity]}
+              {rarityLabel(rarity)}
               <span className="ms-auto ps-3 text-xs text-muted-foreground">
                 {rarityRange(rarity)}
               </span>
@@ -93,7 +87,7 @@ export function LeaderboardFilters({ players }: LeaderboardFiltersProps) {
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setFilters({ positions: [], rarities: [] })}>
-              Filtreleri temizle
+              {m.filter_clear()}
             </DropdownMenuItem>
           </>
         ) : null}

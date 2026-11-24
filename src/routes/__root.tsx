@@ -14,6 +14,8 @@ import { DefaultCatchBoundary } from "@/components/shared/DefaultCatchBoundary"
 import { NotFound } from "@/components/shared/NotFound"
 import { SiteFooter } from "@/components/shared/SiteFooter"
 import { SiteHeader } from "@/components/shared/SiteHeader"
+import { SkipLink } from "@/components/shared/SkipLink"
+import { getLocale } from "@/paraglide/runtime.js"
 
 interface RouterContext {
   queryClient: QueryClient
@@ -52,6 +54,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function RootComponent() {
   return (
     <Providers>
+      <SkipLink />
       <SiteHeader />
       <Outlet />
       <SiteFooter />
@@ -62,7 +65,7 @@ function RootComponent() {
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     // Site yalnızca koyu temada: kart tasarımı ve stat renkleri koyu zemine göre ayarlı.
-    <html lang="tr" className="dark h-full" style={{ colorScheme: "dark" }}>
+    <html lang={getLocale()} className="dark h-full" style={{ colorScheme: "dark" }}>
       <head>
         <HeadContent />
       </head>

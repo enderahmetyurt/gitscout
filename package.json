@@ -8,7 +8,8 @@
   "virastack": {
     "template": "tanstack",
     "version": "2.2.2",
-    "url": "https://virastack.com"
+    "url": "https://virastack.com",
+    "i18n": true
   },
   "engines": {
     "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
@@ -29,7 +30,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepare": "husky"
+    "prepare": "husky",
+    "postinstall": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
@@ -45,6 +47,7 @@
     "@fontsource-variable/jetbrains-mono": "5.3.0",
     "@fontsource-variable/space-grotesk": "5.3.0",
     "@hookform/resolvers": "^6.0.2",
+    "@inlang/paraglide-js": "^2.29.3",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-query": "^5.105.0",
     "@tanstack/react-router": "^1.170.46",

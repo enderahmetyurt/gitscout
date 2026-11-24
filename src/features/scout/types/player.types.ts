@@ -99,23 +99,42 @@ export type StoredPlayer = {
 
 export type StatKey = "act" | "imp" | "com" | "rep" | "con" | "exp"
 
+/** Puanın parçaları; adları arayüzde dile göre yazılır. */
+export type StatPartId =
+  | "act_contributions"
+  | "imp_stars"
+  | "imp_forks"
+  | "com_followers"
+  | "rep_prs"
+  | "rep_reviews"
+  | "con_weeks"
+  | "con_streak"
+  | "con_years"
+  | "exp_lifetime"
+  | "exp_age"
+
 export type StatPart = {
-  label: string
-  detail: string
+  id: StatPartId
   points: number
   max: number
 }
 
+/** Tooltip'teki tek cümlelik özetin sayıları; cümle arayüzde dile göre kurulur. */
+export type StatSummary =
+  | { key: "act"; contributions: number }
+  | { key: "imp"; stars: number; forks: number }
+  | { key: "com"; followers: number }
+  | { key: "rep"; prs: number; reviews: number }
+  | { key: "con"; weeks: number; streak: number }
+  | { key: "exp"; years: number; contributions: number }
+
 export type Stat = {
   key: StatKey
-  short: string
-  label: string
   /** Kartta gösterilen puan (eğriden geçmiş). */
   value: number
   /** Formülden çıkan ham puan; genel puan bunun üzerinden hesaplanır. */
   raw: number
-  /** Tooltip ve özet satırı için tek cümlelik açıklama. */
-  summary: string
+  summary: StatSummary
   parts: StatPart[]
 }
 
@@ -144,11 +163,35 @@ export type BadgeId =
   | "veteran"
   | "regular"
 
-export type Badge = {
-  id: BadgeId
-  name: string
-  detail: string
+/** Rozet açıklamalarındaki sayılar; yüzdeler 0-100 arası tam sayı. */
+type BadgeValues = {
+  "night-owl": { pct: number }
+  "early-bird": { pct: number }
+  "weekend-warrior": { pct: number }
+  marathon: { days: number }
+  "green-tick": { total: number; pct: number }
+  polyglot: { count: number; languages: string }
+  "conventional-disciple": { pct: number }
+  "star-collector": { stars: number }
+  "oss-ambassador": { prs: number }
+  "test-obsessed": { active: number; tested: number }
+  "commit-machine": { commits: number }
+  "pr-machine": { prs: number }
+  "code-reviewer": { reviews: number }
+  "community-leader": { followers: number }
+  "team-player": { repos: number; min: number }
+  documenter: { total: number; documented: number }
+  veteran: { years: number }
+  regular: { weeks: number }
 }
+
+export type Badge = { [K in BadgeId]: { id: K; values: BadgeValues[K] } }[BadgeId]
+
+/** Unvan: en güçlü stat, nadirlik ve o kombinasyondaki seçenek sırası. */
+export type TitleRef = { stat: StatKey; rarity: Rarity; variant: number }
+
+/** Arşetip cümlesinin parçaları; cümle arayüzde dile göre kurulur. */
+export type Archetype = { rarity: Rarity; strengths: StatKey[]; weakness: StatKey | null }
 
 export type RoleGroup = Exclude<Position, "Full Stack">
 
@@ -200,15 +243,15 @@ export type ScoredPlayer = {
   login: string
   name: string
   avatarUrl: string
-  club: string
+  /** Şirket ya da organizasyon; ikisi de yoksa null (serbest oyuncu). */
+  club: string | null
   position: Position
   positionBreakdown: PositionBreakdown
   topRepos: TopRepo[]
   ovr: number
   rarity: Rarity
-  title: string
-  /** En güçlü ve en zayıf stattan üretilen tek cümlelik tanım. */
-  archetype: string
+  title: TitleRef
+  archetype: Archetype
   stats: Record<StatKey, Stat>
   year: YearSummary
   career: CareerTotals

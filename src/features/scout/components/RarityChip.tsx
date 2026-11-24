@@ -1,6 +1,6 @@
 import { cn } from "cn"
 
-import { RARITY_LABELS } from "@/features/scout/constants/scoring.constants"
+import { rarityLabel } from "@/features/scout/helpers/player-text"
 import type { Rarity } from "@/features/scout/types/player.types"
 
 type RarityChipProps = {
@@ -18,10 +18,10 @@ export function RarityChip({ ovr, rarity, className }: RarityChipProps) {
         "rarity-chip inline-flex h-8 min-w-11 items-center justify-center rounded-md border px-2 text-base font-semibold tabular-nums",
         className
       )}
-      title={RARITY_LABELS[rarity]}
+      title={rarityLabel(rarity)}
     >
       {ovr}
-      <span className="sr-only"> ({RARITY_LABELS[rarity]})</span>
+      <span className="sr-only"> ({rarityLabel(rarity)})</span>
     </span>
   )
 }

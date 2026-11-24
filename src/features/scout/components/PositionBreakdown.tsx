@@ -1,7 +1,9 @@
 import { cn } from "cn"
 
 import { LanguageIcon } from "@/features/scout/components/LanguageIcon"
+import { percent } from "@/features/scout/helpers/player-text"
 import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import * as m from "@/paraglide/messages.js"
 
 type PositionBreakdownProps = {
   position: ScoredPlayer["position"]
@@ -10,7 +12,7 @@ type PositionBreakdownProps = {
 
 const MAX_ROLES = 3
 const MAX_LANGUAGES = 4
-const percent = (share: number) => `%${Math.round(share * 100)}`
+const share = (value: number) => percent(value * 100)
 
 /** Mevkinin hangi alan ve dillerden çıktığını kısaca gösterir. */
 export function PositionBreakdown({ position, breakdown }: PositionBreakdownProps) {
@@ -23,18 +25,20 @@ export function PositionBreakdown({ position, breakdown }: PositionBreakdownProp
     <section className="surface flex flex-col gap-4 p-4" aria-labelledby="position-heading">
       <div className="flex items-baseline justify-between gap-2">
         <h2 id="position-heading" className="text-sm font-medium">
-          Mevki: <span lang="en">{position}</span>
+          {m.position_title({ position })}
         </h2>
-        <p className="text-xs text-muted-foreground">{breakdown.repoCount} repo</p>
+        <p className="text-xs text-muted-foreground">
+          {m.repo_count({ count: breakdown.repoCount })}
+        </p>
       </div>
 
       {roles.length > 0 ? (
-        <ul className="flex flex-col gap-2" aria-label="Alan payları">
+        <ul className="flex flex-col gap-2" aria-label={m.position_roles()}>
           {roles.map((role, index) => (
             <li key={role.group} className="flex flex-col gap-1 text-xs">
               <div className="flex justify-between">
                 <span lang="en">{role.group}</span>
-                <span className="text-muted-foreground tabular-nums">{percent(role.share)}</span>
+                <span className="text-muted-foreground tabular-nums">{share(role.share)}</span>
               </div>
               <span aria-hidden className="h-1.5 overflow-hidden rounded-full bg-muted">
                 <span
@@ -51,7 +55,7 @@ export function PositionBreakdown({ position, breakdown }: PositionBreakdownProp
       ) : null}
 
       {languages.length > 0 ? (
-        <ul className="flex flex-col gap-1.5 border-t pt-3" aria-label="En çok kullanılan diller">
+        <ul className="flex flex-col gap-1.5 border-t pt-3" aria-label={m.position_languages()}>
           {languages.map((language) => {
             return (
               <li key={language.name} className="flex items-center gap-2 text-xs">
@@ -60,18 +64,12 @@ export function PositionBreakdown({ position, breakdown }: PositionBreakdownProp
                   {language.name}
                 </span>
                 <span className="text-muted-foreground tabular-nums">
-                  {percent(language.share)} · {language.repos} repo
+                  {m.language_share({ share: share(language.share), count: language.repos })}
                 </span>
               </li>
             )
           })}
         </ul>
-      ) : null}
-
-      {breakdown.pythonAsData ? (
-        <p className="text-xs text-pretty text-muted-foreground">
-          Notebook ve CUDA içeren repolar nedeniyle Python, Data sayıldı.
-        </p>
       ) : null}
     </section>
   )

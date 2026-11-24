@@ -17,3 +17,6 @@ skills-lock.json
 
 # Uygulamanın yazdığı oyuncu deposu
 data/
+src/paraglide
+project.inlang/*
+!project.inlang/settings.json

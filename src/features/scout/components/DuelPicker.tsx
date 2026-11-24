@@ -3,11 +3,14 @@ import { useState } from "react"
 import { getRouteApi, useNavigate } from "@tanstack/react-router"
 import { Swords } from "lucide-react"
 
+import { getLangParam } from "@/helpers/localized-url"
+
 import { PlayerCombobox } from "@/features/scout/components/PlayerCombobox"
 import { useLeaderboard } from "@/features/scout/hooks/use-leaderboard"
 import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import * as m from "@/paraglide/messages.js"
 
-const routeApi = getRouteApi("/vs/")
+const routeApi = getRouteApi("/{-$lang}/vs/")
 
 /** İki oyuncu seçilince kapışma sayfasına geçer. */
 export function DuelPicker() {
@@ -28,39 +31,40 @@ export function DuelPicker() {
     setRight(nextRight)
     if (nextLeft && nextRight && nextLeft.login !== nextRight.login) {
       void navigate({
-        to: "/vs/$left/$right",
-        params: { left: nextLeft.login, right: nextRight.login }
+        to: "/{-$lang}/vs/$left/$right",
+        params: { lang: getLangParam(), left: nextLeft.login, right: nextRight.login }
       })
     }
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-4 pt-10 pb-20 sm:px-6">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-4 pt-10 pb-20 outline-none sm:px-6"
+    >
       <div className="flex flex-col gap-3">
-        <h1 className="text-4xl font-semibold tracking-tight text-balance">Kapışma</h1>
-        <p className="text-pretty text-muted-foreground">
-          İki oyuncu seç; altı statta karşı karşıya gelsinler. Daha çok stat kazanan maçı alır,
-          eşitlikte genel puana bakılır.
-        </p>
+        <h1 className="text-4xl font-semibold tracking-tight text-balance">{m.duel_title()}</h1>
+        <p className="text-pretty text-muted-foreground">{m.duel_lead()}</p>
       </div>
 
       <div className="grid items-end gap-4 sm:grid-cols-[1fr_auto_1fr]">
         <div className="flex flex-col gap-2">
           <label htmlFor="duel-left" className="text-sm font-medium">
-            Ev sahibi
+            {m.duel_home()}
           </label>
           <PlayerCombobox
             id="duel-left"
             players={data.players.filter((player) => player.login !== right?.login)}
             value={left}
             onChange={(player) => choose("left", player)}
-            placeholder="Ad ya da kullanıcı adı"
+            placeholder={m.duel_placeholder()}
           />
         </div>
         <Swords aria-hidden className="mx-auto mb-2 size-5 text-muted-foreground" />
         <div className="flex flex-col gap-2">
           <label htmlFor="duel-right" className="text-sm font-medium">
-            Deplasman
+            {m.duel_away()}
           </label>
           <PlayerCombobox
             id="duel-right"
@@ -68,14 +72,12 @@ export function DuelPicker() {
             value={right}
             onChange={(player) => choose("right", player)}
             autoFocus={left !== null}
-            placeholder="Ad ya da kullanıcı adı"
+            placeholder={m.duel_placeholder()}
           />
         </div>
       </div>
 
-      <p className="text-sm text-muted-foreground">
-        Listede olmayan biri mi? Önce ana sayfadan kartını çıkar.
-      </p>
+      <p className="text-sm text-muted-foreground">{m.duel_missing()}</p>
     </main>
   )
 }

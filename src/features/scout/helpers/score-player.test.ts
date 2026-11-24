@@ -239,7 +239,7 @@ describe("öne çıkan repolar", () => {
 describe("kararlılık", () => {
   it("aynı girdiye aynı unvanı verir", () => {
     const facts = makeFacts({ login: "omergulcicek" })
-    expect(scorePlayer(stored(facts), NOW).title).toBe(scorePlayer(stored(facts), NOW).title)
+    expect(scorePlayer(stored(facts), NOW).title).toEqual(scorePlayer(stored(facts), NOW).title)
   })
 })
 

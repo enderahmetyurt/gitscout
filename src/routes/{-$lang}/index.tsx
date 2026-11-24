@@ -1,19 +1,21 @@
 import { createFileRoute, stripSearchParams } from "@tanstack/react-router"
 
+import { hreflangLinks } from "@/helpers/localized-url"
+
 import { Pending } from "@/components/shared/Pending"
 import { leaderboardQueryOptions } from "@/features/scout/api/players.queries"
-import { LeaderboardPage } from "@/features/scout/components/LeaderboardPage"
+import { ScoutHome } from "@/features/scout/components/ScoutHome"
 import {
   leaderboardSearchDefaults,
   leaderboardSearchSchema
 } from "@/features/scout/schemas/leaderboard-search.schema"
 
-export const Route = createFileRoute("/leaderboard")({
+export const Route = createFileRoute("/{-$lang}/")({
   validateSearch: leaderboardSearchSchema,
   search: { middlewares: [stripSearchParams(leaderboardSearchDefaults)] },
   loader: ({ context }) =>
     context.queryClient.ensureQueryData({ ...leaderboardQueryOptions(), staleTime: 0 }),
-  head: () => ({ meta: [{ title: "Liderlik tablosu · Gitscout" }] }),
+  head: () => ({ links: hreflangLinks("/") }),
   pendingComponent: Pending,
-  component: LeaderboardPage
+  component: ScoutHome
 })

@@ -51,3 +51,6 @@ yarn-error.log*
 .knip
 .turbo
 
+
+# paraglide (generated on install)
+/src/paraglide

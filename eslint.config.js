@@ -96,6 +96,7 @@ export default [
       "knip.config.js",
       "commitlint.config.mjs",
       "src/routeTree.gen.ts",
+      "src/paraglide/**",
       "dist/**",
       ".tanstack/**",
       ".output/**"

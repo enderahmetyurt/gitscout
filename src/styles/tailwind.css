@@ -35,7 +35,8 @@
   --destructive-foreground: oklch(0.985 0 0);
 
   --success: oklch(0.6 0.15 150);
-  --chart-1: #2f9e5b;
+  --chart-home: #3f8fd8;
+  --chart-away: #bf7c24;
   --warning: oklch(0.7 0.15 75);
 
   /* Football Manager tarzı stat renkleri: düşükten yükseğe kırmızı → yeşil. */
@@ -76,7 +77,9 @@
   --destructive-foreground: oklch(0.985 0 0);
 
   --success: oklch(0.72 0.17 150);
-  --chart-1: #36a362;
+  /* Oyuncu renkleri: tek oyuncu ve ev sahibi mavi, deplasman turuncu. Renk körlüğünde de ayrışır (dataviz doğrulayıcısından geçti). Yeşil-kırmızı yalnızca puan kademeleri içindir. */
+  --chart-home: #3f8fd8;
+  --chart-away: #bf7c24;
   --warning: oklch(0.8 0.15 80);
 
   --stat-poor: #f87171;
@@ -116,7 +119,8 @@
   --color-destructive-foreground: var(--destructive-foreground);
 
   --color-success: var(--success);
-  --color-chart-1: var(--chart-1);
+  --color-chart-home: var(--chart-home);
+  --color-chart-away: var(--chart-away);
   --color-warning: var(--warning);
   --color-stat-poor: var(--stat-poor);
   --color-stat-fair: var(--stat-fair);
@@ -195,7 +199,7 @@
   --card-sheen: 0.45;
 }
 
-/* Bronz, gümüş ve altın FIFA'daki gibi açık, parlak metal zeminli; yazılar koyu. İkon koyu kalır. */
+/* Bronz, gümüş ve altın FIFA'daki gibi açık, parlak metal zeminli; yazılar koyu. İkon siyah-altın. */
 [data-rarity="silver"] {
   --frame-1: #f4f6f9;
   --frame-2: #7f8996;
@@ -220,12 +224,17 @@
   --card-sheen: 0.55;
 }
 
+/* İkon: siyah zemin, altın çerçeve ve altın puan; en üst seviye olduğu için tek koyu kart. */
 [data-rarity="icon"] {
-  --frame-1: #fff3c9;
-  --frame-2: #d8bd6a;
-  --bg-1: #1d1d22;
-  --bg-2: #08080a;
-  --card-accent: #fff1bf;
+  --frame-1: #f6dc8c;
+  --frame-2: #a8832a;
+  --bg-1: #26242b;
+  --bg-2: #060607;
+  --card-accent: #f3d27a;
+  --card-ink: #f7f1e1;
+  --card-muted: rgb(247 241 225 / 0.68);
+  --card-line: #d4af55;
+  --card-sheen: 0.09;
 }
 
 @layer components {
@@ -236,6 +245,17 @@
     box-shadow:
       inset 0 0 0 1px color-mix(in oklab, var(--frame-1) 70%, transparent),
       0 24px 48px -16px color-mix(in oklab, var(--frame-2) 30%, transparent);
+  }
+
+  /* İkon çerçevesi düz değil, ışık alan cilalı altın. */
+  .scout-card[data-rarity="icon"] {
+    background-image: linear-gradient(
+      135deg,
+      var(--frame-1),
+      var(--frame-2) 35%,
+      var(--frame-1) 60%,
+      var(--frame-2)
+    );
   }
 
   .scout-card-inner {
@@ -275,7 +295,7 @@
     box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--card-line) 35%, transparent);
   }
 
-  /* Kart zemini her nadirlikte koyu: statlar koyu tema renklerini kullanır. */
+  /* Varsayılan (koyu zemin) stat renkleri; metal zeminli kartlar aşağıda koyu tonlara geçer. */
   .scout-card {
     --stat-poor: #f87171;
     --stat-fair: #fb923c;
@@ -285,7 +305,7 @@
   }
 
   /* Açık metal zeminli kartlarda statlar koyu tonlarda. */
-  .scout-card:is([data-rarity="gold"], [data-rarity="silver"], [data-rarity="bronze"]) {
+  .scout-card[data-rarity]:not([data-rarity="icon"]) {
     --stat-poor: #7f1d1d;
     --stat-fair: #7c2d12;
     --stat-good: #713f12;
@@ -314,6 +334,8 @@
 @layer components {
   /* shadcn Card ile aynı yüzey: ring yapı, hafif gölge derinlik verir. */
   .surface {
+    /* Yüksek kontrast modunda gölgeler kaybolur; şeffaf kenar orada çizgiye döner. */
+    border: 1px solid transparent;
     border-radius: var(--radius-xl);
     background-color: var(--card);
     color: var(--card-foreground);
@@ -337,6 +359,40 @@
   .rarity-dot {
     background-image: linear-gradient(135deg, var(--bg-1), var(--bg-2));
     box-shadow: inset 0 0 0 1px var(--frame-1);
+  }
+
+  /*
+   * Kapışma girişi: kartlar yanlardan kısa bir mesafeyle gelir (sıfırdan büyümez), skor birer birer
+   * sayar, kazanan satırı sayım bitince belirir. Nadir görülen bir an olduğu için 300ms'den uzun.
+   * Hareketi azaltma tercihinde yalnızca opaklık kalır.
+   */
+  .duel-enter-left,
+  .duel-enter-right {
+    animation: duel-fade 220ms ease both;
+  }
+
+  .score-result {
+    opacity: 0;
+    transition: opacity 300ms var(--ease-out);
+  }
+
+  .score-result.is-done {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .duel-enter-left {
+      animation: duel-enter-left 520ms var(--ease-out) both;
+    }
+
+    .duel-enter-right {
+      animation: duel-enter-right 520ms var(--ease-out) 70ms both;
+    }
+
+    .score-tick {
+      display: inline-block;
+      animation: score-tick 220ms var(--ease-out);
+    }
   }
 
   /* Kartın arkasındaki nadirlik renginde ışıma. */
@@ -366,7 +422,7 @@
     --badge-c: 0.13;
   }
 
-  .scout-card:is([data-rarity="gold"], [data-rarity="silver"], [data-rarity="bronze"]) .badge-tint {
+  .scout-card[data-rarity]:not([data-rarity="icon"]) .badge-tint {
     --badge-l: 0.4;
     --badge-c: 0.14;
   }
@@ -424,5 +480,32 @@
   }
   [data-badge="regular"] {
     --badge-h: 160;
+  }
+}
+
+@keyframes duel-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes duel-enter-left {
+  from {
+    opacity: 0;
+    transform: translateX(-24px) scale(0.97);
+  }
+}
+
+@keyframes duel-enter-right {
+  from {
+    opacity: 0;
+    transform: translateX(24px) scale(0.97);
+  }
+}
+
+@keyframes score-tick {
+  from {
+    opacity: 0.35;
+    transform: translateY(6px) scale(0.92);
   }
 }

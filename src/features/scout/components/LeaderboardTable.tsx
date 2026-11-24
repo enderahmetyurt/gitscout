@@ -11,10 +11,13 @@ import type { SortingState } from "@tanstack/react-table"
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
 import { cn } from "cn"
 
+import { getLangParam } from "@/helpers/localized-url"
+
 import { Badge } from "@/components/ui/badge"
 import { RarityChip } from "@/features/scout/components/RarityChip"
-import { STAT_LABELS, STAT_ORDER } from "@/features/scout/constants/scoring.constants"
+import { STAT_ORDER } from "@/features/scout/constants/scoring.constants"
 import { STAT_TIER_TEXT } from "@/features/scout/constants/stat-tier.constants"
+import { statLabel, statShort, titleText } from "@/features/scout/helpers/player-text"
 import { statTier } from "@/features/scout/helpers/stat-tier"
 import { useLeaderboardSearch } from "@/features/scout/hooks/use-leaderboard-search"
 import {
@@ -23,6 +26,7 @@ import {
 } from "@/features/scout/schemas/leaderboard-search.schema"
 import type { LeaderboardSearch } from "@/features/scout/schemas/leaderboard-search.schema"
 import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import * as m from "@/paraglide/messages.js"
 
 const features = tableFeatures({
   rowSortingFeature,
@@ -30,14 +34,17 @@ const features = tableFeatures({
   sortFns: { text: sortFn_text }
 })
 
-const helper = createColumnHelper<typeof features, ScoredPlayer>()
+/** Sıra, filtre ve aramadan bağımsız olarak tüm tablodaki genel puan sırasıdır. */
+type RankedPlayer = ScoredPlayer & { rank: number }
+
+const helper = createColumnHelper<typeof features, RankedPlayer>()
 
 const statColumns = STAT_ORDER.map((key) =>
   helper.accessor((player) => player.stats[key].value, {
     id: key,
-    header: STAT_LABELS[key].short,
+    header: () => statShort(key),
     sortDescFirst: true,
-    meta: { align: "center", label: STAT_LABELS[key].label },
+    meta: { align: "center", label: () => statLabel(key) },
     cell: (info) => {
       const value = info.getValue()
       return <span className={cn("font-medium", STAT_TIER_TEXT[statTier(value)])}>{value}</span>
@@ -52,20 +59,20 @@ const columns = helper.columns([
     enableSorting: false,
     // Veri sunucudan genel puana göre sıralı gelir; sıra numarası tablo nasıl sıralanırsa sıralansın OVR sırasıdır.
     cell: ({ row }) => (
-      <span className={row.index < 3 ? "font-semibold text-foreground" : undefined}>
-        {row.index + 1}
+      <span className={row.original.rank <= 3 ? "font-semibold text-foreground" : undefined}>
+        {row.original.rank}
       </span>
     )
   }),
   helper.accessor("name", {
     id: "name",
-    header: "Oyuncu",
+    header: () => m.col_player(),
     sortFn: "text",
     cell: ({ row }) => <PlayerCell player={row.original} />
   }),
   helper.accessor("position", {
     id: "position",
-    header: "Mevki",
+    header: () => m.col_position(),
     sortFn: "text",
     cell: (info) => (
       <Badge variant="secondary" lang="en">
@@ -77,7 +84,7 @@ const columns = helper.columns([
     id: "ovr",
     header: "OVR",
     sortDescFirst: true,
-    meta: { align: "center", label: "Genel puan" },
+    meta: { align: "center", label: () => "OVR" },
     cell: ({ row }) => <RarityChip ovr={row.original.ovr} rarity={row.original.rarity} />
   }),
   ...statColumns
@@ -85,10 +92,12 @@ const columns = helper.columns([
 
 type ColumnMeta = { align?: "center"; label?: string }
 
+/** Sütun etiketleri fonksiyon olarak saklanır; okunduğu anda geçerli dilde yazılır. */
 function readMeta(meta: unknown): ColumnMeta {
   if (typeof meta !== "object" || meta === null) return {}
   const align = "align" in meta && meta.align === "center" ? "center" : undefined
-  const label = "label" in meta && typeof meta.label === "string" ? meta.label : undefined
+  const read: unknown = "label" in meta ? meta.label : undefined
+  const label = typeof read === "function" ? String(read()) : undefined
   return { align, label }
 }
 
@@ -99,8 +108,8 @@ function isSortKey(id: string): id is LeaderboardSearch["sort"] {
 function PlayerCell({ player }: { player: ScoredPlayer }) {
   return (
     <Link
-      to="/u/$username"
-      params={{ username: player.login }}
+      to="/{-$lang}/u/$username"
+      params={{ lang: getLangParam(), username: player.login }}
       className="flex items-center gap-3 rounded-sm outline-none after:absolute after:inset-0 focus-visible:ring-[3px] focus-visible:ring-ring/50"
     >
       <img
@@ -113,7 +122,7 @@ function PlayerCell({ player }: { player: ScoredPlayer }) {
       <span className="min-w-0">
         <span className="block truncate font-medium text-foreground">{player.name}</span>
         <span className="block truncate text-xs text-muted-foreground">
-          @{player.login} · {player.title}
+          @{player.login} · {titleText(player.title)}
         </span>
       </span>
     </Link>
@@ -122,16 +131,20 @@ function PlayerCell({ player }: { player: ScoredPlayer }) {
 
 type LeaderboardTableProps = {
   players: ScoredPlayer[]
+  /** Genel sırası hesaplanacak tam liste (sunucudan genel puana göre sıralı gelir). */
+  allPlayers: ScoredPlayer[]
 }
 
-export function LeaderboardTable({ players }: LeaderboardTableProps) {
+export function LeaderboardTable({ players, allPlayers }: LeaderboardTableProps) {
+  const rankOf = new Map(allPlayers.map((player, index) => [player.login, index + 1]))
+  const data = players.map((player) => ({ ...player, rank: rankOf.get(player.login) ?? 0 }))
   const { search, update } = useLeaderboardSearch()
   const sorting: SortingState = [{ id: search.sort, desc: search.dir === "desc" }]
 
   const table = useTable({
     features,
     columns,
-    data: players,
+    data,
     state: { sorting },
     // Sıralama hiç kalkmasın: üçüncü tıklamada boş tablo yerine yön değişir.
     enableSortingRemoval: false,
@@ -146,9 +159,7 @@ export function LeaderboardTable({ players }: LeaderboardTableProps) {
   return (
     <div className="surface overflow-x-auto">
       <table className="w-full min-w-180 text-sm">
-        <caption className="sr-only">
-          Liderlik tablosu. Sütun başlıklarına tıklayarak sıralayabilirsin.
-        </caption>
+        <caption className="sr-only">{m.table_caption()}</caption>
         <thead className="border-b bg-muted/40 text-xs text-muted-foreground uppercase">
           {table.getHeaderGroups().map((group) => (
             <tr key={group.id}>
@@ -175,7 +186,7 @@ export function LeaderboardTable({ players }: LeaderboardTableProps) {
                       <button
                         type="button"
                         onClick={header.column.getToggleSortingHandler()}
-                        title={label ? `Sırala: ${label}` : undefined}
+                        title={label ? m.sort_by({ label }) : undefined}
                         className={
                           sorted
                             ? "inline-flex min-h-6 items-center gap-1 rounded-sm text-foreground uppercase outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"

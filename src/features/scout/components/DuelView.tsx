@@ -1,52 +1,82 @@
 import { Link } from "@tanstack/react-router"
-import { ArrowLeftRight, Link2, Share2 } from "lucide-react"
+import { ArrowLeftRight, ImageIcon, Link2, Share2 } from "lucide-react"
 import { cn } from "cn"
 import { toast } from "sonner"
 
+import { getLangParam } from "@/helpers/localized-url"
+
 import { Button, buttonVariants } from "@/components/ui/button"
+import { DuelRadar } from "@/features/scout/components/DuelRadar"
 import { PlayerCard } from "@/features/scout/components/PlayerCard"
-import { STAT_LABELS } from "@/features/scout/constants/scoring.constants"
 import { SHARE_TARGETS } from "@/features/scout/constants/share.constants"
 import { STAT_TIER_TEXT } from "@/features/scout/constants/stat-tier.constants"
 import { computeDuel } from "@/features/scout/helpers/duel"
 import type { Duel, DuelSide } from "@/features/scout/helpers/duel"
+import { number, percent, statLabel } from "@/features/scout/helpers/player-text"
 import { statTier } from "@/features/scout/helpers/stat-tier"
+import { useCountUp } from "@/features/scout/hooks/use-count-up"
+import { useImageCopy } from "@/features/scout/hooks/use-image-copy"
 import { usePlayer } from "@/features/scout/hooks/use-player"
 import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import * as m from "@/paraglide/messages.js"
 
 type DuelViewProps = {
   left: string
   right: string
 }
 
-const number = new Intl.NumberFormat("tr-TR")
-
 export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) {
   const { data: left } = usePlayer(leftLogin)
   const { data: right } = usePlayer(rightLogin)
   const duel = computeDuel(left, right)
+  const {
+    ref: contentRef,
+    copy,
+    isCopying,
+    excludeProps
+  } = useImageCopy(`gitscout-${leftLogin}-vs-${rightLogin}`)
   const winner = duel.winner === "left" ? left : duel.winner === "right" ? right : null
+
+  const copyImage = () => {
+    copy()
+      .then((result) => {
+        if (result === "copied") toast.success(m.duel_image_copied())
+        if (result === "downloaded") toast.success(m.duel_image_downloaded())
+      })
+      .catch(() => toast.error(m.duel_image_failed()))
+  }
 
   const copyLink = () => {
     navigator.clipboard
       .writeText(window.location.href)
-      .then(() => toast.success("Link kopyalandı"))
-      .catch(() => toast.error("Link kopyalanamadı"))
+      .then(() => toast.success(m.duel_link_copied()))
+      .catch(() => toast.error(m.duel_link_failed()))
   }
 
   const shareOnX = () => {
     const x = SHARE_TARGETS[0]
+    const score = {
+      left: left.name,
+      right: right.name,
+      leftScore: duel.score.left,
+      rightScore: duel.score.right
+    }
     const text = winner
-      ? `Gitscout kapışması: ${left.name} ${duel.score.left}–${duel.score.right} ${right.name}. Kazanan: ${winner.name}`
-      : `Gitscout kapışması: ${left.name} ${duel.score.left}–${duel.score.right} ${right.name}. Berabere!`
+      ? m.duel_share_winner({ ...score, winner: winner.name })
+      : m.duel_share_draw(score)
     window.open(x.buildUrl(window.location.href, text), "_blank", "noopener,noreferrer")
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 pt-6 pb-20 sm:px-6">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      ref={contentRef}
+      className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 pt-6 pb-20 outline-none sm:px-6"
+    >
       <div className="flex flex-col items-center gap-1 text-center">
         <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
-          Kapışma
+          {m.duel_title()}
         </p>
         <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
           {left.name} <span className="text-muted-foreground">vs</span> {right.name}
@@ -54,48 +84,65 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
       </div>
 
       <div className="grid items-start gap-8 lg:grid-cols-[20rem_1fr_20rem]">
-        <DuelCorner player={left} isWinner={duel.winner === "left"} />
+        <DuelCorner player={left} isWinner={duel.winner === "left"} side="left" />
 
-        <section aria-label="Maç özeti" className="flex flex-col gap-6 lg:order-none">
-          <Scoreboard duel={duel} winner={winner} />
+        <section aria-label={m.duel_summary()} className="flex flex-col gap-6 lg:order-none">
+          <Scoreboard key={`${left.login}-${right.login}`} duel={duel} winner={winner} />
+          <DuelRadar left={left} right={right} />
           <Rounds duel={duel} />
           <Receipts left={left} right={right} />
-          <div className="flex flex-wrap justify-center gap-2">
+          <div {...excludeProps} className="flex flex-wrap justify-center gap-2">
+            <Button variant="outline" size="sm" onClick={copyImage} disabled={isCopying}>
+              <ImageIcon aria-hidden />
+              {isCopying ? m.duel_copying_image() : m.duel_copy_image()}
+            </Button>
             <Button variant="outline" size="sm" onClick={copyLink}>
               <Link2 aria-hidden />
-              Linki kopyala
+              {m.duel_copy_link()}
             </Button>
             <Button variant="outline" size="sm" onClick={shareOnX}>
               <Share2 aria-hidden />
-              X'te paylaş
+              {m.duel_share_x()}
             </Button>
             <Link
-              to="/vs/$left/$right"
-              params={{ left: right.login, right: left.login }}
+              to="/{-$lang}/vs/$left/$right"
+              params={{ lang: getLangParam(), left: right.login, right: left.login }}
               className={buttonVariants({ variant: "outline", size: "sm" })}
             >
               <ArrowLeftRight aria-hidden />
-              Yer değiştir
+              {m.duel_swap()}
             </Link>
-            <Link to="/vs" className={buttonVariants({ variant: "ghost", size: "sm" })}>
-              Başka kapışma
+            <Link
+              to="/{-$lang}/vs"
+              params={{ lang: getLangParam() }}
+              className={buttonVariants({ variant: "ghost", size: "sm" })}
+            >
+              {m.duel_another()}
             </Link>
           </div>
         </section>
 
-        <DuelCorner player={right} isWinner={duel.winner === "right"} />
+        <DuelCorner player={right} isWinner={duel.winner === "right"} side="right" />
       </div>
     </main>
   )
 }
 
-function DuelCorner({ player, isWinner }: { player: ScoredPlayer; isWinner: boolean }) {
+type DuelCornerProps = { player: ScoredPlayer; isWinner: boolean; side: DuelSide }
+
+function DuelCorner({ player, isWinner, side }: DuelCornerProps) {
   return (
-    <div className="flex flex-col items-center gap-3">
+    // Geniş ekranda kartlar yerinde kalır, ortadaki maç özeti kayar.
+    <div
+      className={cn(
+        "flex flex-col items-center gap-3 lg:sticky lg:top-6",
+        side === "left" ? "duel-enter-left" : "duel-enter-right"
+      )}
+    >
       <Link
-        to="/u/$username"
-        params={{ username: player.login }}
-        aria-label={`${player.name} kartını aç`}
+        to="/{-$lang}/u/$username"
+        params={{ lang: getLangParam(), username: player.login }}
+        aria-label={m.duel_open_card({ name: player.name })}
         className={cn(
           "card-lift rounded-[28px] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
           !isWinner && "opacity-90"
@@ -109,37 +156,38 @@ function DuelCorner({ player, isWinner }: { player: ScoredPlayer; isWinner: bool
 }
 
 function Scoreboard({ duel, winner }: { duel: Duel; winner: ScoredPlayer | null }) {
-  const reason =
-    duel.decidedBy === "rounds"
-      ? "Daha çok statta önde"
-      : duel.decidedBy === "ovr"
-        ? "Stat sayısı eşit; genel puan belirledi"
-        : "Stat sayısı ve genel puan eşit"
+  const left = useCountUp(duel.score.left)
+  const right = useCountUp(duel.score.right)
+  const done = left === duel.score.left && right === duel.score.right
 
   return (
     <div className="surface flex flex-col items-center gap-3 px-4 py-5 text-center">
+      {/* Ekran okuyucu son skoru duyar; sayım yalnızca görsel. */}
+      <p className="sr-only">{m.duel_score({ left: duel.score.left, right: duel.score.right })}</p>
       <p
-        className="font-display text-6xl leading-none font-semibold tracking-tight"
-        aria-label={`Skor ${duel.score.left}-${duel.score.right}`}
+        aria-hidden
+        className="flex font-display text-6xl leading-none font-semibold tracking-tight tabular-nums"
       >
-        {duel.score.left}
+        <span key={`left-${left}`} className="score-tick">
+          {left}
+        </span>
         <span className="px-3 text-muted-foreground">–</span>
-        {duel.score.right}
+        <span key={`right-${right}`} className="score-tick">
+          {right}
+        </span>
       </p>
-      <p className="text-lg font-semibold">{winner ? `Kazanan: ${winner.name}` : "Berabere"}</p>
-      <p className="text-sm text-muted-foreground">{reason}</p>
+      <p className={cn("score-result text-lg font-semibold", done && "is-done")}>
+        {winner ? m.duel_winner({ name: winner.name }) : m.duel_draw()}
+      </p>
       <div className="flex w-full flex-col gap-1.5">
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span>%{Math.round(duel.dominance.left * 100)}</span>
-          <span>Üstünlük</span>
-          <span>%{Math.round(duel.dominance.right * 100)}</span>
+          <span>{percent(duel.dominance.left * 100)}</span>
+          <span>{m.duel_dominance()}</span>
+          <span>{percent(duel.dominance.right * 100)}</span>
         </div>
         <div aria-hidden className="flex h-1.5 gap-0.5 overflow-hidden rounded-full">
-          <span className="bg-foreground" style={{ width: `${duel.dominance.left * 100}%` }} />
-          <span
-            className="bg-muted-foreground/40"
-            style={{ width: `${duel.dominance.right * 100}%` }}
-          />
+          <span className="bg-chart-home" style={{ width: `${duel.dominance.left * 100}%` }} />
+          <span className="bg-chart-away" style={{ width: `${duel.dominance.right * 100}%` }} />
         </div>
       </div>
     </div>
@@ -148,20 +196,25 @@ function Scoreboard({ duel, winner }: { duel: Duel; winner: ScoredPlayer | null 
 
 function Rounds({ duel }: { duel: Duel }) {
   return (
-    <ul className="surface flex flex-col gap-3 px-4 py-4" aria-label="Stat karşılaştırması">
+    <ul className="surface flex flex-col gap-3 px-4 py-4" aria-label={m.duel_rounds()}>
       {duel.rounds.map((round) => (
         <li
           key={round.key}
-          className="grid grid-cols-[2.5rem_1fr_3.5rem_1fr_2.5rem] items-center gap-2 text-sm"
+          className="grid grid-cols-[2.5rem_1fr_6.5rem_1fr_2.5rem] items-center gap-2 text-sm"
         >
           <RoundValue value={round.left} wins={round.winner === "left"} align="left" />
           <RoundBar value={round.left} wins={round.winner === "left"} side="left" />
-          <span lang="en" className="text-center text-xs font-semibold text-muted-foreground">
-            {STAT_LABELS[round.key].short}
+          <span className="text-center text-xs font-medium text-muted-foreground">
+            {statLabel(round.key)}
             <span className="sr-only">
               {" "}
-              ({STAT_LABELS[round.key].label}
-              {round.winner ? `, ${round.winner === "left" ? "sol" : "sağ"} kazandı` : ", eşit"})
+              (
+              {round.winner === "left"
+                ? m.duel_left_won()
+                : round.winner === "right"
+                  ? m.duel_right_won()
+                  : m.duel_tied()}
+              )
             </span>
           </span>
           <RoundBar value={round.right} wins={round.winner === "right"} side="right" />
@@ -197,7 +250,12 @@ function RoundBar({ value, wins, side }: { value: number; wins: boolean; side: D
       )}
     >
       <span
-        className={cn("h-full rounded-full", wins ? "bg-foreground" : "bg-muted-foreground/40")}
+        // Her taraf kendi oyuncu renginde; kaybeden tonu soluk kalır.
+        className={cn(
+          "h-full rounded-full",
+          side === "left" ? "bg-chart-home" : "bg-chart-away",
+          !wins && "opacity-35"
+        )}
         style={{ width: `${value}%` }}
       />
     </span>
@@ -206,14 +264,18 @@ function RoundBar({ value, wins, side }: { value: number; wins: boolean; side: D
 
 function Receipts({ left, right }: { left: ScoredPlayer; right: ScoredPlayer }) {
   const rows = [
-    { label: "Commit (son 1 yıl)", left: left.year.commits, right: right.year.commits },
-    { label: "Pull request (son 1 yıl)", left: left.year.prs, right: right.year.prs },
-    { label: "Review (son 1 yıl)", left: left.year.reviews, right: right.year.reviews },
-    { label: "Aktif gün (son 1 yıl)", left: left.year.activeDays, right: right.year.activeDays },
-    { label: "Yıldız", left: left.career.stars, right: right.career.stars },
-    { label: "Takipçi", left: left.career.followers, right: right.career.followers },
+    { label: m.duel_row_commits(), left: left.year.commits, right: right.year.commits },
+    { label: m.duel_row_prs(), left: left.year.prs, right: right.year.prs },
+    { label: m.duel_row_reviews(), left: left.year.reviews, right: right.year.reviews },
     {
-      label: "Toplam katkı",
+      label: m.duel_row_active_days(),
+      left: left.year.activeDays,
+      right: right.year.activeDays
+    },
+    { label: m.duel_row_stars(), left: left.career.stars, right: right.career.stars },
+    { label: m.duel_row_followers(), left: left.career.followers, right: right.career.followers },
+    {
+      label: m.duel_row_contributions(),
       left: left.career.contributions,
       right: right.career.contributions
     }
@@ -221,15 +283,15 @@ function Receipts({ left, right }: { left: ScoredPlayer; right: ScoredPlayer }) 
 
   return (
     <div className="surface overflow-hidden">
-      <h2 className="px-4 pt-4 pb-2 text-center text-sm font-medium">Rakamlar</h2>
+      <h2 className="px-4 pt-4 pb-2 text-center text-sm font-medium">{m.duel_numbers()}</h2>
       <table className="w-full text-sm">
         <caption className="sr-only">
-          {left.name} ve {right.name} için ham sayılar
+          {m.duel_numbers_caption({ left: left.name, right: right.name })}
         </caption>
         <thead className="sr-only">
           <tr>
             <th scope="col">{left.name}</th>
-            <th scope="col">Ölçü</th>
+            <th scope="col">{m.duel_metric()}</th>
             <th scope="col">{right.name}</th>
           </tr>
         </thead>
@@ -242,7 +304,7 @@ function Receipts({ left, right }: { left: ScoredPlayer; right: ScoredPlayer }) 
                   row.left > row.right ? "font-semibold" : "text-muted-foreground"
                 )}
               >
-                {number.format(row.left)}
+                {number(row.left)}
               </td>
               <th
                 scope="row"
@@ -256,7 +318,7 @@ function Receipts({ left, right }: { left: ScoredPlayer; right: ScoredPlayer }) 
                   row.right > row.left ? "font-semibold" : "text-muted-foreground"
                 )}
               >
-                {number.format(row.right)}
+                {number(row.right)}
               </td>
             </tr>
           ))}

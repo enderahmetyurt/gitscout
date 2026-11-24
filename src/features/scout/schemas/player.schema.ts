@@ -1,14 +1,16 @@
 import { z } from "zod"
 
 import type { StoredPlayer } from "@/features/scout/types/player.types"
+import * as m from "@/paraglide/messages.js"
 
 /** GitHub kullanıcı adı kuralları: harf, rakam ve tek tire; en fazla 39 karakter. */
 export const usernameSchema = z
   .string()
   .trim()
-  .min(1, { error: "Kullanıcı adı gir" })
-  .max(39, { error: "Kullanıcı adı en fazla 39 karakter olabilir" })
-  .regex(/^[a-zA-Z\d](?:[a-zA-Z\d]|-(?=[a-zA-Z\d]))*$/, { error: "Geçersiz GitHub kullanıcı adı" })
+  // Mesajlar fonksiyon: okunduğu anda (doğrulama sırasında) geçerli dilde yazılır.
+  .min(1, { error: () => m.username_required() })
+  .max(39, { error: () => m.username_too_long() })
+  .regex(/^[a-zA-Z\d](?:[a-zA-Z\d]|-(?=[a-zA-Z\d]))*$/, { error: () => m.username_invalid() })
 
 export const addPlayerSchema = z.object({
   username: usernameSchema

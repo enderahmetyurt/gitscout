@@ -1,26 +1,26 @@
+import { number } from "@/features/scout/helpers/player-text"
 import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import * as m from "@/paraglide/messages.js"
 
 type YearSummaryProps = {
   year: ScoredPlayer["year"]
 }
 
-const number = new Intl.NumberFormat("tr-TR")
-
 /** Puanların arkasındaki ham sayılar: son bir yılın özeti. */
 export function YearSummary({ year }: YearSummaryProps) {
   const items = [
-    { label: "Commit", value: number.format(year.commits) },
-    { label: "Pull request", value: number.format(year.prs) },
-    { label: "Review", value: number.format(year.reviews) },
-    { label: "Issue", value: number.format(year.issues) },
-    { label: "Aktif gün", value: number.format(year.activeDays) },
-    { label: "En uzun seri", value: `${number.format(year.longestStreak)} gün` }
+    { label: m.year_commits(), value: number(year.commits) },
+    { label: m.year_prs(), value: number(year.prs) },
+    { label: m.year_reviews(), value: number(year.reviews) },
+    { label: m.year_issues(), value: number(year.issues) },
+    { label: m.year_active_days(), value: number(year.activeDays) },
+    { label: m.year_streak(), value: m.days({ count: number(year.longestStreak) }) }
   ]
 
   return (
     <section className="surface flex flex-col gap-3 p-4" aria-labelledby="year-heading">
       <h2 id="year-heading" className="text-sm font-medium">
-        Son 1 yıl
+        {m.year_title()}
       </h2>
       <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
         {items.map((item) => (

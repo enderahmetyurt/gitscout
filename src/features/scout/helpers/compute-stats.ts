@@ -6,22 +6,26 @@ import {
   EXP,
   IMP,
   LANGUAGE_MIN_SHARE,
-  REP,
-  STAT_LABELS
+  REP
 } from "@/features/scout/constants/scoring.constants"
-import type { PlayerFacts, Stat, StatKey, StatPart } from "@/features/scout/types/player.types"
+import type {
+  PlayerFacts,
+  Stat,
+  StatKey,
+  StatPart,
+  StatPartId,
+  StatSummary
+} from "@/features/scout/types/player.types"
 
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value))
-const pct = (value: number) => `%${Math.round(value * 100)}`
-const fmt = (value: number) => Math.round(value).toLocaleString("tr-TR")
 const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000
 
 /** 0'dan `fullAt`'e logaritmik ölçek: ilk adımlar hızlı, sonrası zorlaşır. */
 const logScale = (value: number, fullAt: number) =>
   clamp01(Math.log10(Math.max(0, value) + 1) / Math.log10(fullAt + 1))
 
-function part(label: string, detail: string, ratio: number, max: number): StatPart {
-  return { label, detail, points: Math.round(clamp01(ratio) * max * 10) / 10, max }
+function part(id: StatPartId, ratio: number, max: number): StatPart {
+  return { id, points: Math.round(clamp01(ratio) * max * 10) / 10, max }
 }
 
 /** Ham puanı FIFA ölçeğine taşır; `DISPLAY_CURVE` noktaları arasında doğrusal. */
@@ -35,12 +39,18 @@ export function toDisplayScore(raw: number): number {
   return Math.round(DISPLAY_CURVE[DISPLAY_CURVE.length - 1]?.[1] ?? value)
 }
 
-function makeStat(key: StatKey, summary: string, parts: StatPart[]): Stat {
+function makeStat(summary: StatSummary, parts: StatPart[]): Stat {
   const raw = Math.min(
     100,
     parts.reduce((total, item) => total + item.points, 0)
   )
-  return { key, ...STAT_LABELS[key], value: toDisplayScore(raw), raw, summary, parts }
+  return {
+    key: summary.key,
+    value: toDisplayScore(raw),
+    raw,
+    summary,
+    parts
+  }
 }
 
 /* ---------- Ortak ölçümler (rozetler ve unvanlar da kullanır) ---------- */
@@ -137,78 +147,37 @@ export const significantLanguages = (facts: PlayerFacts) =>
 function activity(facts: PlayerFacts): Stat {
   const { commits, prs, reviews, issues, restricted } = facts.lastYear
   const total = commits + prs + reviews + issues + restricted
-  return makeStat("act", `Son 1 yılda ${fmt(total)} katkı`, [
-    part(
-      "Son 1 yıl katkı",
-      `${fmt(total)} katkı: ${fmt(commits)} commit, ${fmt(prs)} PR, ${fmt(reviews)} review, ${fmt(issues)} issue${restricted > 0 ? `, ${fmt(restricted)} private` : ""}. Tam puan: ${fmt(ACT.contributions.fullAt)}`,
-      logScale(total, ACT.contributions.fullAt),
-      ACT.contributions.max
-    )
+  return makeStat({ key: "act", contributions: total }, [
+    part("act_contributions", logScale(total, ACT.contributions.fullAt), ACT.contributions.max)
   ])
 }
 
 function impact(facts: PlayerFacts): Stat {
-  const ownedStars = facts.ownedRepos.reduce((sum, repo) => sum + repo.stars, 0)
-  const ownedForks = facts.ownedRepos.reduce((sum, repo) => sum + repo.forks, 0)
   const credits = orgCredits(facts)
-  const orgStars = credits.reduce((sum, credit) => sum + credit.stars, 0)
-  const orgForks = credits.reduce((sum, credit) => sum + credit.forks, 0)
-  const topOrg = credits[0]
-  const orgDetail =
-    orgStars >= 1
-      ? ` + ${fmt(orgStars)} organizasyon payı${topOrg ? ` (en çok: ${topOrg.repo}, commit payı ${pct(topOrg.share)})` : ""}`
-      : ""
+  const stars =
+    facts.ownedRepos.reduce((sum, repo) => sum + repo.stars, 0) +
+    credits.reduce((sum, credit) => sum + credit.stars, 0)
+  const forks =
+    facts.ownedRepos.reduce((sum, repo) => sum + repo.forks, 0) +
+    credits.reduce((sum, credit) => sum + credit.forks, 0)
 
-  return makeStat(
-    "imp",
-    `${fmt(ownedStars + orgStars)} yıldız, ${fmt(ownedForks + orgForks)} fork`,
-    [
-      part(
-        "Yıldız",
-        `${fmt(ownedStars)} kendi repolarından${orgDetail}. Tam puan: ${fmt(IMP.stars.fullAt)}`,
-        logScale(ownedStars + orgStars, IMP.stars.fullAt),
-        IMP.stars.max
-      ),
-      part(
-        "Fork",
-        `${fmt(ownedForks + orgForks)} fork. Tam puan: ${fmt(IMP.forks.fullAt)}`,
-        logScale(ownedForks + orgForks, IMP.forks.fullAt),
-        IMP.forks.max
-      )
-    ]
-  )
+  return makeStat({ key: "imp", stars: Math.round(stars), forks: Math.round(forks) }, [
+    part("imp_stars", logScale(stars, IMP.stars.fullAt), IMP.stars.max),
+    part("imp_forks", logScale(forks, IMP.forks.fullAt), IMP.forks.max)
+  ])
 }
 
 function community(facts: PlayerFacts): Stat {
-  return makeStat("com", `${fmt(facts.followers)} takipçi`, [
-    part(
-      "Takipçi",
-      `${fmt(facts.followers)} takipçi. Tam puan: ${fmt(COM.followers.fullAt)}`,
-      logScale(facts.followers, COM.followers.fullAt),
-      COM.followers.max
-    )
+  return makeStat({ key: "com", followers: facts.followers }, [
+    part("com_followers", logScale(facts.followers, COM.followers.fullAt), COM.followers.max)
   ])
 }
 
 function respect(facts: PlayerFacts): Stat {
-  return makeStat(
-    "rep",
-    `Başka repolara ${fmt(facts.mergedExternalPrs)} kabul edilen PR, son 1 yılda ${fmt(facts.lastYear.reviews)} review`,
-    [
-      part(
-        "Kabul edilen PR",
-        `Başkalarının repolarına ${fmt(facts.mergedExternalPrs)} merge edilmiş PR (tüm zamanlar). Tam puan: ${fmt(REP.externalPrs.fullAt)}`,
-        logScale(facts.mergedExternalPrs, REP.externalPrs.fullAt),
-        REP.externalPrs.max
-      ),
-      part(
-        "Code review",
-        `Son 1 yılda ${fmt(facts.lastYear.reviews)} review. Tam puan: ${fmt(REP.reviews.fullAt)}`,
-        logScale(facts.lastYear.reviews, REP.reviews.fullAt),
-        REP.reviews.max
-      )
-    ]
-  )
+  return makeStat({ key: "rep", prs: facts.mergedExternalPrs, reviews: facts.lastYear.reviews }, [
+    part("rep_prs", logScale(facts.mergedExternalPrs, REP.externalPrs.fullAt), REP.externalPrs.max),
+    part("rep_reviews", logScale(facts.lastYear.reviews, REP.reviews.fullAt), REP.reviews.max)
+  ])
 }
 
 function consistency(facts: PlayerFacts): Stat {
@@ -217,48 +186,20 @@ function consistency(facts: PlayerFacts): Stat {
   const recentYears = [...facts.yearly].sort((a, b) => b.year - a.year).slice(0, CON.years.span)
   const activeYears = recentYears.filter((year) => year.total >= CON.years.minContributions)
 
-  return makeStat("con", `52 haftanın ${weeks}'inde aktif, en uzun seri ${streak} gün`, [
-    part(
-      "Aktif hafta",
-      `Son 52 haftanın ${weeks}'inde katkı var. Tam puan: ${CON.activeWeeks.fullAt}`,
-      weeks / CON.activeWeeks.fullAt,
-      CON.activeWeeks.max
-    ),
-    part(
-      "En uzun seri",
-      `${streak} gün üst üste. Tam puan: ${CON.streak.fullAt} gün`,
-      logScale(streak, CON.streak.fullAt),
-      CON.streak.max
-    ),
-    part(
-      "Aktif yıllar",
-      `Son ${CON.years.span} yılın ${activeYears.length}'inde ${CON.years.minContributions}+ katkı (${recentYears
-        .map((year) => `${year.year}: ${fmt(year.total)}`)
-        .join(", ")})`,
-      activeYears.length / CON.years.span,
-      CON.years.max
-    )
+  return makeStat({ key: "con", weeks, streak }, [
+    part("con_weeks", weeks / CON.activeWeeks.fullAt, CON.activeWeeks.max),
+    part("con_streak", logScale(streak, CON.streak.fullAt), CON.streak.max),
+    part("con_years", activeYears.length / CON.years.span, CON.years.max)
   ])
 }
 
 function career(facts: PlayerFacts, now: Date): Stat {
   const lifetime = facts.yearly.reduce((sum, year) => sum + year.total, 0)
   const age = Math.max(0, (now.getTime() - new Date(facts.createdAt).getTime()) / YEAR_MS)
-  const firstYear = new Date(facts.createdAt).getUTCFullYear()
 
-  return makeStat("exp", `${age.toFixed(0)} yıllık hesap, toplam ${fmt(lifetime)} katkı`, [
-    part(
-      "Toplam katkı",
-      `${firstYear}'den bu yana ${fmt(lifetime)} katkı. Tam puan: ${fmt(EXP.lifetime.fullAt)}`,
-      logScale(lifetime, EXP.lifetime.fullAt),
-      EXP.lifetime.max
-    ),
-    part(
-      "Hesap yaşı",
-      `${age.toFixed(1)} yıl. Tam puan: ${EXP.accountAge.fullAtYears} yıl`,
-      age / EXP.accountAge.fullAtYears,
-      EXP.accountAge.max
-    )
+  return makeStat({ key: "exp", years: Math.round(age), contributions: lifetime }, [
+    part("exp_lifetime", logScale(lifetime, EXP.lifetime.fullAt), EXP.lifetime.max),
+    part("exp_age", age / EXP.accountAge.fullAtYears, EXP.accountAge.max)
   ])
 }
 

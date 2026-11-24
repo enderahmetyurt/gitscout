@@ -5,7 +5,6 @@ import {
   STAT_ORDER,
   STAT_WEIGHTS
 } from "@/features/scout/constants/scoring.constants"
-import { TITLES } from "@/features/scout/constants/titles.constants"
 import { computeArchetype } from "@/features/scout/helpers/archetype"
 import { computeBadges } from "@/features/scout/helpers/compute-badges"
 import type { BadgeClock } from "@/features/scout/helpers/compute-badges"
@@ -26,8 +25,12 @@ import type {
   Stat,
   StatKey,
   StoredPlayer,
+  TitleRef,
   TopRepo
 } from "@/features/scout/types/player.types"
+
+/** Her stat ve nadirlik için kaç unvan seçeneği var; metinler mesaj dosyalarında. */
+const TITLE_VARIANTS = 3
 
 /** En yüksek stata bu kadar yakın statlar unvan için eşit sayılır. */
 const TITLE_TIE_MARGIN = 1
@@ -166,10 +169,10 @@ export function computeTopRepos(facts: PlayerFacts): TopRepo[] {
   return [...owned, ...org].sort((a, b) => b.stars - a.stars).slice(0, TOP_REPO_COUNT)
 }
 
-function computeClub(facts: PlayerFacts): string {
+function computeClub(facts: PlayerFacts): string | null {
   const company = facts.company?.trim().replace(/^@/, "").split(/[\s,]/)[0]
   if (company) return company
-  return facts.topOrg ?? "Serbest"
+  return facts.topOrg
 }
 
 export function computeOvr(stats: Record<StatKey, Stat>): number {
@@ -193,13 +196,15 @@ function hash(text: string): number {
  * Unvan en güçlü stattan gelir. Üst düzey oyuncularda birden çok stat tavana dayandığı için
  * eşitlik kullanıcı adına göre kararlı biçimde bozulur; böylece efsaneler aynı unvana yığılmaz.
  */
-function computeTitle(login: string, stats: Record<StatKey, Stat>, rarity: Rarity): string {
+function computeTitle(login: string, stats: Record<StatKey, Stat>, rarity: Rarity): TitleRef {
   const top = Math.max(...STAT_ORDER.map((key) => stats[key].raw))
   const tied = STAT_ORDER.filter((key) => stats[key].raw >= top - TITLE_TIE_MARGIN)
   const seed = hash(login)
-  const key = tied[seed % tied.length] ?? "act"
-  const pool: readonly string[] = TITLES[key][rarity]
-  return pool[(seed >>> 4) % pool.length] ?? "Oyuncu"
+  return {
+    stat: tied[seed % tied.length] ?? "act",
+    rarity,
+    variant: (seed >>> 4) % TITLE_VARIANTS
+  }
 }
 
 /** Oyuncunun genel ve kendi mevkisindeki sırası; eşit puanlılar aynı sırayı paylaşır. */

@@ -6,11 +6,9 @@ import type { ScoredPlayer, StatKey } from "@/features/scout/types/player.types"
 const player = (ovr: number, values: Record<StatKey, number>): ScoredPlayer => {
   const stat = (key: StatKey) => ({
     key,
-    short: key,
-    label: key,
     value: values[key],
     raw: values[key],
-    summary: "",
+    summary: { key: "com" as const, followers: 0 },
     parts: []
   })
   return {
@@ -23,8 +21,8 @@ const player = (ovr: number, values: Record<StatKey, number>): ScoredPlayer => {
     topRepos: [],
     ovr,
     rarity: "gold",
-    title: "",
-    archetype: "",
+    title: { stat: "act", rarity: "gold", variant: 0 },
+    archetype: { rarity: "gold", strengths: [], weakness: null },
     stats: {
       act: stat("act"),
       imp: stat("imp"),

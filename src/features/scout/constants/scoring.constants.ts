@@ -11,15 +11,6 @@ export const STAT_WEIGHTS: Record<StatKey, number> = {
   exp: 0.15
 }
 
-export const STAT_LABELS: Record<StatKey, { short: string; label: string }> = {
-  act: { short: "ACT", label: "Aktivite" },
-  imp: { short: "IMP", label: "Etki" },
-  com: { short: "COM", label: "Topluluk" },
-  rep: { short: "REP", label: "Saygınlık" },
-  con: { short: "CON", label: "İstikrar" },
-  exp: { short: "EXP", label: "Kıdem" }
-}
-
 /** Kartta statların sırası: ilk üçü sol sütun, son üçü sağ sütun. */
 export const STAT_ORDER: StatKey[] = ["act", "imp", "com", "rep", "con", "exp"]
 
@@ -95,13 +86,6 @@ export const RARITY_THRESHOLDS: { rarity: Rarity; min: number }[] = [
   { rarity: "silver", min: 65 },
   { rarity: "bronze", min: 0 }
 ]
-
-export const RARITY_LABELS: Record<Rarity, string> = {
-  icon: "İkon",
-  gold: "Altın",
-  silver: "Gümüş",
-  bronze: "Bronz"
-}
 
 /** Dil → mevki grubu. Listede olmayan diller mevki hesabına girmez. */
 export const LANGUAGE_GROUPS: Record<string, Exclude<Position, "Full Stack">> = {
