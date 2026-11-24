@@ -8,7 +8,8 @@ import { z } from "zod"
  * read via `import.meta.env` on the client.
  */
 const serverSchema = z.object({
-  NODE_ENV: z.enum(["development", "production", "test"]).default("development")
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+  GITHUB_TOKEN: z.string().optional()
 })
 
 const clientSchema = z.object({
@@ -25,7 +26,8 @@ function readEnv(key: string): string | undefined {
 }
 
 const serverParsed = serverSchema.safeParse({
-  NODE_ENV: readEnv("NODE_ENV")
+  NODE_ENV: readEnv("NODE_ENV"),
+  GITHUB_TOKEN: readEnv("GITHUB_TOKEN") || undefined
 })
 
 const clientParsed = clientSchema.safeParse({

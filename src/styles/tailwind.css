@@ -7,6 +7,9 @@
 :root {
   --radius: 0.625rem;
 
+  /* Emil Kowalski: yerleşik easing'ler zayıf; etkileşimler için güçlü ease-out. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
 
@@ -30,6 +33,10 @@
 
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
+
+  --success: oklch(0.6 0.15 150);
+  --chart-1: #2f9e5b;
+  --warning: oklch(0.7 0.15 75);
 
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
@@ -61,6 +68,10 @@
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.985 0 0);
 
+  --success: oklch(0.72 0.17 150);
+  --chart-1: #36a362;
+  --warning: oklch(0.8 0.15 80);
+
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 18%);
   --ring: oklch(0.556 0 0);
@@ -90,6 +101,10 @@
 
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-success: var(--success);
+  --color-chart-1: var(--chart-1);
+  --color-warning: var(--warning);
 
   --color-border: var(--border);
   --color-input: var(--input);
@@ -131,4 +146,135 @@
   ascent-override: 90.44%;
   descent-override: 22.52%;
   line-gap-override: 0%;
+}
+
+/* ---------- Oyuncu kartı ---------- */
+
+/* Nadirlik renkleri kartın kendisine ait; tema değişse de kart aynı görünür. */
+[data-rarity] {
+  --card-ink: #f6f1e4;
+  --card-muted: rgb(246 241 228 / 0.66);
+}
+
+[data-rarity="bronze"] {
+  --frame-1: #e9b98a;
+  --frame-2: #a8683a;
+  --bg-1: #3d2717;
+  --bg-2: #22150c;
+  --card-accent: #f0c497;
+}
+
+[data-rarity="silver"] {
+  --frame-1: #c3cad3;
+  --frame-2: #6f7884;
+  --bg-1: #323b47;
+  --bg-2: #181d24;
+  --card-accent: #f1f4f7;
+}
+
+[data-rarity="gold"] {
+  --frame-1: #d8b95c;
+  --frame-2: #8f6d1f;
+  --bg-1: #3a2f12;
+  --bg-2: #1d1707;
+  --card-accent: #ecd27c;
+}
+
+[data-rarity="icon"] {
+  --frame-1: #fff3c9;
+  --frame-2: #d8bd6a;
+  --bg-1: #1d1d22;
+  --bg-2: #08080a;
+  --card-accent: #fff1bf;
+}
+
+@layer components {
+  /* Dış kasa: nadirlik metalinin düz rengi, ince bir iç çizgiyle. */
+  .scout-card {
+    color: var(--card-ink);
+    background-color: var(--frame-2);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--frame-1) 70%, transparent),
+      0 24px 48px -16px color-mix(in oklab, var(--frame-2) 30%, transparent);
+  }
+
+  .scout-card-inner {
+    background-color: var(--bg-1);
+    background-image: linear-gradient(180deg, var(--bg-1), var(--bg-2));
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--frame-1) 30%, transparent);
+  }
+
+  /* GitHub katkı grafiğinden esinlenen kare ızgara; üstte belirgin, altta kaybolur. */
+  .scout-card-texture {
+    background-image: radial-gradient(
+      color-mix(in oklab, var(--frame-1) 22%, transparent) 1px,
+      transparent 1.5px
+    );
+    background-size: 12px 12px;
+    mask-image: linear-gradient(180deg, black, transparent 70%);
+  }
+
+  .scout-card-accent {
+    color: var(--card-accent);
+  }
+
+  .scout-card-muted {
+    color: var(--card-muted);
+  }
+
+  .scout-card-chip {
+    color: var(--card-ink);
+    background-color: color-mix(in oklab, var(--frame-1) 16%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--frame-1) 35%, transparent);
+  }
+
+  .scout-card-avatar {
+    box-shadow:
+      0 0 0 3px var(--bg-1),
+      0 0 0 5px var(--frame-1);
+  }
+
+  .scout-card-rule {
+    border-color: color-mix(in oklab, var(--frame-1) 30%, transparent);
+  }
+
+  /* Sayı metin rengini taşır (okunabilirlik); nadirlik zemin tonu ve çerçeveyle anlatılır. */
+  .rarity-chip {
+    color: var(--foreground);
+    border-color: color-mix(in oklab, var(--frame-2) 70%, transparent);
+    background: color-mix(in oklab, var(--frame-2) 18%, transparent);
+  }
+}
+
+@layer components {
+  /* shadcn Card ile aynı yüzey: ring yapı, hafif gölge derinlik verir. */
+  .surface {
+    border-radius: var(--radius-xl);
+    background-color: var(--card);
+    color: var(--card-foreground);
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--foreground) 10%, transparent),
+      0 1px 2px 0 rgb(0 0 0 / 0.05);
+  }
+
+  /* Detay sayfasındaki kart: nadir görülen bir ekran, hafif bir yükselme hak ediyor. */
+  .card-lift {
+    transition: transform 300ms var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .card-lift:hover {
+      transform: translateY(-6px) rotate(-0.6deg);
+    }
+  }
+
+  /* Kartın arkasındaki nadirlik renginde ışıma. */
+  .scout-card-glow {
+    background: radial-gradient(
+      closest-side,
+      color-mix(in oklab, var(--frame-2) 45%, transparent),
+      transparent
+    );
+    filter: blur(24px);
+  }
 }

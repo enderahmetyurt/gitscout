@@ -1,0 +1,86 @@
+import { notFound } from "@tanstack/react-router"
+import { createServerFn } from "@tanstack/react-start"
+import { z } from "zod"
+
+import { fetchPlayerFacts } from "@/features/scout/api/fetch-player-facts.api"
+import {
+  getAllLogins,
+  getPlayers,
+  getStaleCount,
+  getStoredPlayer,
+  savePlayer
+} from "@/features/scout/api/player-store"
+import { scorePlayer } from "@/features/scout/helpers/score-player"
+import { playerRequestSchema, usernameSchema } from "@/features/scout/schemas/player.schema"
+import type { ScoredPlayer, StoredPlayer } from "@/features/scout/types/player.types"
+
+type Leaderboard = {
+  players: ScoredPlayer[]
+  /** Veri biçimi değiştiği için yenilenmeyi bekleyen oyuncu sayısı. */
+  staleCount: number
+}
+
+/** Kayıtlı bütün oyuncuları, saklanan veriden yeniden puanlayıp sıralar. GitHub'a istek atmaz. */
+export const getLeaderboard = createServerFn({ method: "GET" }).handler(
+  async (): Promise<Leaderboard> => {
+    const [players, staleCount] = await Promise.all([getPlayers(), getStaleCount()])
+    const now = new Date()
+    return {
+      players: players
+        .map((player) => scorePlayer(player, now))
+        .sort((a, b) => b.ovr - a.ovr || a.login.localeCompare(b.login)),
+      staleCount
+    }
+  }
+)
+
+async function fetchAndSave(login: string, previous: StoredPlayer | null) {
+  const facts = await fetchPlayerFacts(login)
+  const stored: StoredPlayer = {
+    login: facts.login,
+    fetchedAt: new Date().toISOString(),
+    timezone: previous?.timezone,
+    facts
+  }
+  await savePlayer(stored)
+  return stored
+}
+
+/**
+ * Bütün oyuncuları GitHub'dan sırayla yeniden çeker. Formül ya da veri biçimi değiştiğinde kullanılır.
+ * Sırayla çalışır ki GitHub'ın eşzamanlı istek sınırına takılmasın.
+ */
+export const refreshAllPlayers = createServerFn({ method: "POST" }).handler(
+  async (): Promise<{ refreshed: string[]; failed: { login: string; reason: string }[] }> => {
+    const logins = await getAllLogins()
+    const refreshed: string[] = []
+    const failed: { login: string; reason: string }[] = []
+    for (const login of logins) {
+      try {
+        await fetchAndSave(login, await getStoredPlayer(login))
+        refreshed.push(login)
+      } catch (error) {
+        failed.push({ login, reason: error instanceof Error ? error.message : "Bilinmeyen hata" })
+      }
+    }
+    return { refreshed, failed }
+  }
+)
+
+export const getPlayer = createServerFn({ method: "GET" })
+  .validator(z.object({ username: usernameSchema }))
+  .handler(async ({ data }): Promise<ScoredPlayer> => {
+    const stored = await getStoredPlayer(data.username)
+    if (!stored) throw notFound()
+    return scorePlayer(stored)
+  })
+
+/** Oyuncu kayıtlıysa istek atmadan döner; yoksa ya da `refresh` istenirse GitHub'dan çekip kaydeder. */
+export const addPlayer = createServerFn({ method: "POST" })
+  .validator(playerRequestSchema)
+  .handler(async ({ data }): Promise<ScoredPlayer> => {
+    const existing = await getStoredPlayer(data.username)
+    if (existing && !data.refresh) return scorePlayer(existing)
+
+    return scorePlayer(await fetchAndSave(data.username, existing))
+  })
