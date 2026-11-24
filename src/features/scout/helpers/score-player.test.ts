@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest"
 
+import { REP } from "@/features/scout/constants/scoring.constants"
 import {
+  activeWeeks,
+  computeStats,
   creditedStars,
+  externalPrs,
   isConventional,
+  lifetimeReviews,
   toDisplayScore
 } from "@/features/scout/helpers/compute-stats"
 import {
@@ -56,8 +61,8 @@ describe("commit mesajı sınıflandırma", () => {
 describe("nadirlik ve genel puan", () => {
   it("eşiklere göre nadirlik verir", () => {
     expect(computeRarity(95)).toBe("icon")
-    expect(computeRarity(80)).toBe("gold")
-    expect(computeRarity(79)).toBe("silver")
+    expect(computeRarity(75)).toBe("gold")
+    expect(computeRarity(74)).toBe("silver")
     expect(computeRarity(65)).toBe("silver")
     expect(computeRarity(64)).toBe("bronze")
   })
@@ -233,6 +238,85 @@ describe("öne çıkan repolar", () => {
     expect(repos.map((repo) => repo.fullName)).toEqual(["ada/e", "ada/d", "acme/lib"])
     expect(repos[0]?.language).toBe("TypeScript")
     expect(repos[2]?.isOrg).toBe(true)
+  })
+})
+
+/** Son `days` gün, her gün `count` katkı. */
+const calendarOf = (days: number, count: number) =>
+  Array.from({ length: days }, (_, index) => ({
+    date: new Date(NOW.getTime() - (days - index) * 86_400_000).toISOString().slice(0, 10),
+    count
+  }))
+
+describe("adil puanlama", () => {
+  it("günlük katkı tavanı commit yağmurunu sınırlar", () => {
+    const steady = computeStats(makeFacts({ calendar: calendarOf(365, 40) }), NOW)
+    const flood = computeStats(makeFacts({ calendar: calendarOf(365, 500) }), NOW)
+    expect(flood.act.value).toBe(steady.act.value)
+  })
+
+  it("eski ama boş hesap kıdemli sayılmaz", () => {
+    const idle = makeFacts({
+      createdAt: "2010-01-01T00:00:00Z",
+      yearly: [{ year: 2015, total: 20 }]
+    })
+    const active = makeFacts({
+      createdAt: "2020-01-01T00:00:00Z",
+      yearly: [2021, 2022, 2023, 2024, 2025, 2026].map((year) => ({ year, total: 800 }))
+    })
+    expect(computeStats(active, NOW).exp.value).toBeGreaterThan(computeStats(idle, NOW).exp.value)
+  })
+
+  it("içinde bulunulan yıl, geçen kısmı oranında aktif sayılır", () => {
+    const january = new Date("2026-01-10T12:00:00Z")
+    const facts = makeFacts({
+      yearly: [2022, 2023, 2024, 2025]
+        .map((year) => ({ year, total: 500 }))
+        .concat({ year: 2026, total: 5 })
+    })
+    const years = computeStats(facts, january).con.parts.find((item) => item.id === "con_years")
+    expect(years?.points).toBe(years?.max)
+  })
+
+  it("aktif hafta en fazla 52 olur", () => {
+    expect(activeWeeks(calendarOf(371, 1))).toBe(52)
+  })
+
+  it("tek repodaki bot commit'leri aktiviteden düşülür, normal yoğunluk etkilenmez", () => {
+    const calendar = calendarOf(365, 300)
+    const bot = makeFacts({
+      calendar,
+      repoCommits: [{ repo: "a/proxy", commits: 100_000, stars: 200 }]
+    })
+    const busy = makeFacts({ calendar, repoCommits: [{ repo: "a/app", commits: 4_000, stars: 0 }] })
+    expect(computeStats(bot, NOW).act.value).toBeLessThan(computeStats(busy, NOW).act.value)
+    expect(computeStats(busy, NOW).act.value).toBe(
+      computeStats(makeFacts({ calendar }), NOW).act.value
+    )
+  })
+
+  it("en çok yıldızlı repolar ayrıntılı listede yoksa da sayılır, iki kez sayılmaz", () => {
+    const facts = makeFacts({
+      ownedRepos: [],
+      starredRepos: [{ name: "old-hit", stars: 5_000, forks: 100, language: "C" }]
+    })
+    expect(creditedStars(facts)).toBe(5_000)
+  })
+
+  it("maintainer olunan organizasyondaki PR'lar düşük ağırlıkla sayılır", () => {
+    const facts = makeFacts({ mergedExternalPrs: 1_000, ownOrgPrs: [{ org: "acme", prs: 800 }] })
+    expect(externalPrs(facts)).toBe(1_000 - 800 * (1 - REP.ownOrgPrWeight))
+    expect(externalPrs(makeFacts({ mergedExternalPrs: 1_000 }))).toBe(1_000)
+  })
+
+  it("review yıllık kırılım varsa ömür boyu, yoksa son bir yıl", () => {
+    const yearly = [
+      { year: 2024, total: 100, reviews: 30 },
+      { year: 2025, total: 100, reviews: 20 }
+    ]
+    expect(lifetimeReviews(makeFacts({ yearly }))).toBe(50)
+    const old = makeFacts({ yearly: [{ year: 2025, total: 100 }] })
+    expect(lifetimeReviews(old)).toBe(old.lastYear.reviews)
   })
 })
 

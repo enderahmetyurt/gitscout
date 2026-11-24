@@ -63,7 +63,7 @@ export function statSummary(summary: Stat["summary"]): string {
     case "rep":
       return m.summary_rep({ prs: number(summary.prs), reviews: number(summary.reviews) })
     case "con":
-      return m.summary_con({ weeks: number(summary.weeks), streak: number(summary.streak) })
+      return m.summary_con({ days: number(summary.days), streak: number(summary.streak) })
     case "exp":
       return m.summary_exp({
         years: number(summary.years),
@@ -79,11 +79,11 @@ const PART_LABELS = {
   com_followers: m.part_com_followers,
   rep_prs: m.part_rep_prs,
   rep_reviews: m.part_rep_reviews,
-  con_weeks: m.part_con_weeks,
+  con_days: m.part_con_days,
   con_streak: m.part_con_streak,
   con_years: m.part_con_years,
   exp_lifetime: m.part_exp_lifetime,
-  exp_age: m.part_exp_age
+  exp_years: m.part_exp_years
 } as const satisfies Record<StatPartId, () => string>
 
 export function partLabel(id: StatPartId): string {
@@ -251,13 +251,6 @@ export function titleText(title: TitleRef): string {
   return (pool[title.variant] ?? pool[0] ?? m.title_act_bronze_0)()
 }
 
-const ARCHETYPE_LEADS = {
-  icon: m.archetype_lead_icon,
-  gold: m.archetype_lead_gold,
-  silver: m.archetype_lead_silver,
-  bronze: m.archetype_lead_bronze
-} as const satisfies Record<Rarity, () => string>
-
 const ARCHETYPE_STRENGTHS = {
   act: m.archetype_strength_act,
   imp: m.archetype_strength_imp,
@@ -276,20 +269,15 @@ const ARCHETYPE_WEAKNESSES = {
   exp: m.archetype_weakness_exp
 } as const satisfies Record<StatKey, () => string>
 
-/** "Seçkin profil: …" cümlesi; `lead` ayrıca döner ki arayüz onu vurgulayabilsin. */
-export function archetypeText(archetype: Archetype): { lead: string; text: string } {
-  const lead = ARCHETYPE_LEADS[archetype.rarity]()
-  const strengths = archetype.strengths
-    .map((key) => ARCHETYPE_STRENGTHS[key]())
-    .join(` ${m.archetype_and()} `)
-  const weakness = archetype.weakness ? ARCHETYPE_WEAKNESSES[archetype.weakness]() : null
-  const text =
-    strengths && weakness
-      ? m.archetype_full({ lead, strengths, weakness })
-      : strengths
-        ? m.archetype_strengths_only({ lead, strengths })
-        : weakness
-          ? m.archetype_weakness_only({ lead, weakness })
-          : `${lead}.`
-  return { lead, text }
+/** Scout notu: en fazla iki güçlü yön ve varsa tek bir gelişim alanı. */
+export function archetypeNote(archetype: Archetype): {
+  strengths: string[]
+  growth: string | null
+} {
+  return {
+    strengths: archetype.strengths.map((key) => ARCHETYPE_STRENGTHS[key]()),
+    growth: archetype.weakness
+      ? m.archetype_growth({ area: ARCHETYPE_WEAKNESSES[archetype.weakness]() })
+      : null
+  }
 }

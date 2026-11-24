@@ -14,11 +14,13 @@ export function LanguageSwitcher() {
     <button
       type="button"
       lang={next}
+      aria-label={m.language_switch()}
       onClick={() => void setLocale(next)}
       className="inline-flex min-h-6 items-center gap-1.5 rounded-sm text-sm text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
     >
       <Languages aria-hidden className="size-4" />
-      {m.language_switch()}
+      <span className="sm:hidden">{next.toUpperCase()}</span>
+      <span className="hidden sm:inline">{m.language_switch()}</span>
     </button>
   )
 }

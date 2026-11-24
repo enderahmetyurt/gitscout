@@ -13,12 +13,17 @@ import { addPlayerSchema } from "@/features/scout/schemas/player.schema"
 import type { AddPlayerInput } from "@/features/scout/schemas/player.schema"
 import * as m from "@/paraglide/messages.js"
 
-export function AddPlayerForm() {
+type AddPlayerFormProps = {
+  /** Bulunamayan bir profil sayfasında kullanıcı adı hazır gelir. */
+  defaultUsername?: string
+}
+
+export function AddPlayerForm({ defaultUsername = "" }: AddPlayerFormProps) {
   const navigate = useNavigate()
   const addPlayer = useAddPlayer()
   const form = useForm<AddPlayerInput>({
     resolver: zodResolver(addPlayerSchema),
-    defaultValues: { username: "" }
+    defaultValues: { username: defaultUsername }
   })
 
   const onSubmit = form.handleSubmit(async (values) => {

@@ -18,11 +18,10 @@ import type {
 } from "@/features/scout/types/player.types"
 
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value))
-const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000
 
-/** 0'dan `fullAt`'e logaritmik ölçek: ilk adımlar hızlı, sonrası zorlaşır. */
-const logScale = (value: number, fullAt: number) =>
-  clamp01(Math.log10(Math.max(0, value) + 1) / Math.log10(fullAt + 1))
+/** 0'dan `fullAt`'e logaritmik ölçek: ilk adımlar hızlı, sonrası zorlaşır. `soft` ilk basamağı büyütür. */
+const logScale = (value: number, fullAt: number, soft = 1) =>
+  clamp01(Math.log10(1 + Math.max(0, value) / soft) / Math.log10(1 + fullAt / soft))
 
 function part(id: StatPartId, ratio: number, max: number): StatPart {
   return { id, points: Math.round(clamp01(ratio) * max * 10) / 10, max }
@@ -70,13 +69,19 @@ export function longestStreak(calendar: PlayerFacts["calendar"]): number {
   return best
 }
 
+/** Son 52 hafta; takvim 365-371 gün döndüğü için baştaki artık günler sayılmaz. */
 export function activeWeeks(calendar: PlayerFacts["calendar"]): number {
+  const days = calendar.slice(-52 * 7)
   let weeks = 0
-  for (let start = 0; start < calendar.length; start += 7) {
-    if (calendar.slice(start, start + 7).some((day) => day.count > 0)) weeks += 1
+  for (let start = 0; start < days.length; start += 7) {
+    if (days.slice(start, start + 7).some((day) => day.count > 0)) weeks += 1
   }
   return weeks
 }
+
+/** Son 365 günde katkı olan gün sayısı. */
+const activeDays = (calendar: PlayerFacts["calendar"]) =>
+  calendar.slice(-365).filter((day) => day.count > 0).length
 
 export function checkSuccessRate(facts: PlayerFacts): { rate: number; total: number } {
   let success = 0
@@ -111,9 +116,32 @@ function orgCredits(facts: PlayerFacts): OrgCredit[] {
     .sort((a, b) => b.stars - a.stars)
 }
 
+/** Kendi repoları: ayrıntılı liste ile en çok yıldızlı 100 repo birleşir, her repo bir kez. */
+function ownedTotals(facts: PlayerFacts): { stars: number; forks: number } {
+  const repos = new Map<string, { stars: number; forks: number }>()
+  for (const repo of facts.ownedRepos) repos.set(repo.name.toLowerCase(), repo)
+  for (const repo of facts.starredRepos ?? []) {
+    if (!repos.has(repo.name.toLowerCase())) repos.set(repo.name.toLowerCase(), repo)
+  }
+  let stars = 0
+  let forks = 0
+  for (const repo of repos.values()) {
+    stars += repo.stars
+    forks += repo.forks
+  }
+  return { stars, forks }
+}
+
 export function creditedStars(facts: PlayerFacts) {
-  const owned = facts.ownedRepos.reduce((sum, repo) => sum + repo.stars, 0)
-  return owned + orgCredits(facts).reduce((sum, credit) => sum + credit.stars, 0)
+  return ownedTotals(facts).stars + orgCredits(facts).reduce((sum, credit) => sum + credit.stars, 0)
+}
+
+/** Tek repoda yıllık `repoYearCap` üstündeki commit'ler: insan temposunu aşan otomasyon. */
+export function automatedCommits(facts: PlayerFacts): number {
+  return (facts.repoCommits ?? []).reduce(
+    (sum, repo) => sum + Math.max(0, repo.commits - ACT.repoYearCap),
+    0
+  )
 }
 
 /** Dil payları: kendi repoları ve aktif organizasyon repoları birlikte, her repo bir kez. */
@@ -145,21 +173,23 @@ export const significantLanguages = (facts: PlayerFacts) =>
 /* ---------- Statlar ---------- */
 
 function activity(facts: PlayerFacts): Stat {
-  const { commits, prs, reviews, issues, restricted } = facts.lastYear
-  const total = commits + prs + reviews + issues + restricted
+  const days = facts.calendar.slice(-365)
+  const raw = days.reduce((sum, day) => sum + day.count, 0)
+  const capped = days.reduce((sum, day) => sum + Math.min(day.count, ACT.dailyCap), 0)
+  // Takvim repo ayırmıyor; otomasyonun toplam içindeki payı kadar takvim küçültülür.
+  const human = raw === 0 ? 1 : clamp01((raw - automatedCommits(facts)) / raw)
+  const total = Math.round(capped * human)
+  const { fullAt, soft, max } = ACT.contributions
   return makeStat({ key: "act", contributions: total }, [
-    part("act_contributions", logScale(total, ACT.contributions.fullAt), ACT.contributions.max)
+    part("act_contributions", logScale(total, fullAt, soft), max)
   ])
 }
 
 function impact(facts: PlayerFacts): Stat {
   const credits = orgCredits(facts)
-  const stars =
-    facts.ownedRepos.reduce((sum, repo) => sum + repo.stars, 0) +
-    credits.reduce((sum, credit) => sum + credit.stars, 0)
-  const forks =
-    facts.ownedRepos.reduce((sum, repo) => sum + repo.forks, 0) +
-    credits.reduce((sum, credit) => sum + credit.forks, 0)
+  const owned = ownedTotals(facts)
+  const stars = owned.stars + credits.reduce((sum, credit) => sum + credit.stars, 0)
+  const forks = owned.forks + credits.reduce((sum, credit) => sum + credit.forks, 0)
 
   return makeStat({ key: "imp", stars: Math.round(stars), forks: Math.round(forks) }, [
     part("imp_stars", logScale(stars, IMP.stars.fullAt), IMP.stars.max),
@@ -169,37 +199,70 @@ function impact(facts: PlayerFacts): Stat {
 
 function community(facts: PlayerFacts): Stat {
   return makeStat({ key: "com", followers: facts.followers }, [
-    part("com_followers", logScale(facts.followers, COM.followers.fullAt), COM.followers.max)
+    part(
+      "com_followers",
+      logScale(facts.followers, COM.followers.fullAt, COM.followers.soft),
+      COM.followers.max
+    )
   ])
+}
+
+/** Başkasının projesinde birleştirilen PR'lar; maintainer olunan organizasyondakiler düşük ağırlıkla. */
+export function externalPrs(facts: PlayerFacts): number {
+  const ownOrg = Math.min(
+    facts.mergedExternalPrs,
+    (facts.ownOrgPrs ?? []).reduce((sum, item) => sum + item.prs, 0)
+  )
+  return Math.round(facts.mergedExternalPrs - ownOrg * (1 - REP.ownOrgPrWeight))
+}
+
+/** Ömür boyu review; yıllık kırılımı olmayan eski kayıtta son bir yıl. */
+export function lifetimeReviews(facts: PlayerFacts): number {
+  if (!facts.yearly.some((year) => year.reviews !== undefined)) return facts.lastYear.reviews
+  return facts.yearly.reduce((sum, year) => sum + (year.reviews ?? 0), 0)
 }
 
 function respect(facts: PlayerFacts): Stat {
-  return makeStat({ key: "rep", prs: facts.mergedExternalPrs, reviews: facts.lastYear.reviews }, [
-    part("rep_prs", logScale(facts.mergedExternalPrs, REP.externalPrs.fullAt), REP.externalPrs.max),
-    part("rep_reviews", logScale(facts.lastYear.reviews, REP.reviews.fullAt), REP.reviews.max)
+  const prs = externalPrs(facts)
+  const reviews = lifetimeReviews(facts)
+  return makeStat({ key: "rep", prs, reviews }, [
+    part("rep_prs", logScale(prs, REP.externalPrs.fullAt), REP.externalPrs.max),
+    part("rep_reviews", logScale(reviews, REP.reviews.fullAt), REP.reviews.max)
   ])
 }
 
-function consistency(facts: PlayerFacts): Stat {
-  const weeks = activeWeeks(facts.calendar)
-  const streak = longestStreak(facts.calendar)
-  const recentYears = [...facts.yearly].sort((a, b) => b.year - a.year).slice(0, CON.years.span)
-  const activeYears = recentYears.filter((year) => year.total >= CON.years.minContributions)
+/** Yılın geçen kısmı (0-1); ocak ayında yeni yıl eksik sayılıp istikrar düşmesin diye. */
+function yearElapsed(now: Date): number {
+  const year = now.getUTCFullYear()
+  const start = Date.UTC(year, 0, 1)
+  return (now.getTime() - start) / (Date.UTC(year + 1, 0, 1) - start)
+}
 
-  return makeStat({ key: "con", weeks, streak }, [
-    part("con_weeks", weeks / CON.activeWeeks.fullAt, CON.activeWeeks.max),
+function consistency(facts: PlayerFacts, now: Date): Stat {
+  const days = activeDays(facts.calendar)
+  const streak = longestStreak(facts.calendar)
+  const currentYear = now.getUTCFullYear()
+  const recentYears = [...facts.yearly].sort((a, b) => b.year - a.year).slice(0, CON.years.span)
+  const activeYears = recentYears.filter(
+    (year) =>
+      year.total >= CON.years.minContributions * (year.year === currentYear ? yearElapsed(now) : 1)
+  )
+
+  return makeStat({ key: "con", days, streak }, [
+    part("con_days", days / CON.activeDays.fullAt, CON.activeDays.max),
     part("con_streak", logScale(streak, CON.streak.fullAt), CON.streak.max),
     part("con_years", activeYears.length / CON.years.span, CON.years.max)
   ])
 }
 
-function career(facts: PlayerFacts, now: Date): Stat {
-  const lifetime = facts.yearly.reduce((sum, year) => sum + year.total, 0)
-  const age = Math.max(0, (now.getTime() - new Date(facts.createdAt).getTime()) / YEAR_MS)
+function career(facts: PlayerFacts): Stat {
+  const { fullAt, soft, max, yearCap } = EXP.lifetime
+  const lifetime = facts.yearly.reduce((sum, year) => sum + Math.min(year.total, yearCap), 0)
+  const years = facts.yearly.filter((year) => year.total >= EXP.activeYears.minContributions).length
 
-  return makeStat({ key: "exp", years: Math.round(age), contributions: lifetime }, [
-    part("exp_lifetime", logScale(lifetime, EXP.lifetime.fullAt), EXP.lifetime.max),
-    part("exp_age", age / EXP.accountAge.fullAtYears, EXP.accountAge.max)
+  return makeStat({ key: "exp", years, contributions: lifetime }, [
+    part("exp_lifetime", logScale(lifetime, fullAt, soft), max),
+    part("exp_years", years / EXP.activeYears.fullAt, EXP.activeYears.max)
   ])
 }
 
@@ -209,7 +272,7 @@ export function computeStats(facts: PlayerFacts, now: Date): Record<StatKey, Sta
     imp: impact(facts),
     com: community(facts),
     rep: respect(facts),
-    con: consistency(facts),
-    exp: career(facts, now)
+    con: consistency(facts, now),
+    exp: career(facts)
   }
 }

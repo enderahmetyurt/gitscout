@@ -1,12 +1,15 @@
 import {
   fetchActiveRepos,
   fetchCommitUtcOffset,
+  fetchOrgPrCounts,
   fetchProfile,
+  fetchStarredRepos,
   fetchYearlyContributions,
   GithubError
 } from "@/features/scout/api/get-github-data.api"
-import { COMMIT_SAMPLE_SIZE, CON } from "@/features/scout/constants/scoring.constants"
+import { COMMIT_SAMPLE_SIZE, CON, IMP } from "@/features/scout/constants/scoring.constants"
 import { buildFacts, pickActiveRepos } from "@/features/scout/helpers/build-facts"
+import type { ActiveRepoNode } from "@/features/scout/schemas/github.schema"
 import type { PlayerFacts } from "@/features/scout/types/player.types"
 
 /** Bir oyuncunun bütün verisini toplar: profil, sayfalı repolar, aktif repolar ve hesabın açıldığı yıldan bu yana yıllık katkılar. */
@@ -29,15 +32,21 @@ export async function fetchPlayerFacts(login: string, now = new Date()): Promise
   )
   const since = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000).toISOString()
 
-  const [activeNodes, yearlyResponse] = await Promise.all([
+  const [activeNodes, yearlyResponse, starred] = await Promise.all([
     fetchActiveRepos(user.id, activeRefs, since),
-    fetchYearlyContributions(user.login, years)
+    fetchYearlyContributions(user.login, years),
+    fetchStarredRepos(user.login)
   ])
+  const ownOrgPrs = await fetchOrgPrCounts(user.login, maintainedOrgs(activeNodes))
 
-  const yearly = years.map((year) => ({
-    year,
-    total: yearlyResponse.user[`y${year}`]?.contributionCalendar.totalContributions ?? 0
-  }))
+  const yearly = years.map((year) => {
+    const entry = yearlyResponse.user[`y${year}`]
+    return {
+      year,
+      total: entry?.contributionCalendar.totalContributions ?? 0,
+      reviews: entry?.totalPullRequestReviewContributions ?? 0
+    }
+  })
 
   const facts = buildFacts({
     user,
@@ -45,10 +54,36 @@ export async function fetchPlayerFacts(login: string, now = new Date()): Promise
     activeRefs,
     activeNodes,
     yearly,
+    starredRepos: starred.map((repo) => ({
+      name: repo.name,
+      stars: repo.stargazerCount,
+      forks: repo.forkCount,
+      language: repo.primaryLanguage?.name ?? null
+    })),
+    ownOrgPrs,
     commitSampleSize: COMMIT_SAMPLE_SIZE
   })
 
   return { ...facts, utcOffsetMinutes: await detectUtcOffset(facts.commits) }
+}
+
+/**
+ * Son bir yılın commit'lerinde yeterli payı olan organizasyonlar: Etki'de yıldızları zaten kullanıcıya
+ * yazılan, yani kullanıcının maintainer olduğu yerler.
+ */
+function maintainedOrgs(nodes: Record<string, ActiveRepoNode>): string[] {
+  const orgs = new Set<string>()
+  for (const node of Object.values(nodes)) {
+    if (node?.owner.__typename !== "Organization") continue
+    const target = node.defaultBranchRef?.target
+    const total = target?.yearTotal.totalCount ?? 0
+    const mine = target?.mineYear.totalCount ?? 0
+    if (total > 0 && mine / total >= IMP.orgFullShare) {
+      const [owner] = node.nameWithOwner.split("/")
+      if (owner) orgs.add(owner)
+    }
+  }
+  return [...orgs]
 }
 
 const OFFSET_SAMPLE = 10

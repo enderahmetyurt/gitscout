@@ -1,10 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
 
-import { getLangParam, hreflangLinks } from "@/helpers/localized-url"
+import { hreflangLinks } from "@/helpers/localized-url"
 
 import { Pending } from "@/components/shared/Pending"
-import { buttonVariants } from "@/components/ui/button"
 import { playerQueryOptions } from "@/features/scout/api/players.queries"
+import { AddPlayerForm } from "@/features/scout/components/AddPlayerForm"
 import { PlayerDetail } from "@/features/scout/components/PlayerDetail"
 import * as m from "@/paraglide/messages.js"
 
@@ -35,9 +35,9 @@ function PlayerNotFound() {
     >
       <h1 className="text-3xl font-bold">{m.player_not_found_title({ username })}</h1>
       <p className="text-muted-foreground">{m.player_not_found_description()}</p>
-      <Link to="/{-$lang}" params={{ lang: getLangParam() }} className={buttonVariants()}>
-        {m.go_home()}
-      </Link>
+      <div className="w-full text-left">
+        <AddPlayerForm defaultUsername={username} />
+      </div>
     </main>
   )
 }

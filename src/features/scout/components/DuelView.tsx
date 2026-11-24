@@ -7,6 +7,7 @@ import { getLangParam } from "@/helpers/localized-url"
 
 import { Button, buttonVariants } from "@/components/ui/button"
 import { DuelRadar } from "@/features/scout/components/DuelRadar"
+import { GetYourCard } from "@/features/scout/components/GetYourCard"
 import { PlayerCard } from "@/features/scout/components/PlayerCard"
 import { SHARE_TARGETS } from "@/features/scout/constants/share.constants"
 import { STAT_TIER_TEXT } from "@/features/scout/constants/stat-tier.constants"
@@ -123,6 +124,10 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
         </section>
 
         <DuelCorner player={right} isWinner={duel.winner === "right"} side="right" />
+      </div>
+
+      <div {...excludeProps}>
+        <GetYourCard />
       </div>
     </main>
   )

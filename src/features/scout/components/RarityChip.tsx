@@ -9,17 +9,10 @@ type RarityChipProps = {
   className?: string
 }
 
-/** Genel puanı nadirlik rengiyle gösterir; nadirlik adı ekran okuyucuya da söylenir. */
+/** Genel puan: yalnızca rakam; kart türünün adı ipucunda ve ekran okuyucuda. */
 export function RarityChip({ ovr, rarity, className }: RarityChipProps) {
   return (
-    <span
-      data-rarity={rarity}
-      className={cn(
-        "rarity-chip inline-flex h-8 min-w-11 items-center justify-center rounded-md border px-2 text-base font-semibold tabular-nums",
-        className
-      )}
-      title={rarityLabel(rarity)}
-    >
+    <span className={cn("text-base font-bold tabular-nums", className)} title={rarityLabel(rarity)}>
       {ovr}
       <span className="sr-only"> ({rarityLabel(rarity)})</span>
     </span>

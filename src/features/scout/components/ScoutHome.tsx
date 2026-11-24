@@ -7,6 +7,7 @@ import { buttonVariants } from "@/components/ui/button"
 import { AddPlayerForm } from "@/features/scout/components/AddPlayerForm"
 import { EmptyLeaderboard } from "@/features/scout/components/EmptyLeaderboard"
 import { LeaderboardTable } from "@/features/scout/components/LeaderboardTable"
+import { PlayerCard } from "@/features/scout/components/PlayerCard"
 import { StaleNotice } from "@/features/scout/components/StaleNotice"
 import { STAT_ORDER } from "@/features/scout/constants/scoring.constants"
 import { statLabel, statShort } from "@/features/scout/helpers/player-text"
@@ -21,6 +22,7 @@ export function ScoutHome() {
   const { players: allPlayers, staleCount } = data
   // Sunucu listeyi genel puana göre sıralı döner.
   const players = allPlayers.slice(0, HOME_LIMIT)
+  const leader = players[0]
 
   return (
     <main
@@ -28,23 +30,39 @@ export function ScoutHome() {
       tabIndex={-1}
       className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-12 px-4 pt-6 pb-20 outline-none sm:px-6"
     >
-      <section className="flex max-w-2xl flex-col gap-5 pt-4 sm:pt-8">
-        <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-          {m.home_title()}
-        </h1>
-        <p className="max-w-xl text-pretty text-muted-foreground sm:text-lg">{m.home_lead()}</p>
-        <div className="max-w-xl">
-          <AddPlayerForm />
-        </div>
-        <dl className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm" aria-label={m.home_stats_label()}>
-          {STAT_ORDER.map((key) => (
-            <div key={key} className="flex items-baseline gap-1.5">
-              <dt className="text-xs font-semibold tracking-wide">{statShort(key)}</dt>
-              <dd className="text-muted-foreground">{statLabel(key)}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      <div className="grid items-center gap-10 lg:grid-cols-[1fr_auto]">
+        <section className="flex max-w-2xl flex-col gap-5 pt-4 sm:pt-8">
+          <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
+            {m.home_title()}
+          </h1>
+          <p className="max-w-xl text-pretty text-muted-foreground sm:text-lg">{m.home_lead()}</p>
+          <div className="max-w-xl">
+            <AddPlayerForm />
+          </div>
+          <dl
+            className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm"
+            aria-label={m.home_stats_label()}
+          >
+            {STAT_ORDER.map((key) => (
+              <div key={key} className="flex items-baseline gap-1.5">
+                <dt className="text-xs font-semibold tracking-wide">{statShort(key)}</dt>
+                <dd className="text-muted-foreground">{statLabel(key)}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+        {leader ? (
+          // Ödül önden görünsün: geniş ekranda zirvedeki oyuncunun kartı başlığın yanında.
+          <Link
+            to="/{-$lang}/u/$username"
+            params={{ lang: getLangParam(), username: leader.login }}
+            aria-label={m.duel_open_card({ name: leader.name })}
+            className="card-lift hidden rounded-[28px] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 lg:block"
+          >
+            <PlayerCard player={leader} />
+          </Link>
+        ) : null}
+      </div>
 
       <section className="flex flex-col gap-4" aria-labelledby="leaderboard-heading">
         <div className="flex flex-wrap items-center justify-between gap-3">

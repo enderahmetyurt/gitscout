@@ -1,4 +1,8 @@
+import { Link } from "@tanstack/react-router"
+
 import { siteConfig } from "@/config/site.config"
+
+import { getLangParam } from "@/helpers/localized-url"
 
 import * as m from "@/paraglide/messages.js"
 
@@ -13,10 +17,15 @@ export function SiteFooter() {
           {m.footer_credit({ name: "Ömer Gülçiçek" })}
           <span className="sr-only"> {m.new_tab()}</span>
         </a>
-        <a href={siteConfig.links.github} target="_blank" rel="noreferrer" className={linkClass}>
-          GitHub
-          <span className="sr-only"> {m.new_tab()}</span>
-        </a>
+        <div className="flex items-center gap-4">
+          <Link to="/{-$lang}/about" params={{ lang: getLangParam() }} className={linkClass}>
+            {m.nav_about()}
+          </Link>
+          <a href={siteConfig.links.github} target="_blank" rel="noreferrer" className={linkClass}>
+            GitHub
+            <span className="sr-only"> {m.new_tab()}</span>
+          </a>
+        </div>
       </div>
     </footer>
   )

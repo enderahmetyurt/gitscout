@@ -56,6 +56,29 @@ type ContributionDay = {
 type YearlyContribution = {
   year: number
   total: number
+  /** O yılın PR review sayısı; eski kayıtlarda yok. */
+  reviews?: number
+}
+
+/** En çok yıldızlı repolardan biri; yalnızca yıldız ve dil için hafif kayıt. */
+export type StarredRepo = {
+  name: string
+  stars: number
+  forks: number
+  language: string | null
+}
+
+/** Son bir yılda herkese açık bir repoya atılan commit sayısı ve reponun yıldızı. */
+type RepoCommits = {
+  repo: string
+  commits: number
+  stars: number
+}
+
+/** Kullanıcının maintainer olduğu organizasyonda birleştirilen PR sayısı. */
+export type OrgPrCount = {
+  org: string
+  prs: number
 }
 
 /** Son bir yılın katkı toplamları; private katkılar yalnızca sayı olarak gelir. */
@@ -85,6 +108,10 @@ export type PlayerFacts = {
   commits: CommitSample[]
   calendar: ContributionDay[]
   yearly: YearlyContribution[]
+  /** Aşağıdaki üç alan sonradan eklendi; yenilenmemiş kayıtlarda yoksa eski hesap kullanılır. */
+  starredRepos?: StarredRepo[]
+  repoCommits?: RepoCommits[]
+  ownOrgPrs?: OrgPrCount[]
 }
 
 export type StoredPlayer = {
@@ -107,11 +134,11 @@ export type StatPartId =
   | "com_followers"
   | "rep_prs"
   | "rep_reviews"
-  | "con_weeks"
+  | "con_days"
   | "con_streak"
   | "con_years"
   | "exp_lifetime"
-  | "exp_age"
+  | "exp_years"
 
 export type StatPart = {
   id: StatPartId
@@ -125,7 +152,7 @@ export type StatSummary =
   | { key: "imp"; stars: number; forks: number }
   | { key: "com"; followers: number }
   | { key: "rep"; prs: number; reviews: number }
-  | { key: "con"; weeks: number; streak: number }
+  | { key: "con"; days: number; streak: number }
   | { key: "exp"; years: number; contributions: number }
 
 export type Stat = {

@@ -67,6 +67,7 @@ const profileResponseSchema = z.object({
               nameWithOwner: z.string(),
               isFork: z.boolean(),
               isPrivate: z.boolean(),
+              stargazerCount: z.number(),
               owner: z.object({ login: z.string(), __typename: z.string() })
             })
           })
@@ -128,9 +129,29 @@ export const activeResponseSchema = z.record(z.string(), activeRepoNodeSchema)
 export const yearlyResponseSchema = z.object({
   user: z.record(
     z.string(),
-    z.object({ contributionCalendar: z.object({ totalContributions: z.number() }) })
+    z.object({
+      totalPullRequestReviewContributions: z.number(),
+      contributionCalendar: z.object({ totalContributions: z.number() })
+    })
   )
 })
+
+export const starredPageSchema = z.object({
+  user: z.object({
+    repositories: z.object({
+      nodes: z.array(
+        z.object({
+          name: z.string(),
+          stargazerCount: z.number(),
+          forkCount: z.number(),
+          primaryLanguage: z.object({ name: z.string() }).nullable()
+        })
+      )
+    })
+  })
+})
+
+export const searchCountsSchema = z.record(z.string(), z.object({ issueCount: z.number() }))
 
 export const graphqlEnvelopeSchema = z.object({
   data: z.unknown().optional(),

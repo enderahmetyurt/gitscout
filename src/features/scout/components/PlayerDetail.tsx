@@ -7,22 +7,17 @@ import { getLangParam } from "@/helpers/localized-url"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { BadgeIcon } from "@/features/scout/components/BadgeIcon"
 import { CardActions } from "@/features/scout/components/CardActions"
+import { GetYourCard } from "@/features/scout/components/GetYourCard"
 import { PlayerCard } from "@/features/scout/components/PlayerCard"
 import { PositionBreakdown } from "@/features/scout/components/PositionBreakdown"
 import { StatRadar } from "@/features/scout/components/StatRadar"
 import { TopRepos } from "@/features/scout/components/TopRepos"
 import { YearSummary } from "@/features/scout/components/YearSummary"
 import { errorText } from "@/features/scout/helpers/error-text"
-import {
-  archetypeText,
-  badgeDetail,
-  badgeName,
-  rarityLabel
-} from "@/features/scout/helpers/player-text"
+import { badgeDetail, badgeName, rarityLabel } from "@/features/scout/helpers/player-text"
 import { useAddPlayer } from "@/features/scout/hooks/use-add-player"
 import { useCardDownload } from "@/features/scout/hooks/use-card-download"
 import { usePlayer } from "@/features/scout/hooks/use-player"
-import type { Archetype } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
 import { getLocale } from "@/paraglide/runtime.js"
 
@@ -109,7 +104,6 @@ export function PlayerDetail({ username }: PlayerDetailProps) {
               <ArrowUpRight aria-hidden className="size-4" />
               <span className="sr-only"> {m.github_profile()}</span>
             </a>
-            <ArchetypeLine archetype={player.archetype} />
           </div>
         </aside>
 
@@ -129,7 +123,7 @@ export function PlayerDetail({ username }: PlayerDetailProps) {
             </h2>
             {/* 2×2 grid: aynı satırdaki kartlar aynı yüksekliğe uzar, üst ve alt kenarlar hizalanır. */}
             <div className="grid gap-6 lg:grid-cols-2">
-              <StatRadar stats={player.stats} />
+              <StatRadar stats={player.stats} archetype={player.archetype} />
               <TopRepos repos={player.topRepos} />
               <PositionBreakdown position={player.position} breakdown={player.positionBreakdown} />
               <YearSummary year={player.year} />
@@ -167,17 +161,8 @@ export function PlayerDetail({ username }: PlayerDetailProps) {
           </section>
         </div>
       </div>
-    </main>
-  )
-}
 
-/** "Seçkin profil: …" cümlesinin başını vurgular. */
-function ArchetypeLine({ archetype }: { archetype: Archetype }) {
-  const { lead, text } = archetypeText(archetype)
-  return (
-    <p className="max-w-80 text-center text-sm text-pretty text-muted-foreground">
-      <span className="font-medium text-foreground">{lead}</span>
-      {text.slice(lead.length)}
-    </p>
+      <GetYourCard />
+    </main>
   )
 }

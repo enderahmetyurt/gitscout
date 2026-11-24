@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router"
+import { cn } from "cn"
 
 import { getLangParam } from "@/helpers/localized-url"
 
@@ -22,14 +23,20 @@ export function SiteHeader() {
         >
           Gitscout
         </Link>
-        <nav aria-label={m.nav_label()} className="flex items-center gap-5">
+        <nav aria-label={m.nav_label()} className="flex items-center gap-4 sm:gap-5">
           <Link to="/{-$lang}/leaderboard" params={{ lang }} className={navLinkClass}>
-            {m.nav_leaderboard()}
+            <span className="sm:hidden">{m.nav_leaderboard_short()}</span>
+            <span className="hidden sm:inline">{m.nav_leaderboard()}</span>
           </Link>
           <Link to="/{-$lang}/vs" params={{ lang }} className={navLinkClass}>
             {m.nav_duel()}
           </Link>
-          <Link to="/{-$lang}/about" params={{ lang }} className={navLinkClass}>
+          {/* Dar ekranda menü sığsın diye Hakkında yalnızca alt bilgide. */}
+          <Link
+            to="/{-$lang}/about"
+            params={{ lang }}
+            className={cn(navLinkClass, "max-sm:hidden")}
+          >
             {m.nav_about()}
           </Link>
           <LanguageSwitcher />

@@ -84,7 +84,23 @@ const playerFactsSchema = z.object({
     })
   ),
   calendar: z.array(z.object({ date: z.string(), count: z.number() })),
-  yearly: z.array(z.object({ year: z.number(), total: z.number() }))
+  yearly: z.array(
+    z.object({ year: z.number(), total: z.number(), reviews: z.number().optional() })
+  ),
+  starredRepos: z
+    .array(
+      z.object({
+        name: z.string(),
+        stars: z.number(),
+        forks: z.number(),
+        language: z.string().nullable()
+      })
+    )
+    .optional(),
+  repoCommits: z
+    .array(z.object({ repo: z.string(), commits: z.number(), stars: z.number() }))
+    .optional(),
+  ownOrgPrs: z.array(z.object({ org: z.string(), prs: z.number() })).optional()
 })
 
 export const storedPlayerSchema: z.ZodType<StoredPlayer> = z.object({

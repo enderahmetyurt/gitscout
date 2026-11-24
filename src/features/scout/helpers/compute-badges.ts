@@ -1,7 +1,9 @@
 import {
   activeWeeks,
+  automatedCommits,
   checkSuccessRate,
   creditedStars,
+  externalPrs,
   isConventional,
   longestStreak,
   significantLanguages
@@ -115,10 +117,11 @@ export function computeBadges(facts: PlayerFacts, clock: BadgeClock | null, now:
     })
   }
 
-  if (facts.mergedExternalPrs >= 20) {
+  const prs = externalPrs(facts)
+  if (prs >= 20) {
     badges.push({
       id: "oss-ambassador",
-      values: { prs: facts.mergedExternalPrs }
+      values: { prs }
     })
   }
 
@@ -131,10 +134,11 @@ export function computeBadges(facts: PlayerFacts, clock: BadgeClock | null, now:
     })
   }
 
-  if (facts.lastYear.commits >= 1000) {
+  const humanCommits = facts.lastYear.commits - automatedCommits(facts)
+  if (humanCommits >= 1000) {
     badges.push({
       id: "commit-machine",
-      values: { commits: facts.lastYear.commits }
+      values: { commits: humanCommits }
     })
   }
 

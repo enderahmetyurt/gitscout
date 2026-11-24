@@ -1,19 +1,26 @@
+import { ArrowUpRight, Check } from "lucide-react"
 import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart } from "recharts"
 
 import { Card, CardContent } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
 import type { ChartConfig } from "@/components/ui/chart"
 import { RADAR_ORDER, STAT_ORDER } from "@/features/scout/constants/scoring.constants"
-import { partLabel, statLabel, statSummary } from "@/features/scout/helpers/player-text"
-import type { ScoredPlayer, Stat } from "@/features/scout/types/player.types"
+import {
+  archetypeNote,
+  partLabel,
+  statLabel,
+  statSummary
+} from "@/features/scout/helpers/player-text"
+import type { Archetype, ScoredPlayer, Stat } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
 
 type StatRadarProps = {
   stats: ScoredPlayer["stats"]
+  archetype: Archetype
 }
 
 /** Altı statın şekli: oyuncunun hangi yönde güçlü olduğunu tek bakışta gösterir. */
-export function StatRadar({ stats }: StatRadarProps) {
+export function StatRadar({ stats, archetype }: StatRadarProps) {
   // Etiket ve yapılandırma render sırasında kurulur ki geçerli dilde olsun.
   const chartConfig = {
     value: { label: m.radar_score(), color: "var(--chart-home)" }
@@ -62,8 +69,37 @@ export function StatRadar({ stats }: StatRadarProps) {
             />
           </RadarChart>
         </ChartContainer>
+        <ScoutNote archetype={archetype} />
       </CardContent>
     </Card>
+  )
+}
+
+/** Grafiğin sözlü özeti: güçlü yönler ve varsa tek bir gelişim alanı. */
+function ScoutNote({ archetype }: { archetype: Archetype }) {
+  const { strengths, growth } = archetypeNote(archetype)
+  if (strengths.length === 0 && !growth) return null
+
+  return (
+    <div className="mx-4 mt-3 flex flex-col gap-1.5 border-t pt-3 text-sm">
+      <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+        {m.archetype_note()}
+      </p>
+      <ul className="flex flex-col gap-1">
+        {strengths.map((text) => (
+          <li key={text} className="flex items-start gap-2">
+            <Check aria-hidden className="mt-0.5 size-4 shrink-0 text-chart-home" />
+            {text}
+          </li>
+        ))}
+        {growth ? (
+          <li className="flex items-start gap-2 text-muted-foreground">
+            <ArrowUpRight aria-hidden className="mt-0.5 size-4 shrink-0" />
+            {growth}
+          </li>
+        ) : null}
+      </ul>
+    </div>
   )
 }
 

@@ -322,13 +322,6 @@
   .scout-card-rule {
     border-color: color-mix(in oklab, var(--card-line) 30%, transparent);
   }
-
-  /* Sayı metin rengini taşır (okunabilirlik); nadirlik zemin tonu ve çerçeveyle anlatılır. */
-  .rarity-chip {
-    color: var(--foreground);
-    border-color: color-mix(in oklab, var(--frame-2) 70%, transparent);
-    background: color-mix(in oklab, var(--frame-2) 18%, transparent);
-  }
 }
 
 @layer components {

@@ -9,6 +9,8 @@ import {
   patchSchema,
   profileBaseSchema,
   reposPageSchema,
+  searchCountsSchema,
+  starredPageSchema,
   yearlyResponseSchema
 } from "@/features/scout/schemas/github.schema"
 import type { ProfileResponse } from "@/features/scout/schemas/github.schema"
@@ -135,6 +137,7 @@ const PROFILE_QUERY = /* GraphQL */ `
             nameWithOwner
             isFork
             isPrivate
+            stargazerCount
             owner {
               login
               __typename
@@ -221,6 +224,51 @@ async function fetchOwnedRepos(login: string) {
     after = repositories.pageInfo.endCursor
   }
   return nodes
+}
+
+const STARRED_QUERY = /* GraphQL */ `
+  query Starred($login: String!) {
+    user(login: $login) {
+      repositories(
+        first: 100
+        ownerAffiliations: OWNER
+        isFork: false
+        privacy: PUBLIC
+        orderBy: { field: STARGAZERS, direction: DESC }
+      ) {
+        nodes {
+          name
+          stargazerCount
+          forkCount
+          primaryLanguage {
+            name
+          }
+        }
+      }
+    }
+  }
+`
+
+/**
+ * En çok yıldızlı 100 repo. Ayrıntılı repo listesi son push tarihine göre 100 repoda kesildiği için
+ * eski ama popüler repolar orada görünmeyebiliyor; bu sorgu hafif olduğu için tek istekte gelir.
+ */
+export async function fetchStarredRepos(login: string) {
+  const result = await graphql(STARRED_QUERY, { login }, starredPageSchema)
+  return result.user.repositories.nodes
+}
+
+/** Organizasyon başına, kullanıcının o organizasyonda birleştirilen herkese açık PR sayısı. */
+export async function fetchOrgPrCounts(login: string, orgs: string[]) {
+  if (orgs.length === 0) return []
+  const fields = orgs
+    .map(
+      (org, index) =>
+        `o${index}: search(query: ${JSON.stringify(`author:${login} is:pr is:merged is:public org:${org}`)}, type: ISSUE) { issueCount }`
+    )
+    .join("\n")
+  const result = await graphql(`query OrgPrs {\n${fields}\n}`, {}, searchCountsSchema)
+  return orgs.map((org, index) => ({ org, prs: result[`o${index}`]?.issueCount ?? 0 }))
 }
 
 export async function fetchProfile(login: string): Promise<ProfileResponse> {
@@ -366,28 +414,48 @@ export async function fetchActiveRepos(
   return result
 }
 
-/** Bir sorgudaki yıl sayısı; çok yıllı hesaplarda tek sorgu GitHub'ın süre sınırını aşabiliyor. */
-const YEARS_PER_QUERY = 6
+/** Bir sorgudaki yıl sayısı; yoğun hesaplarda yıl başına ~3 saniye sürüyor, GitHub ~10 saniyede kesiyor. */
+const YEARS_PER_QUERY = 2
+const YEARLY_CONCURRENCY = 3
 
-/** Takvim yılı başına toplam katkı; GitHub bir sorguda en fazla bir yıllık aralık kabul ediyor. */
+/** Takvim yılı başına toplam katkı ve review; GitHub bir sorguda en fazla bir yıllık aralık kabul ediyor. */
 export async function fetchYearlyContributions(login: string, years: number[]) {
   const fetchYears = (chunk: number[]) => {
     const fields = chunk
       .map(
         (year) =>
-          `y${year}: contributionsCollection(from: "${year}-01-01T00:00:00Z", to: "${year}-12-31T23:59:59Z") { contributionCalendar { totalContributions } }`
+          `y${year}: contributionsCollection(from: "${year}-01-01T00:00:00Z", to: "${year}-12-31T23:59:59Z") { totalPullRequestReviewContributions contributionCalendar { totalContributions } }`
       )
       .join("\n")
     const query = `query Yearly($login: String!) { user(login: $login) {\n${fields}\n} }`
     return graphql(query, { login }, yearlyResponseSchema)
   }
 
+  // Parça zaman aşımına düşerse yıllar tek tek istenir.
+  const fetchSafely = async (chunk: number[]) => {
+    try {
+      return await fetchYears(chunk)
+    } catch (error) {
+      if (!(error instanceof GithubError) || error.kind !== "request" || chunk.length === 1) {
+        throw error
+      }
+      const singles = await Promise.all(chunk.map((year) => fetchYears([year])))
+      return { user: Object.assign({}, ...singles.map((single) => single.user)) }
+    }
+  }
+
   const chunks: number[][] = []
   for (let start = 0; start < years.length; start += YEARS_PER_QUERY) {
     chunks.push(years.slice(start, start + YEARS_PER_QUERY))
   }
-  const results = await Promise.all(chunks.map(fetchYears))
-  return { user: Object.assign({}, ...results.map((result) => result.user)) }
+  const user: z.output<typeof yearlyResponseSchema>["user"] = {}
+  for (let start = 0; start < chunks.length; start += YEARLY_CONCURRENCY) {
+    const batch = await Promise.all(
+      chunks.slice(start, start + YEARLY_CONCURRENCY).map(fetchSafely)
+    )
+    for (const result of batch) Object.assign(user, result.user)
+  }
+  return { user }
 }
 
 const PATCH_DATE = /^Date: .* ([+-])(\d{2})(\d{2})$/m

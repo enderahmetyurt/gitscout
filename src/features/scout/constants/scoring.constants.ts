@@ -26,9 +26,20 @@ export const RADAR_ORDER: StatKey[] = ["con", "com", "exp", "rep", "act", "imp"]
  * 99 yalnızca gerçekten benzersiz değerlerde çıkar, güçlü profiller 85-95 bandına yayılır.
  */
 
-/** Son 1 yıl: commit + PR + review + issue + private katkılar. */
+/**
+ * `soft`: logaritmanın ilk basamağı. 1 olunca birkaç katkı bile yüksek puan getirir;
+ * büyüdükçe azalan getiri korunur ama küçük değerler hak ettiğinden fazla puan almaz.
+ */
+
+/**
+ * Son 1 yıl, katkı takviminden. Bir günün katkısı `dailyCap` ile sınırlanır:
+ * otomatik commit yağmuru (günde yüzlerce) aktiviteyi şişirmez.
+ * Tek bir repoda yılda `repoYearCap` üstü commit (her gün ~14) bot işi sayılır; takvimin o payı düşülür.
+ */
 export const ACT = {
-  contributions: { max: 100, fullAt: 10_000 }
+  contributions: { max: 100, fullAt: 10_000, soft: 25 },
+  dailyCap: 40,
+  repoYearCap: 5_000
 }
 
 /** Kendi repoları + katkı payı oranında organizasyon repoları. */
@@ -40,24 +51,34 @@ export const IMP = {
 }
 
 export const COM = {
-  followers: { max: 100, fullAt: 300_000 }
+  followers: { max: 100, fullAt: 300_000, soft: 10 }
 }
 
-/** Başkasının kodunu kabul etmesi: kodu okumadan elde edilebilecek en güçlü güven sinyali. */
+/**
+ * Başkasının kodunu kabul etmesi: kodu okumadan elde edilebilecek en güçlü güven sinyali.
+ * PR ve review ikisi de ömür boyu. Maintainer olunan organizasyondaki PR'lar `ownOrgPrWeight` ile sayılır:
+ * o repoların yıldızı zaten Etki'ye yazılıyor ve birleştiren çoğu zaman kişinin kendisi.
+ */
 export const REP = {
   externalPrs: { max: 60, fullAt: 2_000 },
-  reviews: { max: 40, fullAt: 2_000 }
+  reviews: { max: 40, fullAt: 10_000 },
+  ownOrgPrWeight: 0.5
 }
 
+/** İçinde bulunulan yıl için `minContributions` yılın geçen kısmı oranında istenir. */
 export const CON = {
-  activeWeeks: { max: 50, fullAt: 52 },
+  activeDays: { max: 50, fullAt: 365 },
   streak: { max: 25, fullAt: 365 },
   years: { max: 25, span: 5, minContributions: 50 }
 }
 
+/**
+ * Kıdem hesap yaşından değil, gerçekten üretilen yıllardan gelir: boş duran eski hesap kıdemli sayılmaz.
+ * Toplam katkıda her yıl `yearCap` ile sınırlanır.
+ */
 export const EXP = {
-  lifetime: { max: 60, fullAt: 100_000 },
-  accountAge: { max: 40, fullAtYears: 18 }
+  lifetime: { max: 60, fullAt: 100_000, soft: 10, yearCap: 10_000 },
+  activeYears: { max: 40, fullAt: 15, minContributions: 50 }
 }
 
 /** Rozetler için commit örneklemi. */
@@ -88,7 +109,7 @@ export const DISPLAY_CURVE: [number, number][] = [
 
 export const RARITY_THRESHOLDS: { rarity: Rarity; min: number }[] = [
   { rarity: "icon", min: 90 },
-  { rarity: "gold", min: 80 },
+  { rarity: "gold", min: 75 },
   { rarity: "silver", min: 65 },
   { rarity: "bronze", min: 0 }
 ]

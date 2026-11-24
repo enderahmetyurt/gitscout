@@ -6,7 +6,9 @@ type LanguageIconProps = {
 
 /** svgl.app ikonu; ikonu olmayan diller baş harfle gösterilir. Dil adı yanında yazdığı için dekoratif. */
 export function LanguageIcon({ name }: LanguageIconProps) {
-  const icon = name ? LANGUAGE_ICONS[name] : undefined
+  // Dili olmayan depo (yalnızca belge, yapılandırma) için yer tutucu gösterilmez.
+  if (!name) return null
+  const icon = LANGUAGE_ICONS[name]
   if (icon) {
     return (
       <img
@@ -24,7 +26,7 @@ export function LanguageIcon({ name }: LanguageIconProps) {
       aria-hidden
       className="grid size-3.5 shrink-0 place-items-center rounded-sm bg-muted text-[9px] font-semibold"
     >
-      {name?.charAt(0) ?? "?"}
+      {name.charAt(0)}
     </span>
   )
 }

@@ -5,8 +5,10 @@ import type {
   ActiveRepo,
   CheckState,
   CommitSample,
+  OrgPrCount,
   OwnedRepo,
-  PlayerFacts
+  PlayerFacts,
+  StarredRepo
 } from "@/features/scout/types/player.types"
 
 type ProfileUser = NonNullable<ProfileResponse["user"]>
@@ -122,7 +124,9 @@ type BuildFactsInput = {
   mergedExternalPrs: number
   activeRefs: ActiveRepoRef[]
   activeNodes: Record<string, ActiveRepoNode>
-  yearly: { year: number; total: number }[]
+  yearly: { year: number; total: number; reviews: number }[]
+  starredRepos: StarredRepo[]
+  ownOrgPrs: OrgPrCount[]
   commitSampleSize: number
 }
 
@@ -203,6 +207,13 @@ export function buildFacts(input: BuildFactsInput): PlayerFacts {
     calendar: user.contributionsCollection.contributionCalendar.weeks.flatMap((week) =>
       week.contributionDays.map((day) => ({ date: day.date, count: day.contributionCount }))
     ),
-    yearly: input.yearly
+    yearly: input.yearly,
+    starredRepos: input.starredRepos.filter((repo) => !isSpecialRepo(repo.name, user.login)),
+    repoCommits: publicContributions(user).map((item) => ({
+      repo: item.repository.nameWithOwner,
+      commits: item.contributions.totalCount,
+      stars: item.repository.stargazerCount
+    })),
+    ownOrgPrs: input.ownOrgPrs
   }
 }

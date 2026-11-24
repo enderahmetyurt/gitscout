@@ -157,6 +157,19 @@ export function computeTopRepos(facts: PlayerFacts): TopRepo[] {
     isOrg: false
   }))
   const ownedNames = new Set(owned.map((repo) => repo.fullName.toLowerCase()))
+  // Ayrıntılı listede olmayan eski ama popüler repolar.
+  for (const repo of facts.starredRepos ?? []) {
+    const fullName = `${facts.login}/${repo.name}`
+    if (ownedNames.has(fullName.toLowerCase())) continue
+    ownedNames.add(fullName.toLowerCase())
+    owned.push({
+      fullName,
+      stars: repo.stars,
+      forks: repo.forks,
+      language: repo.language,
+      isOrg: false
+    })
+  }
   const org = facts.activeRepos
     .filter((repo) => repo.isOrg && !ownedNames.has(repo.nameWithOwner.toLowerCase()))
     .map((repo) => ({

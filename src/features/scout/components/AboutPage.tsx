@@ -21,7 +21,11 @@ import * as m from "@/paraglide/messages.js"
 function statDescription(key: StatKey): string {
   switch (key) {
     case "act":
-      return m.about_stat_act({ full: number(ACT.contributions.fullAt) })
+      return m.about_stat_act({
+        full: number(ACT.contributions.fullAt),
+        cap: number(ACT.dailyCap),
+        repo: number(ACT.repoYearCap)
+      })
     case "imp":
       return m.about_stat_imp({ stars: number(IMP.stars.fullAt) })
     case "com":
@@ -31,7 +35,7 @@ function statDescription(key: StatKey): string {
     case "con":
       return m.about_stat_con({ years: number(CON.years.span) })
     case "exp":
-      return m.about_stat_exp({ years: number(EXP.accountAge.fullAtYears) })
+      return m.about_stat_exp({ years: number(EXP.activeYears.fullAt) })
   }
 }
 

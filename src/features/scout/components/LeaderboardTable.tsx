@@ -44,7 +44,7 @@ const statColumns = STAT_ORDER.map((key) =>
     id: key,
     header: () => statShort(key),
     sortDescFirst: true,
-    meta: { align: "center", label: () => statLabel(key) },
+    meta: { align: "center", label: () => statLabel(key), wide: true },
     cell: (info) => {
       const value = info.getValue()
       return <span className={cn("font-medium", STAT_TIER_TEXT[statTier(value)])}>{value}</span>
@@ -74,6 +74,7 @@ const columns = helper.columns([
     id: "position",
     header: () => m.col_position(),
     sortFn: "text",
+    meta: { wide: true },
     cell: (info) => (
       <Badge variant="secondary" lang="en">
         {info.getValue()}
@@ -90,15 +91,17 @@ const columns = helper.columns([
   ...statColumns
 ])
 
-type ColumnMeta = { align?: "center"; label?: string }
+/** `wide`: dar ekranda gizlenen sütun; telefonda yalnızca sıra, oyuncu ve puan kalır. */
+type ColumnMeta = { align?: "center"; label?: string; wide: boolean }
 
 /** Sütun etiketleri fonksiyon olarak saklanır; okunduğu anda geçerli dilde yazılır. */
 function readMeta(meta: unknown): ColumnMeta {
-  if (typeof meta !== "object" || meta === null) return {}
+  if (typeof meta !== "object" || meta === null) return { wide: false }
   const align = "align" in meta && meta.align === "center" ? "center" : undefined
   const read: unknown = "label" in meta ? meta.label : undefined
   const label = typeof read === "function" ? String(read()) : undefined
-  return { align, label }
+  const wide = "wide" in meta && meta.wide === true
+  return { align, label, wide }
 }
 
 function isSortKey(id: string): id is LeaderboardSearch["sort"] {
@@ -158,13 +161,13 @@ export function LeaderboardTable({ players, allPlayers }: LeaderboardTableProps)
 
   return (
     <div className="surface overflow-x-auto">
-      <table className="w-full min-w-180 text-sm">
+      <table className="w-full text-sm sm:min-w-180">
         <caption className="sr-only">{m.table_caption()}</caption>
         <thead className="border-b bg-muted/40 text-xs text-muted-foreground uppercase">
           {table.getHeaderGroups().map((group) => (
             <tr key={group.id}>
               {group.headers.map((header) => {
-                const { align, label } = readMeta(header.column.columnDef.meta)
+                const { align, label, wide } = readMeta(header.column.columnDef.meta)
                 const sorted = header.column.getIsSorted()
                 const canSort = header.column.getCanSort()
                 const SortIcon =
@@ -176,11 +179,12 @@ export function LeaderboardTable({ players, allPlayers }: LeaderboardTableProps)
                     aria-sort={
                       sorted === "asc" ? "ascending" : sorted === "desc" ? "descending" : undefined
                     }
-                    className={
+                    className={cn(
                       align === "center"
                         ? "px-1 py-2 text-center font-medium"
-                        : "px-3 py-2 text-left font-medium"
-                    }
+                        : "px-3 py-2 text-left font-medium",
+                      wide && "max-sm:hidden"
+                    )}
                   >
                     {canSort ? (
                       <button
@@ -215,18 +219,19 @@ export function LeaderboardTable({ players, allPlayers }: LeaderboardTableProps)
               className="relative border-b transition-colors last:border-0 hover:bg-muted/40"
             >
               {row.getAllCells().map((cell) => {
-                const { align } = readMeta(cell.column.columnDef.meta)
+                const { align, wide } = readMeta(cell.column.columnDef.meta)
                 const isRank = cell.column.id === "rank"
                 return (
                   <td
                     key={cell.id}
-                    className={
+                    className={cn(
                       isRank
                         ? "w-12 px-3 py-3 text-muted-foreground tabular-nums"
                         : align === "center"
                           ? "px-1 py-3 text-center tabular-nums"
-                          : "px-3 py-3"
-                    }
+                          : "px-3 py-3",
+                      wide && "max-sm:hidden"
+                    )}
                   >
                     <table.FlexRender cell={cell} />
                   </td>
