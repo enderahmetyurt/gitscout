@@ -89,6 +89,15 @@ export async function getScoredPlayer(login: string): Promise<ScoredPlayer | nul
   return (await rescore([row.login]))[0] ?? null
 }
 
+/** Site haritası için bütün oyuncuların kullanıcı adı ve verinin tarihi; özet ya da ham veri okunmaz. */
+export async function getSitemapPlayers(): Promise<{ login: string; fetchedAt: Date }[]> {
+  const sql = getDb()
+  const rows = z
+    .array(z.object({ login: z.string(), fetched_at: z.date() }))
+    .parse(await sql`select login, fetched_at from players order by ovr desc, login`)
+  return rows.map((row) => ({ login: row.login, fetchedAt: row.fetched_at }))
+}
+
 /** Son bir saatte eklenen oyuncu sayısı; kişisel veri tutmadan toplu eklemeyi sınırlar. */
 export async function countRecentPlayers(): Promise<number> {
   const sql = getDb()

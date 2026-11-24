@@ -85,7 +85,7 @@ export function PlayerCombobox({
                 <span className="truncate">{player.name}</span>
                 <span className="truncate text-xs text-muted-foreground">@{player.login}</span>
               </span>
-              <RarityChip ovr={player.ovr} rarity={player.rarity} className="text-xs" />
+              <RarityChip ovr={player.ovr} rarity={player.rarity} size="sm" />
             </ComboboxItem>
           )}
         </ComboboxList>

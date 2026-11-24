@@ -77,13 +77,13 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
     })
   }
 
-  const picker = (side: DuelSide) => {
+  const picker = (side: DuelSide, idSuffix = "") => {
     const current = side === "left" ? left : right
     const other = side === "left" ? right : left
     return (
       <div {...excludeProps} className="w-full max-w-80">
         <PlayerCombobox
-          id={`duel-${side}`}
+          id={`duel-${side}${idSuffix}`}
           players={board.players.filter((player) => player.login !== other.login)}
           value={board.players.find((player) => player.login === current.login) ?? null}
           onChange={(player) => {
@@ -147,6 +147,12 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
         <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
           {left.name} <span className="text-muted-foreground">vs</span> {right.name}
         </h1>
+      </div>
+
+      {/* Mobilde iki taraf sayfa başında yan yana: büyük kartlar yerine mini kartlar. */}
+      <div className="grid grid-cols-2 gap-3 lg:hidden">
+        <MiniCorner player={left} picker={picker("left", "-mobile")} />
+        <MiniCorner player={right} picker={picker("right", "-mobile")} />
       </div>
 
       <div className="grid items-start gap-8 lg:grid-cols-[20rem_1fr_20rem]">
@@ -225,7 +231,7 @@ function DuelCorner({ player, isWinner, side, picker }: DuelCornerProps) {
     // Geniş ekranda kartlar yerinde kalır, ortadaki maç özeti kayar.
     <div
       className={cn(
-        "flex flex-col items-center gap-3 lg:sticky lg:top-6",
+        "flex-col items-center gap-3 max-lg:hidden lg:sticky lg:top-6 lg:flex",
         side === "left" ? "duel-enter-left" : "duel-enter-right"
       )}
     >
@@ -242,6 +248,33 @@ function DuelCorner({ player, isWinner, side, picker }: DuelCornerProps) {
         <PlayerCard player={player} />
       </Link>
       <p className="text-sm text-muted-foreground">@{player.login}</p>
+    </div>
+  )
+}
+
+/** Mobil için küçük kart: kart türünün rengi, fotoğraf ve isim. */
+function MiniCorner({ player, picker }: { player: ScoredPlayer; picker: ReactNode }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-2">
+      {picker}
+      <Link
+        to="/{-$lang}/u/$username"
+        params={{ lang: getLangParam(), username: player.login }}
+        aria-label={m.duel_open_card({ name: player.name })}
+        data-rarity={player.rarity}
+        className="scout-card flex rounded-2xl p-1.5 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      >
+        <span className="scout-card-inner flex w-full flex-col items-center gap-2 rounded-xl px-2 py-3">
+          <img
+            src={player.avatarUrl}
+            alt=""
+            width={64}
+            height={64}
+            className="size-16 rounded-full bg-muted"
+          />
+          <span className="w-full truncate text-center text-sm font-semibold">{player.name}</span>
+        </span>
+      </Link>
     </div>
   )
 }

@@ -7,6 +7,8 @@ import { cn } from "cn"
 
 import { siteConfig } from "@/config/site.config"
 
+import { RarityLegend } from "@/features/scout/components/RarityLegend"
+import { WeightsDonut } from "@/features/scout/components/WeightsDonut"
 import {
   ACT,
   COM,
@@ -18,9 +20,7 @@ import {
   STAT_ORDER,
   STAT_WEIGHTS
 } from "@/features/scout/constants/scoring.constants"
-import { number, percent, rarityLabel, statLabel } from "@/features/scout/helpers/player-text"
-import { rarityRange } from "@/features/scout/helpers/rarity-range"
-import { RARITIES } from "@/features/scout/schemas/leaderboard-search.schema"
+import { number, percent, statLabel, statShort } from "@/features/scout/helpers/player-text"
 import type { StatKey } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
 
@@ -103,34 +103,39 @@ export function AboutPage() {
 
       <Section id="about-stats" title={m.about_stats_title()}>
         <p className={bodyClass}>{m.about_stats_intro()}</p>
-        <dl className="surface divide-y overflow-hidden">
+
+        <div className="flex flex-col gap-2">
+          <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+            {m.about_weights_title()}
+          </p>
+          <WeightsDonut />
+        </div>
+
+        <ul className="grid gap-3 sm:grid-cols-2">
           {STAT_ORDER.map((key) => (
-            <div key={key} className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:gap-4">
-              <dt className="flex shrink-0 flex-col sm:w-40">
-                <span className="font-medium">{statLabel(key)}</span>
-                <span className="text-xs text-muted-foreground">
-                  {m.about_weight({ weight: percent(STAT_WEIGHTS[key] * 100) })}
+            <li key={key} className="surface flex flex-col gap-2 p-4">
+              <div className="flex items-center gap-2">
+                <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-semibold">
+                  {statShort(key)}
                 </span>
-              </dt>
-              <dd className={cn("flex flex-col gap-1", bodyClass)}>
-                <span>{STAT_DESCRIPTIONS[key]()}</span>
-                <span className="text-xs">{fullMarks(key)}</span>
-              </dd>
-            </div>
+                <span className="font-medium">{statLabel(key)}</span>
+                <span className="ms-auto text-xs text-muted-foreground">
+                  {percent(STAT_WEIGHTS[key] * 100)}
+                </span>
+              </div>
+              <p className={bodyClass}>{STAT_DESCRIPTIONS[key]()}</p>
+              <p className="mt-auto border-t pt-2 text-xs text-muted-foreground">
+                {fullMarks(key)}
+              </p>
+            </li>
           ))}
-        </dl>
+        </ul>
+        <p className={bodyClass}>{m.about_rating_note({ days: REFRESH.maxAgeDays })}</p>
       </Section>
 
       <Section id="about-ovr" title={m.about_ovr_title()}>
         <p className={bodyClass}>{m.about_ovr_body()}</p>
-        <ul className="flex flex-wrap gap-2">
-          {RARITIES.map((rarity) => (
-            <li key={rarity} className="surface flex items-center gap-2 px-3 py-1.5 text-sm">
-              <span aria-hidden data-rarity={rarity} className="rarity-dot size-2.5 rounded-full" />
-              {m.about_rarity({ rarity: rarityLabel(rarity), range: rarityRange(rarity) })}
-            </li>
-          ))}
-        </ul>
+        <RarityLegend />
       </Section>
 
       <Section id="about-position" title={m.about_position_title()}>
@@ -144,7 +149,6 @@ export function AboutPage() {
       <Section id="about-privacy" title={m.about_privacy_title()}>
         <ul className={cn("flex list-disc flex-col gap-2 pl-5", bodyClass)}>
           <li>{m.about_privacy_source()}</li>
-          <li>{m.about_privacy_refresh({ days: REFRESH.maxAgeDays })}</li>
           <li>{m.about_privacy_private()}</li>
         </ul>
         {/* "Kartının kaldırılmasını mı istiyorsun?" bağlantıları buraya iner; aynı kırmızıyla eşleşir. */}

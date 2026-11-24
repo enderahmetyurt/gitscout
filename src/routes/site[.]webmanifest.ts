@@ -12,8 +12,9 @@ export const Route = createFileRoute("/site.webmanifest")({
           description: siteConfig.description,
           start_url: "/",
           display: "standalone",
-          background_color: "#ffffff",
-          theme_color: "#ffffff",
+          // Site yalnızca koyu temada; ana ekrandan açılışta da aynı zemin görünsün.
+          background_color: "#0a0a0a",
+          theme_color: "#0a0a0a",
           // FIXME: add 192x192 and 512x512 icons to make the app installable.
           icons: [
             {

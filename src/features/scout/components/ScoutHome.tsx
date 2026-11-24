@@ -8,6 +8,7 @@ import { AddPlayerForm } from "@/features/scout/components/AddPlayerForm"
 import { EmptyLeaderboard } from "@/features/scout/components/EmptyLeaderboard"
 import { LeaderboardTable } from "@/features/scout/components/LeaderboardTable"
 import { PlayerCard } from "@/features/scout/components/PlayerCard"
+import { RarityLegend } from "@/features/scout/components/RarityLegend"
 import { STAT_ORDER } from "@/features/scout/constants/scoring.constants"
 import { statLabel, statShort } from "@/features/scout/helpers/player-text"
 import { useLeaderboard } from "@/features/scout/hooks/use-leaderboard"
@@ -84,7 +85,10 @@ export function ScoutHome() {
         {allPlayers.length === 0 ? (
           <EmptyLeaderboard />
         ) : (
-          <LeaderboardTable players={players} allPlayers={allPlayers} />
+          <>
+            <LeaderboardTable players={players} allPlayers={allPlayers} />
+            <RarityLegend className="justify-center" />
+          </>
         )}
       </section>
     </main>

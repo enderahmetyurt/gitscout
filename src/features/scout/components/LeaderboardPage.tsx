@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input"
 import { EmptyLeaderboard } from "@/features/scout/components/EmptyLeaderboard"
 import { LeaderboardFilters } from "@/features/scout/components/LeaderboardFilters"
 import { LeaderboardTable } from "@/features/scout/components/LeaderboardTable"
+import { RarityLegend } from "@/features/scout/components/RarityLegend"
 import { matchesPlayer } from "@/features/scout/helpers/search-text"
 import { useLeaderboard } from "@/features/scout/hooks/use-leaderboard"
 import { useLeaderboardSearch } from "@/features/scout/hooks/use-leaderboard-search"
@@ -66,6 +67,7 @@ export function LeaderboardPage() {
       ) : (
         <LeaderboardTable players={players} allPlayers={allPlayers} />
       )}
+      {allPlayers.length > 0 ? <RarityLegend className="justify-center" /> : null}
     </main>
   )
 }

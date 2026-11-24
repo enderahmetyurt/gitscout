@@ -27,6 +27,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      // Mobil tarayıcı çubuğu sitenin koyu zeminiyle aynı renkte.
+      { name: "theme-color", content: "#0a0a0a" },
       ...seoHeadMeta()
     ],
     links: [
