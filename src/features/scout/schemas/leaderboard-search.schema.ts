@@ -25,12 +25,27 @@ export const POSITIONS = [
 
 export const RARITIES = ["icon", "gold", "silver", "bronze"] as const
 
+/** URL'de görünen kısa adlar: `?pos=frontend,fullstack`. */
+export const POSITION_SLUGS = {
+  Frontend: "frontend",
+  Backend: "backend",
+  "Full Stack": "fullstack",
+  DevOps: "devops",
+  Mobile: "mobile",
+  Data: "data",
+  Systems: "systems",
+  "Game Dev": "gamedev"
+} as const satisfies Record<(typeof POSITIONS)[number], string>
+
 export const leaderboardSearchDefaults = { sort: "ovr", dir: "desc" } as const
 
-/** Liderlik tablosunun sıralaması ve filtreleri URL'de tutulur ki paylaşılan link aynı görünümü göstersin. */
+/**
+ * Liderlik tablosunun sıralaması ve filtreleri URL'de tutulur ki paylaşılan link aynı görünümü göstersin.
+ * Filtreler virgülle ayrılmış düz metin; geçersiz parçalar okunurken atlanır.
+ */
 export const leaderboardSearchSchema = z.object({
-  pos: z.array(z.enum(POSITIONS)).optional().catch(undefined),
-  rarity: z.array(z.enum(RARITIES)).optional().catch(undefined),
+  pos: z.string().optional().catch(undefined),
+  rarity: z.string().optional().catch(undefined),
   sort: z
     .enum(LEADERBOARD_SORT_KEYS)
     .default(leaderboardSearchDefaults.sort)

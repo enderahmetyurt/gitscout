@@ -1,4 +1,8 @@
-import { createRouter as createTanStackRouter } from "@tanstack/react-router"
+import {
+  createRouter as createTanStackRouter,
+  defaultParseSearch,
+  defaultStringifySearch
+} from "@tanstack/react-router"
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query"
 
 import { getContext } from "./providers/root-provider"
@@ -12,7 +16,10 @@ export function getRouter() {
     context,
     scrollRestoration: true,
     defaultPreload: "intent",
-    defaultPreloadStaleTime: 0
+    defaultPreloadStaleTime: 0,
+    // Virgül sorgu dizesinde güvenli; kodlanmasın ki filtreler `?pos=frontend,backend` diye okunsun.
+    stringifySearch: (search) => defaultStringifySearch(search).replace(/%2C/gi, ","),
+    parseSearch: defaultParseSearch
   })
 
   setupRouterSsrQueryIntegration({ router, queryClient: context.queryClient })

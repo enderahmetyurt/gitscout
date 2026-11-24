@@ -128,6 +128,27 @@ describe("mevki", () => {
     expect(computePosition(facts)).toBe("Backend")
   })
 
+  it("C# varsayılan olarak Backend, Unity izi olan repoda Game Dev", () => {
+    const dotnet = makeFacts({ ownedRepos: [repo([{ name: "C#", size: 100 }])] })
+    expect(computePosition(dotnet)).toBe("Backend")
+    const unity = makeFacts({
+      ownedRepos: [
+        repo([
+          { name: "C#", size: 80 },
+          { name: "ShaderLab", size: 20 }
+        ])
+      ]
+    })
+    expect(computePosition(unity)).toBe("Game Dev")
+  })
+
+  it("adı yapay zekâ işaret eden repolarda Python Data sayılır", () => {
+    const facts = makeFacts({
+      ownedRepos: [{ ...repo([{ name: "Python", size: 100 }]), name: "turkish-llm" }]
+    })
+    expect(computePosition(facts)).toBe("Data")
+  })
+
   it("notebook içeren repolar Python'u Data yapar ve dökümde dil başına repo sayılır", () => {
     const facts = makeFacts({
       ownedRepos: [

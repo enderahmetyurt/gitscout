@@ -1,7 +1,16 @@
 import { useNavigate, useSearch } from "@tanstack/react-router"
 
+import {
+  parsePositions,
+  parseRarities,
+  serializePositions,
+  serializeRarities
+} from "@/features/scout/helpers/filter-params"
 import { leaderboardSearchSchema } from "@/features/scout/schemas/leaderboard-search.schema"
 import type { LeaderboardSearch } from "@/features/scout/schemas/leaderboard-search.schema"
+import type { Position, Rarity } from "@/features/scout/types/player.types"
+
+type Filters = { positions: Position[]; rarities: Rarity[] }
 
 /**
  * Tablonun sıralama ve filtre durumu; hangi sayfada olduğunu bilmeden URL'den okur ve yazar.
@@ -10,6 +19,10 @@ import type { LeaderboardSearch } from "@/features/scout/schemas/leaderboard-sea
 export function useLeaderboardSearch() {
   const search = leaderboardSearchSchema.parse(useSearch({ strict: false }))
   const navigate = useNavigate()
+  const filters: Filters = {
+    positions: parsePositions(search.pos),
+    rarities: parseRarities(search.rarity)
+  }
 
   const update = (patch: Partial<LeaderboardSearch>) => {
     void navigate({
@@ -20,5 +33,12 @@ export function useLeaderboardSearch() {
     })
   }
 
-  return { search, update }
+  const setFilters = (next: Partial<Filters>) => {
+    update({
+      pos: serializePositions(next.positions ?? filters.positions),
+      rarity: serializeRarities(next.rarities ?? filters.rarities)
+    })
+  }
+
+  return { search, filters, update, setFilters }
 }

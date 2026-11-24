@@ -11,29 +11,36 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { RARITY_LABELS } from "@/features/scout/constants/scoring.constants"
+import { RARITY_LABELS, RARITY_THRESHOLDS } from "@/features/scout/constants/scoring.constants"
 import { useLeaderboardSearch } from "@/features/scout/hooks/use-leaderboard-search"
 import { POSITIONS, RARITIES } from "@/features/scout/schemas/leaderboard-search.schema"
-import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import type { Rarity, ScoredPlayer } from "@/features/scout/types/player.types"
 
 type LeaderboardFiltersProps = {
   players: ScoredPlayer[]
 }
 
-/** Seçili değeri listeye ekler ya da çıkarır; liste boşalırsa filtre URL'den kalkar. */
-function toggle<T>(list: readonly T[] | undefined, value: T, checked: boolean): T[] | undefined {
-  const next = checked ? [...(list ?? []), value] : (list ?? []).filter((item) => item !== value)
-  return next.length > 0 ? next : undefined
+/** Eşiklerden okunabilir aralık: "90+", "80–89", "0–64". */
+function rarityRange(rarity: Rarity): string {
+  const index = RARITY_THRESHOLDS.findIndex((threshold) => threshold.rarity === rarity)
+  const min = RARITY_THRESHOLDS[index]?.min ?? 0
+  const above = RARITY_THRESHOLDS[index - 1]
+  return above ? `${min}–${above.min - 1}` : `${min}+`
+}
+
+/** Seçili değeri listeye ekler ya da çıkarır. */
+function toggle<T>(list: readonly T[], value: T, checked: boolean): T[] {
+  return checked ? [...list, value] : list.filter((item) => item !== value)
 }
 
 /** Mevki ve kart filtreleri; yalnızca tabloda gerçekten bulunan seçenekler listelenir. */
 export function LeaderboardFilters({ players }: LeaderboardFiltersProps) {
-  const { search, update } = useLeaderboardSearch()
+  const { filters, setFilters } = useLeaderboardSearch()
   const positions = POSITIONS.filter((position) =>
     players.some((player) => player.position === position)
   )
   const rarities = RARITIES.filter((rarity) => players.some((player) => player.rarity === rarity))
-  const activeCount = (search.pos?.length ?? 0) + (search.rarity?.length ?? 0)
+  const activeCount = filters.positions.length + filters.rarities.length
 
   return (
     <DropdownMenu>
@@ -54,8 +61,10 @@ export function LeaderboardFilters({ players }: LeaderboardFiltersProps) {
             <DropdownMenuCheckboxItem
               key={position}
               lang="en"
-              checked={search.pos?.includes(position) ?? false}
-              onCheckedChange={(checked) => update({ pos: toggle(search.pos, position, checked) })}
+              checked={filters.positions.includes(position)}
+              onCheckedChange={(checked) =>
+                setFilters({ positions: toggle(filters.positions, position, checked) })
+              }
             >
               {position}
             </DropdownMenuCheckboxItem>
@@ -67,19 +76,23 @@ export function LeaderboardFilters({ players }: LeaderboardFiltersProps) {
           {rarities.map((rarity) => (
             <DropdownMenuCheckboxItem
               key={rarity}
-              checked={search.rarity?.includes(rarity) ?? false}
+              checked={filters.rarities.includes(rarity)}
               onCheckedChange={(checked) =>
-                update({ rarity: toggle(search.rarity, rarity, checked) })
+                setFilters({ rarities: toggle(filters.rarities, rarity, checked) })
               }
             >
+              <span aria-hidden data-rarity={rarity} className="rarity-dot size-2.5 rounded-full" />
               {RARITY_LABELS[rarity]}
+              <span className="ms-auto ps-3 text-xs text-muted-foreground">
+                {rarityRange(rarity)}
+              </span>
             </DropdownMenuCheckboxItem>
           ))}
         </DropdownMenuGroup>
         {activeCount > 0 ? (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => update({ pos: undefined, rarity: undefined })}>
+            <DropdownMenuItem onClick={() => setFilters({ positions: [], rarities: [] })}>
               Filtreleri temizle
             </DropdownMenuItem>
           </>

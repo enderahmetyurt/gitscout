@@ -333,6 +333,12 @@
     }
   }
 
+  /* Filtre menüsünde kart türünün küçük renk örneği: kartın zemin geçişi ve çerçevesi. */
+  .rarity-dot {
+    background-image: linear-gradient(135deg, var(--bg-1), var(--bg-2));
+    box-shadow: inset 0 0 0 1px var(--frame-1);
+  }
+
   /* Kartın arkasındaki nadirlik renginde ışıma. */
   .scout-card-glow {
     background: radial-gradient(

@@ -34,6 +34,11 @@ const TITLE_TIE_MARGIN = 1
 
 /** Python bu dillerle aynı repodaysa veri/yapay zekâ işidir. */
 const DATA_MARKERS = new Set(["Jupyter Notebook", "Cuda"])
+/** Repo adı bunlardan birini içeriyorsa Python yine veri/yapay zekâ işidir (ör. nanoGPT, turkish-llm). */
+const DATA_NAME =
+  /gpt|llm|nlp|neural|learning|keras|torch|tensorflow|transformer|diffusion|bert|analy[sz]|predict|forecast|(^|[-_.])(ml|ai|rag|data)([-_.]|$)/i
+/** C# bu dillerle aynı repodaysa oyun motoru işidir (Unity, Godot); değilse .NET backend. */
+const GAME_MARKERS = new Set(["ShaderLab", "HLSL", "GLSL", "GDScript"])
 /** Python repolarının (ağırlıklı) bu kadarı veri işaretliyse oyuncunun bütün Python'u Data sayılır. */
 const DATA_PROFILE_SHARE = 0.3
 
@@ -54,8 +59,12 @@ export function computePositionBreakdown(facts: PlayerFacts): PositionBreakdown 
       (repo) => repo.isOrg && !ownedNames.has(repo.nameWithOwner.toLowerCase())
     )
   ].filter((repo) => repo.languages.some((language) => language.size > 0))
-  const hasData = (repo: (typeof repos)[number]) =>
-    repo.languages.some((language) => DATA_MARKERS.has(language.name))
+  type Repo = (typeof repos)[number]
+  const repoName = (repo: Repo) => ("name" in repo ? repo.name : repo.nameWithOwner)
+  const hasData = (repo: Repo) =>
+    repo.languages.some((language) => DATA_MARKERS.has(language.name)) ||
+    DATA_NAME.test(repoName(repo))
+  const hasGame = (repo: Repo) => repo.languages.some((language) => GAME_MARKERS.has(language.name))
   const pythonRepos = repos.filter((repo) =>
     repo.languages.some((language) => language.name === "Python")
   )
@@ -72,11 +81,15 @@ export function computePositionBreakdown(facts: PlayerFacts): PositionBreakdown 
     const size = repo.languages.reduce((sum, language) => sum + language.size, 0)
     const weight = repoWeight(repo.stars)
     const pythonIsData = isDataProfile || hasData(repo)
+    const csharpIsGame = hasGame(repo)
     for (const language of repo.languages) {
       if (language.size === 0) continue
       const group =
-        (language.name === "Python" && pythonIsData ? "Data" : LANGUAGE_GROUPS[language.name]) ??
-        null
+        (language.name === "Python" && pythonIsData
+          ? "Data"
+          : language.name === "C#" && csharpIsGame
+            ? "Game Dev"
+            : LANGUAGE_GROUPS[language.name]) ?? null
       const value = (language.size / size) * weight
       total += value
       const entry = languages.get(language.name) ?? { group, weight: 0, repos: 0 }

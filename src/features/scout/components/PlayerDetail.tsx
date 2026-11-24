@@ -137,7 +137,9 @@ export function PlayerDetail({ username }: PlayerDetailProps) {
                     </span>
                     <div className="min-w-0 text-sm">
                       <p className="font-medium">{badge.name}</p>
-                      <p className="text-pretty text-muted-foreground">{badge.detail}</p>
+                      <p className="mt-0.5 text-xs text-pretty text-muted-foreground">
+                        {badge.detail}
+                      </p>
                     </div>
                   </li>
                 ))}

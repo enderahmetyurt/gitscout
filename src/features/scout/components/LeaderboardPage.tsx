@@ -8,11 +8,11 @@ import { useLeaderboardSearch } from "@/features/scout/hooks/use-leaderboard-sea
 export function LeaderboardPage() {
   const { data } = useLeaderboard()
   const { players: allPlayers, staleCount } = data
-  const { search } = useLeaderboardSearch()
+  const { filters } = useLeaderboardSearch()
   const players = allPlayers.filter(
     (player) =>
-      (!search.pos?.length || search.pos.includes(player.position)) &&
-      (!search.rarity?.length || search.rarity.includes(player.rarity))
+      (filters.positions.length === 0 || filters.positions.includes(player.position)) &&
+      (filters.rarities.length === 0 || filters.rarities.includes(player.rarity))
   )
 
   return (
