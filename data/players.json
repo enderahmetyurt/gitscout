@@ -13,6 +13,7 @@
         "createdAt": "2009-08-01T18:39:25Z",
         "topOrg": "PatternsDev",
         "mergedExternalPrs": 399,
+        "utcOffsetMinutes": -420,
         "lastYear": {
           "commits": 798,
           "prs": 34,
@@ -6827,8 +6828,7 @@
             "year": 2009,
             "total": 1
           }
-        ],
-        "utcOffsetMinutes": -420
+        ]
       }
     },
     "ademilter": {
@@ -190108,7 +190108,7 @@
     },
     "omergulcicek": {
       "login": "omergulcicek",
-      "fetchedAt": "2026-11-23T23:07:15.088Z",
+      "fetchedAt": "2026-11-24T13:47:21.681Z",
       "facts": {
         "login": "omergulcicek",
         "name": "Ömer Gülçiçek",
@@ -190119,13 +190119,12 @@
         "createdAt": "2015-08-15T20:11:57Z",
         "topOrg": "virastack",
         "mergedExternalPrs": 36,
-        "utcOffsetMinutes": 180,
         "lastYear": {
           "commits": 1266,
           "prs": 58,
           "reviews": 0,
           "issues": 1,
-          "restricted": 567
+          "restricted": 573
         },
         "ownedRepos": [
           {
@@ -194552,13 +194551,13 @@
           },
           {
             "date": "2026-11-24",
-            "count": 1
+            "count": 7
           }
         ],
         "yearly": [
           {
             "year": 2026,
-            "total": 1793
+            "total": 1799
           },
           {
             "year": 2025,
@@ -194604,7 +194603,8 @@
             "year": 2015,
             "total": 1
           }
-        ]
+        ],
+        "utcOffsetMinutes": 180
       }
     },
     "ozankonuskan": {

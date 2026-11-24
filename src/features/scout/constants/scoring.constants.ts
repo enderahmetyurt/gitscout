@@ -15,6 +15,12 @@ export const STAT_WEIGHTS: Record<StatKey, number> = {
 export const STAT_ORDER: StatKey[] = ["act", "imp", "com", "rep", "con", "exp"]
 
 /**
+ * Radar dizilimi (saat yönünde): İstikrar üstte, sonra Topluluk, Kıdem, Saygınlık (alt), Aktivite, Etki.
+ * En uzun etiket (Consistency / İstikrar) yatayda yeri bol olan üst köşede durur.
+ */
+export const RADAR_ORDER: StatKey[] = ["con", "com", "exp", "rep", "act", "imp"]
+
+/**
  * Her stat logaritmik ölçekte `fullAt` değerinde tavan yapar.
  * Tavanlar dünyanın en uç profillerine göre seçildi (ör. 300 bin takipçi, 500 bin yıldız):
  * 99 yalnızca gerçekten benzersiz değerlerde çıkar, güçlü profiller 85-95 bandına yayılır.

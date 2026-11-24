@@ -3,7 +3,7 @@ import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart } from "r
 import { Card, CardContent } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
 import type { ChartConfig } from "@/components/ui/chart"
-import { STAT_ORDER } from "@/features/scout/constants/scoring.constants"
+import { RADAR_ORDER, STAT_ORDER } from "@/features/scout/constants/scoring.constants"
 import { partLabel, statLabel, statSummary } from "@/features/scout/helpers/player-text"
 import type { ScoredPlayer, Stat } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
@@ -18,7 +18,7 @@ export function StatRadar({ stats }: StatRadarProps) {
   const chartConfig = {
     value: { label: m.radar_score(), color: "var(--chart-home)" }
   } satisfies ChartConfig
-  const data = STAT_ORDER.map((key) => ({
+  const data = RADAR_ORDER.map((key) => ({
     key,
     label: statLabel(key),
     value: stats[key].value
@@ -26,7 +26,7 @@ export function StatRadar({ stats }: StatRadarProps) {
 
   return (
     <Card className="h-full justify-center py-4">
-      <CardContent className="px-2">
+      <CardContent className="px-0">
         <ChartContainer
           config={chartConfig}
           className="mx-auto aspect-square max-h-[220px] w-full"
@@ -35,7 +35,7 @@ export function StatRadar({ stats }: StatRadarProps) {
           <RadarChart
             data={data}
             outerRadius="70%"
-            margin={{ top: 4, right: 36, bottom: 4, left: 36 }}
+            margin={{ top: 8, right: 36, bottom: 8, left: 36 }}
           >
             <ChartTooltip
               cursor={false}
