@@ -5,34 +5,52 @@ import { z } from "zod"
 import { fetchPlayerFacts } from "@/features/scout/api/fetch-player-facts.api"
 import { GithubError } from "@/features/scout/api/get-github-data.api"
 import {
-  getPlayers,
-  getStaleCount,
-  getStoredPlayer,
-  savePlayer
+  countRecentPlayers,
+  getScoredPlayer,
+  getScoredPlayers,
+  insertPlayer
 } from "@/features/scout/api/player-store"
-import { computeRanking, scorePlayer } from "@/features/scout/helpers/score-player"
-import { playerRequestSchema, usernameSchema } from "@/features/scout/schemas/player.schema"
-import type { PlayerDetail, ScoredPlayer, StoredPlayer } from "@/features/scout/types/player.types"
+import { NEW_PLAYERS_PER_HOUR } from "@/features/scout/constants/scoring.constants"
+import { computeBenchmarks } from "@/features/scout/helpers/benchmarks"
+import { computeRanking } from "@/features/scout/helpers/score-player"
+import { addPlayerSchema, usernameSchema } from "@/features/scout/schemas/player.schema"
+import type { PlayerDetail, ScoredPlayer } from "@/features/scout/types/player.types"
 
 type Leaderboard = {
   players: ScoredPlayer[]
-  /** Veri biçimi değiştiği için yenilenmeyi bekleyen oyuncu sayısı. */
-  staleCount: number
 }
 
-/** Kayıtlı bütün oyuncuları, saklanan veriden yeniden puanlayıp sıralar. GitHub'a istek atmaz. */
+/**
+ * Aynı sunucu örneği bu süre içinde gelen istekleri veritabanına gitmeden karşılar. Veri haftada bir yenilenir;
+ * yeni eklenen kart, ekleyen kişinin örneğinde hemen, diğer örneklerde en geç bu süre sonra listeye girer.
+ */
+const LIST_CACHE_MS = 5 * 60_000
+let listCache: { at: number; players: ScoredPlayer[] } | null = null
+
+async function cachedPlayers(): Promise<ScoredPlayer[]> {
+  if (listCache && Date.now() - listCache.at < LIST_CACHE_MS) return listCache.players
+  const players = await getScoredPlayers()
+  listCache = { at: Date.now(), players }
+  return players
+}
+
+/** Kayıtlı bütün oyuncular, genel puana göre sıralı. GitHub'a istek atmaz. */
 export const getLeaderboard = createServerFn({ method: "GET" }).handler(
-  async (): Promise<Leaderboard> => {
-    const [players, staleCount] = await Promise.all([getPlayers(), getStaleCount()])
-    const now = new Date()
-    return {
-      players: players
-        .map((player) => scorePlayer(player, now))
-        .sort((a, b) => b.ovr - a.ovr || a.login.localeCompare(b.login)),
-      staleCount
-    }
-  }
+  async (): Promise<Leaderboard> => ({ players: await cachedPlayers() })
 )
+
+export const getPlayer = createServerFn({ method: "GET" })
+  .validator(z.object({ username: usernameSchema }))
+  .handler(async ({ data }): Promise<PlayerDetail> => {
+    const player = await getScoredPlayer(data.username)
+    if (!player) throw notFound()
+    const all = await cachedPlayers()
+    return {
+      ...player,
+      ranking: computeRanking(player, all),
+      benchmarks: computeBenchmarks(player, all)
+    }
+  })
 
 /**
  * GitHub hataları istemciye sabit bir kodla gider (`github:not-found`); mesaj arayüzde dile göre yazılır.
@@ -47,35 +65,26 @@ async function fetchFacts(login: string) {
   }
 }
 
-async function fetchAndSave(login: string, previous: StoredPlayer | null) {
-  const facts = await fetchFacts(login)
-  const stored: StoredPlayer = {
-    login: facts.login,
-    fetchedAt: new Date().toISOString(),
-    timezone: previous?.timezone,
-    facts
-  }
-  await savePlayer(stored)
-  return stored
-}
-
-export const getPlayer = createServerFn({ method: "GET" })
-  .validator(z.object({ username: usernameSchema }))
-  .handler(async ({ data }): Promise<PlayerDetail> => {
-    const stored = await getStoredPlayer(data.username)
-    if (!stored) throw notFound()
-    const now = new Date()
-    const player = scorePlayer(stored, now)
-    const all = (await getPlayers()).map((item) => scorePlayer(item, now))
-    return { ...player, ranking: computeRanking(player, all) }
-  })
-
-/** Oyuncu kayıtlıysa istek atmadan döner; yoksa ya da `refresh` istenirse GitHub'dan çekip kaydeder. */
+/**
+ * Oyuncu kayıtlıysa GitHub'a gitmeden döner. Değilse bir kez çekilip kaydedilir;
+ * kayıtlı veri sonradan değiştirilemez.
+ */
 export const addPlayer = createServerFn({ method: "POST" })
-  .validator(playerRequestSchema)
+  .validator(addPlayerSchema)
   .handler(async ({ data }): Promise<ScoredPlayer> => {
-    const existing = await getStoredPlayer(data.username)
-    if (existing && !data.refresh) return scorePlayer(existing)
+    const existing = await getScoredPlayer(data.username)
+    if (existing) return existing
 
-    return scorePlayer(await fetchAndSave(data.username, existing))
+    if ((await countRecentPlayers()) >= NEW_PLAYERS_PER_HOUR) {
+      throw new Error("github:rate-limit")
+    }
+
+    const facts = await fetchFacts(data.username)
+    const player = await insertPlayer({
+      login: facts.login,
+      fetchedAt: new Date().toISOString(),
+      facts
+    })
+    listCache = null
+    return player
   })

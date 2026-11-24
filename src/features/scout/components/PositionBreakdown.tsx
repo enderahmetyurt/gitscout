@@ -1,5 +1,3 @@
-import { cn } from "cn"
-
 import { LanguageIcon } from "@/features/scout/components/LanguageIcon"
 import { percent } from "@/features/scout/helpers/player-text"
 import type { ScoredPlayer } from "@/features/scout/types/player.types"
@@ -24,8 +22,15 @@ export function PositionBreakdown({ position, breakdown }: PositionBreakdownProp
   return (
     <section className="surface flex flex-col gap-4 p-4" aria-labelledby="position-heading">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 id="position-heading" className="text-sm font-medium">
-          {m.position_title({ position })}
+        <h2 id="position-heading" className="flex items-center gap-2 text-sm font-medium">
+          {m.col_position()}
+          <span
+            lang="en"
+            data-role={position}
+            className="role-tint rounded-full px-2 py-0.5 text-xs"
+          >
+            {position}
+          </span>
         </h2>
         <p className="text-xs text-muted-foreground">
           {m.repo_count({ count: breakdown.repoCount })}
@@ -34,18 +39,15 @@ export function PositionBreakdown({ position, breakdown }: PositionBreakdownProp
 
       {roles.length > 0 ? (
         <ul className="flex flex-col gap-2" aria-label={m.position_roles()}>
-          {roles.map((role, index) => (
-            <li key={role.group} className="flex flex-col gap-1 text-xs">
+          {roles.map((role) => (
+            <li key={role.group} data-role={role.group} className="flex flex-col gap-1 text-xs">
               <div className="flex justify-between">
                 <span lang="en">{role.group}</span>
                 <span className="text-muted-foreground tabular-nums">{share(role.share)}</span>
               </div>
               <span aria-hidden className="h-1.5 overflow-hidden rounded-full bg-muted">
                 <span
-                  className={cn(
-                    "block h-full rounded-full",
-                    index === 0 ? "bg-foreground" : "bg-muted-foreground/50"
-                  )}
+                  className="role-fill block h-full rounded-full"
                   style={{ width: `${Math.round(role.share * 100)}%` }}
                 />
               </span>

@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input"
 import { EmptyLeaderboard } from "@/features/scout/components/EmptyLeaderboard"
 import { LeaderboardFilters } from "@/features/scout/components/LeaderboardFilters"
 import { LeaderboardTable } from "@/features/scout/components/LeaderboardTable"
-import { StaleNotice } from "@/features/scout/components/StaleNotice"
 import { matchesPlayer } from "@/features/scout/helpers/search-text"
 import { useLeaderboard } from "@/features/scout/hooks/use-leaderboard"
 import { useLeaderboardSearch } from "@/features/scout/hooks/use-leaderboard-search"
@@ -12,7 +11,7 @@ import * as m from "@/paraglide/messages.js"
 
 export function LeaderboardPage() {
   const { data } = useLeaderboard()
-  const { players: allPlayers, staleCount } = data
+  const { players: allPlayers } = data
   const { search, filters, update } = useLeaderboardSearch()
   const query = search.q ?? ""
   const players = allPlayers.filter(
@@ -49,7 +48,7 @@ export function LeaderboardPage() {
                   onChange={(event) => update({ q: event.target.value || undefined })}
                   placeholder={m.search_placeholder()}
                   aria-label={m.search_label()}
-                  className="h-8 w-44 ps-8 sm:w-56"
+                  className="h-8 w-48 ps-8 sm:w-56"
                 />
               </div>
               <LeaderboardFilters players={allPlayers} />
@@ -57,8 +56,6 @@ export function LeaderboardPage() {
           ) : null}
         </div>
       </div>
-
-      <StaleNotice count={staleCount} />
 
       {allPlayers.length === 0 ? (
         <EmptyLeaderboard />

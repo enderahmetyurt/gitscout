@@ -1,21 +1,20 @@
 import { Link } from "@tanstack/react-router"
-import { ArrowLeft, ArrowUpRight, RefreshCw } from "lucide-react"
-import { toast } from "sonner"
+import { ArrowLeft, ArrowUpRight } from "lucide-react"
 
 import { getLangParam } from "@/helpers/localized-url"
 
-import { Button, buttonVariants } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import { BadgeIcon } from "@/features/scout/components/BadgeIcon"
+import { Benchmarks } from "@/features/scout/components/Benchmarks"
 import { CardActions } from "@/features/scout/components/CardActions"
 import { GetYourCard } from "@/features/scout/components/GetYourCard"
 import { PlayerCard } from "@/features/scout/components/PlayerCard"
 import { PositionBreakdown } from "@/features/scout/components/PositionBreakdown"
+import { ScoutNote } from "@/features/scout/components/ScoutNote"
 import { StatRadar } from "@/features/scout/components/StatRadar"
 import { TopRepos } from "@/features/scout/components/TopRepos"
 import { YearSummary } from "@/features/scout/components/YearSummary"
-import { errorText } from "@/features/scout/helpers/error-text"
 import { badgeDetail, badgeName, rarityLabel } from "@/features/scout/helpers/player-text"
-import { useAddPlayer } from "@/features/scout/hooks/use-add-player"
 import { useCardDownload } from "@/features/scout/hooks/use-card-download"
 import { usePlayer } from "@/features/scout/hooks/use-player"
 import * as m from "@/paraglide/messages.js"
@@ -27,24 +26,13 @@ type PlayerDetailProps = {
 
 export function PlayerDetail({ username }: PlayerDetailProps) {
   const { data: player } = usePlayer(username)
-  const refresh = useAddPlayer()
   const { cardRef, download, isDownloading } = useCardDownload(`gitscout-${username}`)
-
-  const onRefresh = () => {
-    refresh.mutate(
-      { username: player.login, refresh: true },
-      {
-        onSuccess: () => toast.success(m.refresh_success()),
-        onError: (error) => toast.error(errorText(error))
-      }
-    )
-  }
 
   return (
     <main
       id="main-content"
       tabIndex={-1}
-      className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pt-2 pb-20 outline-none sm:px-6"
+      className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 overflow-x-clip px-4 pt-2 pb-20 outline-none sm:px-6"
     >
       <div className="flex items-center justify-between gap-3">
         <Link
@@ -59,25 +47,19 @@ export function PlayerDetail({ username }: PlayerDetailProps) {
           <ArrowLeft aria-hidden />
           {m.back_to_leaderboard()}
         </Link>
-        <div className="flex items-center gap-3">
-          <span className="hidden text-xs text-muted-foreground sm:inline">
-            {m.last_updated({
-              date: new Intl.DateTimeFormat(getLocale(), {
-                dateStyle: "medium",
-                timeStyle: "short"
-              }).format(new Date(player.fetchedAt))
-            })}
-          </span>
-          <Button variant="ghost" size="sm" onClick={onRefresh} disabled={refresh.isPending}>
-            <RefreshCw aria-hidden className={refresh.isPending ? "animate-spin" : undefined} />
-            {refresh.isPending ? m.refreshing() : m.refresh()}
-          </Button>
-        </div>
+        <span className="hidden text-xs text-muted-foreground sm:inline">
+          {m.last_updated({
+            date: new Intl.DateTimeFormat(getLocale(), {
+              dateStyle: "medium",
+              timeStyle: "short"
+            }).format(new Date(player.fetchedAt))
+          })}
+        </span>
       </div>
 
       <div className="grid gap-6 md:grid-cols-[20rem_1fr] md:items-start">
         <aside className="flex flex-col items-center gap-5 md:sticky md:top-6">
-          <div data-rarity={player.rarity} className="relative">
+          <div data-rarity={player.rarity} className="relative flex w-full max-w-80 justify-center">
             <div aria-hidden className="scout-card-glow pointer-events-none absolute -inset-8" />
             <div className="card-lift relative">
               <PlayerCard player={player} ref={cardRef} />
@@ -121,13 +103,15 @@ export function PlayerDetail({ username }: PlayerDetailProps) {
             <h2 id="stats-heading" className="sr-only">
               {m.stats_heading()}
             </h2>
-            {/* 2×2 grid: aynı satırdaki kartlar aynı yüksekliğe uzar, üst ve alt kenarlar hizalanır. */}
+            {/* Aynı satırdaki kartlar aynı yüksekliğe uzar; scout notu iki kolonu kaplayan şerit. */}
             <div className="grid gap-6 lg:grid-cols-2">
-              <StatRadar stats={player.stats} archetype={player.archetype} />
+              <StatRadar stats={player.stats} />
               <TopRepos repos={player.topRepos} />
+              <ScoutNote archetype={player.archetype} />
               <PositionBreakdown position={player.position} breakdown={player.positionBreakdown} />
               <YearSummary year={player.year} />
             </div>
+            <Benchmarks benchmarks={player.benchmarks} total={player.ranking.total} />
           </section>
 
           <section className="flex flex-col gap-4" aria-labelledby="badges-heading">
@@ -162,7 +146,10 @@ export function PlayerDetail({ username }: PlayerDetailProps) {
         </div>
       </div>
 
-      <GetYourCard />
+      {/* Rozetlerle karışmasın: ana boşluğa (24px) eklenince toplam 40px. */}
+      <div className="mt-4">
+        <GetYourCard />
+      </div>
     </main>
   )
 }

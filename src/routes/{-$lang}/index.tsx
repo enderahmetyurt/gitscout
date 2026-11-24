@@ -13,8 +13,7 @@ import {
 export const Route = createFileRoute("/{-$lang}/")({
   validateSearch: leaderboardSearchSchema,
   search: { middlewares: [stripSearchParams(leaderboardSearchDefaults)] },
-  loader: ({ context }) =>
-    context.queryClient.ensureQueryData({ ...leaderboardQueryOptions(), staleTime: 0 }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(leaderboardQueryOptions()),
   head: () => ({ links: hreflangLinks("/") }),
   pendingComponent: Pending,
   component: ScoutHome

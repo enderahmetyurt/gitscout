@@ -502,3 +502,50 @@
     transform: translateY(6px) scale(0.92);
   }
 }
+
+/* Rol renkleri: her rolün kendi tonu; açık ve koyu temada aynı ton, farklı açıklık. */
+@layer components {
+  [data-role="Frontend"] {
+    --role-h: 150;
+  }
+  [data-role="Backend"] {
+    --role-h: 25;
+  }
+  [data-role="Full Stack"] {
+    --role-h: 250;
+  }
+  [data-role="Mobile"] {
+    --role-h: 300;
+  }
+  [data-role="Systems"] {
+    --role-h: 55;
+  }
+  [data-role="Data"] {
+    --role-h: 200;
+  }
+  [data-role="DevOps"] {
+    --role-h: 90;
+  }
+  [data-role="Game Dev"] {
+    --role-h: 345;
+  }
+
+  .role-tint {
+    --role-l: 0.5;
+    --role-c: 0.15;
+    color: oklch(var(--role-l) var(--role-c) var(--role-h, 250));
+    background-color: oklch(var(--role-l) var(--role-c) var(--role-h, 250) / 0.12);
+    box-shadow: inset 0 0 0 1px oklch(var(--role-l) var(--role-c) var(--role-h, 250) / 0.3);
+  }
+  .dark .role-tint {
+    --role-l: 0.82;
+    --role-c: 0.13;
+  }
+
+  .role-fill {
+    background-color: oklch(0.6 0.16 var(--role-h, 250));
+  }
+  .dark .role-fill {
+    background-color: oklch(0.72 0.15 var(--role-h, 250));
+  }
+}

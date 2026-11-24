@@ -14,8 +14,7 @@ import * as m from "@/paraglide/messages.js"
 export const Route = createFileRoute("/{-$lang}/leaderboard")({
   validateSearch: leaderboardSearchSchema,
   search: { middlewares: [stripSearchParams(leaderboardSearchDefaults)] },
-  loader: ({ context }) =>
-    context.queryClient.ensureQueryData({ ...leaderboardQueryOptions(), staleTime: 0 }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(leaderboardQueryOptions()),
   head: () => ({ meta: [{ title: m.meta_leaderboard() }], links: hreflangLinks("/leaderboard") }),
   pendingComponent: Pending,
   component: LeaderboardPage

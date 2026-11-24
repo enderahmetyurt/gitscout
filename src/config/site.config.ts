@@ -4,7 +4,7 @@ import { env } from "@/env"
 export const siteConfig: SiteConfig = {
   name: env.VITE_APP_NAME,
   description:
-    "GitHub profilini commit kalitesi, test, dokümantasyon ve sürekliliğe göre puanlayıp oyuncu kartına çeviren liderlik tablosu.",
+    "GitHub profilini aktivite, etki, topluluk, saygınlık, istikrar ve kıdeme göre puanlayıp koleksiyon kartına çeviren liderlik tablosu.",
   shortName: "Gitscout",
   url: env.VITE_APP_URL,
   apiUrl: env.VITE_API_URL,

@@ -8,7 +8,6 @@ import { AddPlayerForm } from "@/features/scout/components/AddPlayerForm"
 import { EmptyLeaderboard } from "@/features/scout/components/EmptyLeaderboard"
 import { LeaderboardTable } from "@/features/scout/components/LeaderboardTable"
 import { PlayerCard } from "@/features/scout/components/PlayerCard"
-import { StaleNotice } from "@/features/scout/components/StaleNotice"
 import { STAT_ORDER } from "@/features/scout/constants/scoring.constants"
 import { statLabel, statShort } from "@/features/scout/helpers/player-text"
 import { useLeaderboard } from "@/features/scout/hooks/use-leaderboard"
@@ -19,7 +18,7 @@ const HOME_LIMIT = 10
 
 export function ScoutHome() {
   const { data } = useLeaderboard()
-  const { players: allPlayers, staleCount } = data
+  const { players: allPlayers } = data
   // Sunucu listeyi genel puana göre sıralı döner.
   const players = allPlayers.slice(0, HOME_LIMIT)
   const leader = players[0]
@@ -57,7 +56,7 @@ export function ScoutHome() {
             to="/{-$lang}/u/$username"
             params={{ lang: getLangParam(), username: leader.login }}
             aria-label={m.duel_open_card({ name: leader.name })}
-            className="card-lift hidden rounded-[28px] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 lg:block"
+            className="card-lift hidden w-80 rounded-[28px] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 lg:block"
           >
             <PlayerCard player={leader} />
           </Link>
@@ -80,8 +79,6 @@ export function ScoutHome() {
             </Link>
           ) : null}
         </div>
-
-        <StaleNotice count={staleCount} />
 
         {allPlayers.length === 0 ? (
           <EmptyLeaderboard />

@@ -60,6 +60,7 @@ export function LeaderboardFilters({ players }: LeaderboardFiltersProps) {
             <DropdownMenuRadioItem value={ALL}>{m.filter_all_positions()}</DropdownMenuRadioItem>
             {positions.map((position) => (
               <DropdownMenuRadioItem key={position} value={position} lang="en">
+                <span aria-hidden data-role={position} className="role-fill size-2 rounded-full" />
                 {position}
               </DropdownMenuRadioItem>
             ))}

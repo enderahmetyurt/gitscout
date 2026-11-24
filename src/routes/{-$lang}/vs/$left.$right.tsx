@@ -4,7 +4,7 @@ import { getLangParam, hreflangLinks } from "@/helpers/localized-url"
 
 import { Pending } from "@/components/shared/Pending"
 import { buttonVariants } from "@/components/ui/button"
-import { playerQueryOptions } from "@/features/scout/api/players.queries"
+import { leaderboardQueryOptions, playerQueryOptions } from "@/features/scout/api/players.queries"
 import { DuelView } from "@/features/scout/components/DuelView"
 import * as m from "@/paraglide/messages.js"
 
@@ -12,7 +12,8 @@ export const Route = createFileRoute("/{-$lang}/vs/$left/$right")({
   loader: ({ context, params }) =>
     Promise.all([
       context.queryClient.ensureQueryData(playerQueryOptions(params.left)),
-      context.queryClient.ensureQueryData(playerQueryOptions(params.right))
+      context.queryClient.ensureQueryData(playerQueryOptions(params.right)),
+      context.queryClient.ensureQueryData(leaderboardQueryOptions())
     ]),
   head: ({ params }) => ({
     meta: [{ title: `${params.left} vs ${params.right} · Gitscout` }],

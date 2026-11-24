@@ -1,14 +1,14 @@
-import { env } from "@/env"
-
 import { createApi } from "@/lib/api"
+
+import { serverEnv } from "@/env.server"
 
 /** Yalnızca sunucuda kullanılır: token istemci paketine girmemeli. */
 export const githubApi = createApi({
   baseUrl: "https://api.github.com",
   getHeaders: () => ({
-    ...(env.GITHUB_TOKEN ? { Authorization: `bearer ${env.GITHUB_TOKEN}` } : {}),
+    ...(serverEnv.GITHUB_TOKEN ? { Authorization: `bearer ${serverEnv.GITHUB_TOKEN}` } : {}),
     "User-Agent": "gitscout"
   })
 })
 
-export const hasGithubToken = () => Boolean(env.GITHUB_TOKEN)
+export const hasGithubToken = () => Boolean(serverEnv.GITHUB_TOKEN)

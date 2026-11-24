@@ -4,12 +4,10 @@ import { z } from "zod"
  * Type-safe environment variable schema.
  *
  * Client-exposed variables MUST be prefixed with `VITE_` (Vite inlines these
- * at build time). Server-only variables have no prefix and must never be
- * read via `import.meta.env` on the client.
+ * at build time). Secrets live in `src/env.server.ts`, which only server code imports.
  */
 const serverSchema = z.object({
-  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
-  GITHUB_TOKEN: z.string().optional()
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development")
 })
 
 const clientSchema = z.object({
@@ -26,8 +24,7 @@ function readEnv(key: string): string | undefined {
 }
 
 const serverParsed = serverSchema.safeParse({
-  NODE_ENV: readEnv("NODE_ENV"),
-  GITHUB_TOKEN: readEnv("GITHUB_TOKEN") || undefined
+  NODE_ENV: readEnv("NODE_ENV")
 })
 
 const clientParsed = clientSchema.safeParse({

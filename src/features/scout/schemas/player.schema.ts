@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import type { StoredPlayer } from "@/features/scout/types/player.types"
+import type { ScoredPlayer, StoredPlayer } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
 
 /** GitHub kullanıcı adı kuralları: harf, rakam ve tek tire; en fazla 39 karakter. */
@@ -17,11 +17,6 @@ export const addPlayerSchema = z.object({
 })
 
 export type AddPlayerInput = z.infer<typeof addPlayerSchema>
-
-export const playerRequestSchema = z.object({
-  username: usernameSchema,
-  refresh: z.boolean().default(false)
-})
 
 const checkState = z.enum(["SUCCESS", "FAILURE", "ERROR", "PENDING", "EXPECTED"])
 
@@ -109,3 +104,19 @@ export const storedPlayerSchema: z.ZodType<StoredPlayer> = z.object({
   timezone: z.string().optional(),
   facts: playerFactsSchema
 })
+
+/**
+ * Veritabanındaki puan özeti sunucunun kendi yazdığı veridir ve sürümüyle birlikte okunur;
+ * alanların tamamı yerine temel biçim doğrulanır.
+ */
+export const scoredPlayerSchema = z.custom<ScoredPlayer>(
+  (value) =>
+    typeof value === "object" &&
+    value !== null &&
+    "login" in value &&
+    typeof value.login === "string" &&
+    "ovr" in value &&
+    typeof value.ovr === "number" &&
+    "stats" in value &&
+    typeof value.stats === "object"
+)

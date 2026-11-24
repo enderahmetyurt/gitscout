@@ -1,22 +1,35 @@
-import { Link } from "@tanstack/react-router"
+import type { ReactNode } from "react"
+
+import { Link, useNavigate } from "@tanstack/react-router"
 import { ArrowLeftRight, ImageIcon, Link2, Share2 } from "lucide-react"
 import { cn } from "cn"
 import { toast } from "sonner"
 
+import { trackEvent } from "@/lib/analytics"
 import { getLangParam } from "@/helpers/localized-url"
 
-import { Button, buttonVariants } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu"
 import { DuelRadar } from "@/features/scout/components/DuelRadar"
 import { GetYourCard } from "@/features/scout/components/GetYourCard"
 import { PlayerCard } from "@/features/scout/components/PlayerCard"
+import { PlayerCombobox } from "@/features/scout/components/PlayerCombobox"
 import { SHARE_TARGETS } from "@/features/scout/constants/share.constants"
 import { STAT_TIER_TEXT } from "@/features/scout/constants/stat-tier.constants"
 import { computeDuel } from "@/features/scout/helpers/duel"
 import type { Duel, DuelSide } from "@/features/scout/helpers/duel"
-import { number, percent, statLabel } from "@/features/scout/helpers/player-text"
+import { errorText } from "@/features/scout/helpers/error-text"
+import { number, statLabel } from "@/features/scout/helpers/player-text"
 import { statTier } from "@/features/scout/helpers/stat-tier"
+import { useAddPlayer } from "@/features/scout/hooks/use-add-player"
 import { useCountUp } from "@/features/scout/hooks/use-count-up"
 import { useImageCopy } from "@/features/scout/hooks/use-image-copy"
+import { useLeaderboard } from "@/features/scout/hooks/use-leaderboard"
 import { usePlayer } from "@/features/scout/hooks/use-player"
 import type { ScoredPlayer } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
@@ -37,8 +50,58 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
     excludeProps
   } = useImageCopy(`gitscout-${leftLogin}-vs-${rightLogin}`)
   const winner = duel.winner === "left" ? left : duel.winner === "right" ? right : null
+  const { data: board } = useLeaderboard()
+  const navigate = useNavigate()
+  const addPlayer = useAddPlayer()
+
+  /** Bir tarafı değiştirir; diğer taraf yerinde kalır. */
+  const replace = (side: DuelSide, login: string) => {
+    void navigate({
+      to: "/{-$lang}/vs/$left/$right",
+      params: {
+        lang: getLangParam(),
+        left: side === "left" ? login : left.login,
+        right: side === "right" ? login : right.login
+      }
+    })
+  }
+
+  /** Listede olmayan biri yazılırsa önce kartı çıkarılır, sonra kapışmaya alınır. */
+  const createAndReplace = (side: DuelSide, username: string) => {
+    addPlayer.mutate(username, {
+      onSuccess: (player) => {
+        trackEvent({ name: "card_requested", login: player.login })
+        replace(side, player.login)
+      },
+      onError: (error) => toast.error(errorText(error))
+    })
+  }
+
+  const picker = (side: DuelSide) => {
+    const current = side === "left" ? left : right
+    const other = side === "left" ? right : left
+    return (
+      <div {...excludeProps} className="w-full max-w-80">
+        <PlayerCombobox
+          id={`duel-${side}`}
+          players={board.players.filter((player) => player.login !== other.login)}
+          value={board.players.find((player) => player.login === current.login) ?? null}
+          onChange={(player) => {
+            if (player && player.login !== current.login) replace(side, player.login)
+          }}
+          placeholder={m.duel_change_placeholder()}
+          onCreate={(username) => createAndReplace(side, username)}
+          isCreating={addPlayer.isPending}
+        />
+      </div>
+    )
+  }
+
+  const duelEvent = (via: "image" | "link" | "x") =>
+    trackEvent({ name: "duel_shared", left: left.login, right: right.login, via })
 
   const copyImage = () => {
+    duelEvent("image")
     copy()
       .then((result) => {
         if (result === "copied") toast.success(m.duel_image_copied())
@@ -48,6 +111,7 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
   }
 
   const copyLink = () => {
+    duelEvent("link")
     navigator.clipboard
       .writeText(window.location.href)
       .then(() => toast.success(m.duel_link_copied()))
@@ -55,6 +119,7 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
   }
 
   const shareOnX = () => {
+    duelEvent("x")
     const x = SHARE_TARGETS[0]
     const score = {
       left: left.name,
@@ -73,7 +138,7 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
       id="main-content"
       tabIndex={-1}
       ref={contentRef}
-      className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 pt-6 pb-20 outline-none sm:px-6"
+      className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 overflow-x-clip px-4 pt-6 pb-20 outline-none sm:px-6"
     >
       <div className="flex flex-col items-center gap-1 text-center">
         <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
@@ -85,7 +150,12 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
       </div>
 
       <div className="grid items-start gap-8 lg:grid-cols-[20rem_1fr_20rem]">
-        <DuelCorner player={left} isWinner={duel.winner === "left"} side="left" />
+        <DuelCorner
+          player={left}
+          isWinner={duel.winner === "left"}
+          side="left"
+          picker={picker("left")}
+        />
 
         <section aria-label={m.duel_summary()} className="flex flex-col gap-6 lg:order-none">
           <Scoreboard key={`${left.login}-${right.login}`} duel={duel} winner={winner} />
@@ -93,18 +163,29 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
           <Rounds duel={duel} />
           <Receipts left={left} right={right} />
           <div {...excludeProps} className="flex flex-wrap justify-center gap-2">
-            <Button variant="outline" size="sm" onClick={copyImage} disabled={isCopying}>
-              <ImageIcon aria-hidden />
-              {isCopying ? m.duel_copying_image() : m.duel_copy_image()}
-            </Button>
-            <Button variant="outline" size="sm" onClick={copyLink}>
-              <Link2 aria-hidden />
-              {m.duel_copy_link()}
-            </Button>
-            <Button variant="outline" size="sm" onClick={shareOnX}>
-              <Share2 aria-hidden />
-              {m.duel_share_x()}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger className={buttonVariants({ variant: "default", size: "sm" })}>
+                <Share2 aria-hidden />
+                {m.share()}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="center"
+                className="w-auto overscroll-contain whitespace-nowrap"
+              >
+                <DropdownMenuItem onClick={shareOnX}>
+                  <Share2 aria-hidden />
+                  {m.duel_share_x()}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={copyLink}>
+                  <Link2 aria-hidden />
+                  {m.duel_copy_link()}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={copyImage} disabled={isCopying}>
+                  <ImageIcon aria-hidden />
+                  {isCopying ? m.duel_copying_image() : m.duel_copy_image()}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Link
               to="/{-$lang}/vs/$left/$right"
               params={{ lang: getLangParam(), left: right.login, right: left.login }}
@@ -113,17 +194,15 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
               <ArrowLeftRight aria-hidden />
               {m.duel_swap()}
             </Link>
-            <Link
-              to="/{-$lang}/vs"
-              params={{ lang: getLangParam() }}
-              className={buttonVariants({ variant: "ghost", size: "sm" })}
-            >
-              {m.duel_another()}
-            </Link>
           </div>
         </section>
 
-        <DuelCorner player={right} isWinner={duel.winner === "right"} side="right" />
+        <DuelCorner
+          player={right}
+          isWinner={duel.winner === "right"}
+          side="right"
+          picker={picker("right")}
+        />
       </div>
 
       <div {...excludeProps}>
@@ -133,9 +212,15 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
   )
 }
 
-type DuelCornerProps = { player: ScoredPlayer; isWinner: boolean; side: DuelSide }
+type DuelCornerProps = {
+  player: ScoredPlayer
+  isWinner: boolean
+  side: DuelSide
+  /** Kartın üstündeki arama: bu tarafı başka bir geliştiriciyle değiştirir. */
+  picker: ReactNode
+}
 
-function DuelCorner({ player, isWinner, side }: DuelCornerProps) {
+function DuelCorner({ player, isWinner, side, picker }: DuelCornerProps) {
   return (
     // Geniş ekranda kartlar yerinde kalır, ortadaki maç özeti kayar.
     <div
@@ -144,12 +229,13 @@ function DuelCorner({ player, isWinner, side }: DuelCornerProps) {
         side === "left" ? "duel-enter-left" : "duel-enter-right"
       )}
     >
+      {picker}
       <Link
         to="/{-$lang}/u/$username"
         params={{ lang: getLangParam(), username: player.login }}
         aria-label={m.duel_open_card({ name: player.name })}
         className={cn(
-          "card-lift rounded-[28px] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+          "card-lift flex w-full max-w-80 justify-center rounded-[28px] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
           !isWinner && "opacity-90"
         )}
       >
@@ -184,17 +270,6 @@ function Scoreboard({ duel, winner }: { duel: Duel; winner: ScoredPlayer | null 
       <p className={cn("score-result text-lg font-semibold", done && "is-done")}>
         {winner ? m.duel_winner({ name: winner.name }) : m.duel_draw()}
       </p>
-      <div className="flex w-full flex-col gap-1.5">
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>{percent(duel.dominance.left * 100)}</span>
-          <span>{m.duel_dominance()}</span>
-          <span>{percent(duel.dominance.right * 100)}</span>
-        </div>
-        <div aria-hidden className="flex h-1.5 gap-0.5 overflow-hidden rounded-full">
-          <span className="bg-chart-home" style={{ width: `${duel.dominance.left * 100}%` }} />
-          <span className="bg-chart-away" style={{ width: `${duel.dominance.right * 100}%` }} />
-        </div>
-      </div>
     </div>
   )
 }

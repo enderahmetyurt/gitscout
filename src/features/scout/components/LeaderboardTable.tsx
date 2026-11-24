@@ -13,7 +13,6 @@ import { cn } from "cn"
 
 import { getLangParam } from "@/helpers/localized-url"
 
-import { Badge } from "@/components/ui/badge"
 import { RarityChip } from "@/features/scout/components/RarityChip"
 import { STAT_ORDER } from "@/features/scout/constants/scoring.constants"
 import { STAT_TIER_TEXT } from "@/features/scout/constants/stat-tier.constants"
@@ -76,9 +75,13 @@ const columns = helper.columns([
     sortFn: "text",
     meta: { wide: true },
     cell: (info) => (
-      <Badge variant="secondary" lang="en">
+      <span
+        lang="en"
+        data-role={info.getValue()}
+        className="role-tint inline-flex h-5 items-center rounded-full px-2 text-xs font-medium whitespace-nowrap"
+      >
         {info.getValue()}
-      </Badge>
+      </span>
     )
   }),
   helper.accessor("ovr", {
@@ -230,7 +233,9 @@ export function LeaderboardTable({ players, allPlayers }: LeaderboardTableProps)
                         : align === "center"
                           ? "px-1 py-3 text-center tabular-nums"
                           : "px-3 py-3",
-                      wide && "max-sm:hidden"
+                      wide && "max-sm:hidden",
+                      // Dar ekranda isim sütunu kalan alanı alır ve uzun adlar kesilir; tablo yana taşmaz.
+                      cell.column.id === "name" && "max-sm:w-full max-sm:max-w-0"
                     )}
                   >
                     <table.FlexRender cell={cell} />

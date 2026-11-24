@@ -3,6 +3,7 @@ import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanst
 import monoLatin from "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url"
 import monoCss from "@fontsource-variable/jetbrains-mono/index.css?url"
 import displayCss from "@fontsource-variable/space-grotesk/index.css?url"
+import { Analytics } from "@vercel/analytics/react"
 
 import { seoHeadMeta } from "@/config/seo.config"
 
@@ -74,6 +75,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         suppressHydrationWarning
       >
         {children}
+        {/* Sayfa görüntülemeleri: çerezsiz, yalnızca Vercel'de yayındayken veri gönderir. */}
+        <Analytics />
         <Scripts />
       </body>
     </html>

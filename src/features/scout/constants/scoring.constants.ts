@@ -2,6 +2,15 @@ import type { Position, Rarity, StatKey } from "@/features/scout/types/player.ty
 
 /** Bütün eşikler ve ağırlıklar burada; revizyonlar bu dosyadan yapılır. */
 
+/**
+ * Veritabanındaki puan özetlerinin sürümü. Bu dosyadaki bir formül ya da eşik değişince bir artırılır;
+ * eski sürümdeki özetler ilk okumada ham veriden yeniden hesaplanır.
+ */
+export const SCORE_VERSION = 3
+
+/** Saatte en fazla bu kadar yeni oyuncu eklenir: GitHub token limitini ve veritabanını korur. */
+export const NEW_PLAYERS_PER_HOUR = 120
+
 export const STAT_WEIGHTS: Record<StatKey, number> = {
   act: 0.2,
   imp: 0.2,

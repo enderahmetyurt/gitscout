@@ -14,7 +14,7 @@ export function SiteHeader() {
 
   return (
     <header>
-      <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
+      <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
         <Link
           to="/{-$lang}"
           params={{ lang }}
@@ -23,7 +23,10 @@ export function SiteHeader() {
         >
           Gitscout
         </Link>
-        <nav aria-label={m.nav_label()} className="flex items-center gap-4 sm:gap-5">
+        <nav
+          aria-label={m.nav_label()}
+          className="flex items-center gap-3 min-[360px]:gap-4 sm:gap-5"
+        >
           <Link to="/{-$lang}/leaderboard" params={{ lang }} className={navLinkClass}>
             <span className="sm:hidden">{m.nav_leaderboard_short()}</span>
             <span className="hidden sm:inline">{m.nav_leaderboard()}</span>

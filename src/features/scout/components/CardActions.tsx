@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router"
 import { Download, Share2, Swords } from "lucide-react"
 import { toast } from "sonner"
 
+import { trackEvent } from "@/lib/analytics"
 import { getLangParam } from "@/helpers/localized-url"
 
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -24,22 +25,25 @@ type CardActionsProps = {
 
 export function CardActions({ player, onDownload, isDownloading }: CardActionsProps) {
   const handleDownload = () => {
-    onDownload().catch(() => {
-      toast.error(m.download_failed())
-    })
+    onDownload()
+      .then(() => trackEvent({ name: "card_downloaded", login: player.login }))
+      .catch(() => {
+        toast.error(m.download_failed())
+      })
   }
 
-  const handleShare = (buildUrl: (pageUrl: string, text: string) => string) => {
+  const handleShare = (target: (typeof SHARE_TARGETS)[number]) => {
+    trackEvent({ name: "card_shared", login: player.login, target: target.id })
     const text = m.share_text({
       ovr: player.ovr,
       position: player.position,
       title: titleText(player.title)
     })
-    window.open(buildUrl(window.location.href, text), "_blank", "noopener,noreferrer")
+    window.open(target.buildUrl(window.location.href, text), "_blank", "noopener,noreferrer")
   }
 
   return (
-    <div className="flex gap-2">
+    <div className="flex flex-wrap justify-center gap-2">
       <Button variant="default" size="sm" onClick={handleDownload} disabled={isDownloading}>
         <Download aria-hidden />
         {isDownloading ? m.download_preparing() : m.download()}
@@ -49,9 +53,9 @@ export function CardActions({ player, onDownload, isDownloading }: CardActionsPr
           <Share2 aria-hidden />
           {m.share()}
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="center" className="overscroll-contain">
+        <DropdownMenuContent align="center" className="w-auto overscroll-contain whitespace-nowrap">
           {SHARE_TARGETS.map((target) => (
-            <DropdownMenuItem key={target.id} onClick={() => handleShare(target.buildUrl)}>
+            <DropdownMenuItem key={target.id} onClick={() => handleShare(target)}>
               {target.label}
             </DropdownMenuItem>
           ))}

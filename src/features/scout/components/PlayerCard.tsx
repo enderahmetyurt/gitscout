@@ -29,7 +29,7 @@ export function PlayerCard({ player, ref }: PlayerCardProps) {
     <figure
       ref={ref}
       data-rarity={player.rarity}
-      className="scout-card relative flex h-120 w-80 shrink-0 flex-col overflow-hidden rounded-[28px] p-2"
+      className="scout-card relative flex h-120 w-80 shrink-0 flex-col overflow-hidden rounded-[28px] p-2 max-[351px]:[zoom:0.9]"
     >
       <figcaption className="sr-only">
         {m.card_caption({

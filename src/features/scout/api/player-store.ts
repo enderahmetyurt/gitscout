@@ -1,80 +1,124 @@
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises"
-import path from "node:path"
-
 import { z } from "zod"
 
-import { storedPlayerSchema } from "@/features/scout/schemas/player.schema"
-import type { StoredPlayer } from "@/features/scout/types/player.types"
+import { getDb } from "@/lib/db"
+
+import { SCORE_VERSION } from "@/features/scout/constants/scoring.constants"
+import { scorePlayer } from "@/features/scout/helpers/score-player"
+import { scoredPlayerSchema, storedPlayerSchema } from "@/features/scout/schemas/player.schema"
+import type { ScoredPlayer, StoredPlayer } from "@/features/scout/types/player.types"
 
 /**
- * Yerel geliştirme için JSON dosyası tabanlı depo.
- * Yayına alınırken yalnızca bu dosyanın içi bir veritabanıyla değiştirilir.
+ * Oyuncular Supabase'deki `gitscout.players` tablosunda durur. Her oyuncu GitHub'dan bir kez çekilir ve
+ * bir daha değişmez; uygulama rolünün silme ya da ham veriyi güncelleme yetkisi yoktur.
+ * Listeler ~3 KB'lık puan özetinden beslenir; ~70 KB'lık ham veri yalnızca puanlamada okunur.
  */
-const DATA_FILE = path.resolve(process.cwd(), "data/players.json")
 
-const looseFileSchema = z.object({ players: z.record(z.string(), z.unknown()) })
+const summaryRowSchema = z.object({
+  login: z.string(),
+  scored: scoredPlayerSchema,
+  score_version: z.number()
+})
 
-type PlayersState = {
-  valid: Record<string, StoredPlayer>
-  /** Veri biçimi değiştiği için yeniden çekilmesi gereken oyuncular (eski kayıt olduğu gibi saklanır). */
-  stale: Record<string, unknown>
-}
-
-async function readState(): Promise<PlayersState> {
-  let text: string
-  try {
-    text = await readFile(DATA_FILE, "utf8")
-  } catch (error) {
-    if (error instanceof Error && "code" in error && error.code === "ENOENT") {
-      return { valid: {}, stale: {} }
-    }
-    throw new Error("data/players.json okunamadı", { cause: error })
-  }
-
-  const file = looseFileSchema.parse(JSON.parse(text))
-  const state: PlayersState = { valid: {}, stale: {} }
-  for (const [key, value] of Object.entries(file.players)) {
-    const parsed = storedPlayerSchema.safeParse(value)
-    if (parsed.success) state.valid[key] = parsed.data
-    else state.stale[key] = value
-  }
-  return state
-}
-
-async function writeState(state: PlayersState) {
-  await mkdir(path.dirname(DATA_FILE), { recursive: true })
-  const players = Object.fromEntries(
-    Object.entries({ ...state.stale, ...state.valid }).sort(([a], [b]) => a.localeCompare(b))
-  )
-  // Önce geçici dosyaya yazılır ki yarım kalan bir yazma dosyayı bozmasın.
-  const temp = `${DATA_FILE}.tmp`
-  await writeFile(temp, `${JSON.stringify({ players }, null, 2)}\n`, "utf8")
-  await rename(temp, DATA_FILE)
-}
+const factsRowSchema = z.object({
+  login: z.string(),
+  facts: z.unknown(),
+  fetched_at: z.date()
+})
 
 const keyOf = (login: string) => login.toLowerCase()
 
-export async function getPlayers(): Promise<StoredPlayer[]> {
-  const state = await readState()
-  return Object.values(state.valid)
+/** Ham veriden puanlar; veri çekildiği andaki haliyle puanlanır, böylece sonuç zamanla kaymaz. */
+function scoreStored(stored: StoredPlayer): ScoredPlayer {
+  return scorePlayer(stored, new Date(stored.fetchedAt))
 }
 
-export async function getStaleCount(): Promise<number> {
-  const state = await readState()
-  return Object.keys(state.stale).length
+/** Eski formül sürümüyle yazılmış özetleri ham veriden yeniden hesaplayıp günceller. */
+async function rescore(logins: string[]): Promise<ScoredPlayer[]> {
+  if (logins.length === 0) return []
+  const sql = getDb()
+  const rows = z
+    .array(factsRowSchema)
+    .parse(await sql`select login, facts, fetched_at from players where login in ${sql(logins)}`)
+
+  const scored: ScoredPlayer[] = []
+  for (const row of rows) {
+    const parsed = storedPlayerSchema.safeParse({
+      login: row.login,
+      fetchedAt: row.fetched_at.toISOString(),
+      facts: row.facts
+    })
+    if (!parsed.success) {
+      // Biçimi artık uymayan kayıt listeden çıkar; ham veri olduğu gibi saklanır.
+      console.error("[db] puanlanamayan kayıt", row.login)
+      continue
+    }
+    const player = scoreStored(parsed.data)
+    await sql`
+      update players
+      set scored = ${sql.json(player)}, score_version = ${SCORE_VERSION}, ovr = ${player.ovr}
+      where login = ${row.login}
+    `
+    scored.push(player)
+  }
+  return scored
 }
 
-export async function getStoredPlayer(login: string): Promise<StoredPlayer | null> {
-  const state = await readState()
-  return state.valid[keyOf(login)] ?? null
+/** Bütün oyuncular, genel puana göre sıralı. */
+export async function getScoredPlayers(): Promise<ScoredPlayer[]> {
+  const sql = getDb()
+  const rows = z
+    .array(summaryRowSchema)
+    .parse(await sql`select login, scored, score_version from players order by ovr desc, login`)
+
+  const current = rows.filter((row) => row.score_version === SCORE_VERSION).map((row) => row.scored)
+  const outdated = rows.filter((row) => row.score_version !== SCORE_VERSION).map((row) => row.login)
+  const players = [...current, ...(await rescore(outdated))]
+  return players.sort((a, b) => b.ovr - a.ovr || a.login.localeCompare(b.login))
 }
 
-export async function savePlayer(player: StoredPlayer) {
-  const state = await readState()
-  const key = keyOf(player.login)
-  const previous = state.valid[key]
-  delete state.stale[key]
-  // Elle ayarlanan saat dilimi yenilemede kaybolmasın.
-  state.valid[key] = { ...player, timezone: player.timezone ?? previous?.timezone }
-  await writeState(state)
+export async function getScoredPlayer(login: string): Promise<ScoredPlayer | null> {
+  const sql = getDb()
+  const rows = z
+    .array(summaryRowSchema)
+    .parse(
+      await sql`select login, scored, score_version from players where login = ${keyOf(login)}`
+    )
+  const row = rows[0]
+  if (!row) return null
+  if (row.score_version === SCORE_VERSION) return row.scored
+  return (await rescore([row.login]))[0] ?? null
+}
+
+/** Son bir saatte eklenen oyuncu sayısı; kişisel veri tutmadan toplu eklemeyi sınırlar. */
+export async function countRecentPlayers(): Promise<number> {
+  const sql = getDb()
+  const [row] = z
+    .array(z.object({ count: z.coerce.number() }))
+    .parse(
+      await sql`select count(*) as count from players where created_at > now() - interval '1 hour'`
+    )
+  return row?.count ?? 0
+}
+
+/**
+ * Yeni oyuncuyu kaydeder. Kayıt zaten varsa hiçbir şey değişmez ve var olan özet döner:
+ * aynı anda gelen iki istekten ilki kazanır.
+ */
+export async function insertPlayer(input: StoredPlayer): Promise<ScoredPlayer> {
+  const stored = storedPlayerSchema.parse(input)
+  const player = scoreStored(stored)
+  const sql = getDb()
+  await sql`
+    insert into players (login, facts, scored, score_version, ovr, fetched_at)
+    values (
+      ${keyOf(stored.facts.login)},
+      ${sql.json(stored.facts)},
+      ${sql.json(player)},
+      ${SCORE_VERSION},
+      ${player.ovr},
+      ${stored.fetchedAt}
+    )
+    on conflict (login) do nothing
+  `
+  return (await getScoredPlayer(stored.facts.login)) ?? player
 }

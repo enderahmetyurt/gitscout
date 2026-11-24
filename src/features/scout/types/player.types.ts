@@ -286,4 +286,14 @@ export type ScoredPlayer = {
   fetchedAt: string
 }
 
-export type PlayerDetail = ScoredPlayer & { ranking: PlayerRanking }
+export type BenchmarkKey = "commits" | "activeDays" | "longestStreak" | "stars" | "followers"
+
+/** Bir ölçüde oyuncunun diğer geliştiricilere göre yeri. */
+export type Benchmark = {
+  key: BenchmarkKey
+  value: number
+  /** Oyuncunun önünde olduğu diğer geliştiricilerin payı (0-1); kıyaslanacak kimse yoksa null. */
+  aheadShare: number | null
+}
+
+export type PlayerDetail = ScoredPlayer & { ranking: PlayerRanking; benchmarks: Benchmark[] }
