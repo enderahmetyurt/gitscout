@@ -1,74 +1,24 @@
+<p align="center">
+  <img src="docs/card.png" alt="Gitscout card of Ömer Gülçiçek: 78 overall, Gold, Frontend" width="300" />
+</p>
+
 # Gitscout
 
-**GitHub profilini koleksiyon kartına çevir, liderlik tablosunda yerini gör.**
+**Turn any GitHub profile into a collectible card and see where it ranks.**
 
-Gitscout, herkese açık bir GitHub profilini okuyup ona bir puan, altı istatistik ve bir rol veren bir koleksiyon kartı çıkarır. Kullanıcı adını yazman yeterli: birkaç saniye sonra kartın hazır, sıralamadaki yerin belli.
+Type a GitHub username and Gitscout reads the public profile: contributions, repos, stars, followers and merged pull requests. A few seconds later you get a card with an overall rating, six stats, a role and a spot on the leaderboard.
 
-## Nasıl çalışır?
+- **Six stats:** Activity, Impact, Community, Reputation, Consistency and Experience, each from 0 to 100.
+- **Card tiers:** Icon (90+), Gold (75–89), Silver (65–74), Bronze (0–64).
+- **Role, title and badges:** Your role comes from the languages you use; your title from your strongest stat.
+- **Duels:** Pick two developers and compare them stat by stat.
 
-1. Bir GitHub kullanıcı adı yaz.
-2. Gitscout profilin herkese açık verisini okur: katkılar, repolar, yıldızlar, takipçiler, kabul edilen pull request'ler.
-3. Bu veriden altı istatistik ve bir genel puan hesaplanır, kartın çıkar ve liderlik tablosuna girer.
+Scores come from simple formulas, not AI. They measure visible GitHub activity, not how good a developer is.
 
-Puanlar yapay zekâdan değil, herkesin görebildiği basit formüllerden gelir. Tam puan dünyanın en uç profillerine göre belirlendiği için 90 ve üstü gerçekten nadirdir.
+## Privacy
 
-## Kartın üzerinde neler var?
-
-**Genel puan ve kart türü**
-
-| Kart  | Puan  |
-| ----- | ----- |
-| İkon  | 90+   |
-| Altın | 75–89 |
-| Gümüş | 65–74 |
-| Bronz | 0–64  |
-
-**Altı istatistik**
-
-- **Aktivite:** Son bir yıldaki katkılar.
-- **Etki:** Repolarının yıldız ve fork'ları.
-- **Topluluk:** Takipçi sayısı.
-- **Saygınlık:** Başkalarının projelerine kabul edilen PR'lar ve code review'lar.
-- **İstikrar:** Ne kadar düzenli katkı verdiğin.
-- **Kıdem:** Kaç yıldır aktif olarak kod ürettiğin.
-
-**Rol, unvan ve rozetler**
-
-- **Rol:** Repolarındaki dillerden çıkar: Frontend, Backend, Full Stack, Mobile, Data, DevOps, Systems ya da Game Dev.
-- **Unvan:** En güçlü istatistiğinden ve kart türünden gelir.
-- **Rozetler:** Uzun seriler, çok sayıda review ya da iyi belgelenmiş repolar gibi başarıları gösterir.
-
-## Örnek kart
-
-[Ömer Gülçiçek](https://github.com/omergulcicek):
-
-> **78 · Altın kart · Frontend**
-> _Üretken Geliştirici_
->
-> | Aktivite | Etki | Topluluk | Saygınlık | İstikrar | Kıdem |
-> | :------: | :--: | :------: | :-------: | :------: | :---: |
-> |    86    |  78  |    70    |    59     |    82    |  84   |
->
-> **Scout notu:** Son bir yılda çok sayıda katkı verdi · Uzun yıllardır GitHub'da aktif
-> **Gelişim alanı:** Başka projelere katkı
-
-## Profil sayfasında başka neler var?
-
-- **Scout notu:** Güçlü yönlerin ve gelişim alanın, kısa cümlelerle.
-- **Öne çıkan repolar:** En çok yıldız alan projelerin.
-- **Diğer geliştiricilerle kıyas:** Commit, aktif gün, en uzun seri, yıldız ve takipçide listedeki geliştiricilerin yüzde kaçının önünde olduğun.
-- **Paylaş ve indir:** Kartını görsel olarak indirip X ya da LinkedIn'de paylaşabilirsin.
-
-## Kapışma
-
-İki geliştiriciyi seç, altı istatistikte karşı karşıya gelsinler. Daha çok istatistikte önde olan kazanır; eşitlikte genel puana bakılır. Sonucu link ya da görsel olarak paylaşabilirsin.
-
-## Bilmen gerekenler
-
-- Puanlar bir yazılımcının ne kadar iyi olduğunu değil, GitHub'daki görünür aktivitesini ölçer. Çok iyi bir yazılımcı GitHub'da sessiz olabilir.
-- Bütün veriler GitHub'ın herkese açık API'sinden gelir. Private repoların içeriği okunmaz; e-posta ya da iletişim bilgisi saklanmaz.
-- Herkes herhangi bir kullanıcı adını ekleyebilir. Listede yer almak istemiyorsan bir [issue aç](https://github.com/omergulcicek/gitscout/issues/new), kartın kaldırılır.
+Everything comes from GitHub's public API. Private repos are never read and no contact details are stored. Anyone can add any username; if you'd rather not be listed, [open an issue](https://github.com/omergulcicek/gitscout/issues/new) and your card will be removed.
 
 ---
 
-[Ömer Gülçiçek](https://github.com/omergulcicek) tarafından yapıldı.
+Made by [Ömer Gülçiçek](https://github.com/omergulcicek).
