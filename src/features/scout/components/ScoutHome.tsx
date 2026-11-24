@@ -38,8 +38,9 @@ export function ScoutHome() {
           <div className="max-w-xl">
             <AddPlayerForm />
           </div>
+          {/* İki dilde de aynı düzen: kelime uzunluğu değişse de 3×2 ızgara taşmaz. */}
           <dl
-            className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm"
+            className="grid max-w-xl grid-cols-2 gap-x-4 gap-y-1.5 text-sm sm:grid-cols-3"
             aria-label={m.home_stats_label()}
           >
             {STAT_ORDER.map((key) => (
