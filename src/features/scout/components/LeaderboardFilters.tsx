@@ -3,11 +3,12 @@ import { ListFilter } from "lucide-react"
 import { buttonVariants } from "@/components/ui/button"
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
@@ -22,10 +23,8 @@ type LeaderboardFiltersProps = {
   players: ScoredPlayer[]
 }
 
-/** Seçili değeri listeye ekler ya da çıkarır. */
-function toggle<T>(list: readonly T[], value: T, checked: boolean): T[] {
-  return checked ? [...list, value] : list.filter((item) => item !== value)
-}
+/** Radyo grubunda "hepsi" seçeneğinin değeri; filtreyi kaldırır. */
+const ALL = "all"
 
 /** Mevki ve kart filtreleri; yalnızca tabloda gerçekten bulunan seçenekler listelenir. */
 export function LeaderboardFilters({ players }: LeaderboardFiltersProps) {
@@ -51,37 +50,46 @@ export function LeaderboardFilters({ players }: LeaderboardFiltersProps) {
       <DropdownMenuContent align="end" className="w-48 overscroll-contain">
         <DropdownMenuGroup>
           <DropdownMenuLabel>{m.filter_position()}</DropdownMenuLabel>
-          {positions.map((position) => (
-            <DropdownMenuCheckboxItem
-              key={position}
-              lang="en"
-              checked={filters.positions.includes(position)}
-              onCheckedChange={(checked) =>
-                setFilters({ positions: toggle(filters.positions, position, checked) })
-              }
-            >
-              {position}
-            </DropdownMenuCheckboxItem>
-          ))}
+          <DropdownMenuRadioGroup
+            value={filters.positions[0] ?? ALL}
+            onValueChange={(value) => {
+              const position = positions.find((item) => item === value)
+              setFilters({ positions: position ? [position] : [] })
+            }}
+          >
+            <DropdownMenuRadioItem value={ALL}>{m.filter_all_positions()}</DropdownMenuRadioItem>
+            {positions.map((position) => (
+              <DropdownMenuRadioItem key={position} value={position} lang="en">
+                {position}
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuLabel>{m.filter_card()}</DropdownMenuLabel>
-          {rarities.map((rarity) => (
-            <DropdownMenuCheckboxItem
-              key={rarity}
-              checked={filters.rarities.includes(rarity)}
-              onCheckedChange={(checked) =>
-                setFilters({ rarities: toggle(filters.rarities, rarity, checked) })
-              }
-            >
-              <span aria-hidden data-rarity={rarity} className="rarity-dot size-2.5 rounded-full" />
-              {rarityLabel(rarity)}
-              <span className="ms-auto ps-3 text-xs text-muted-foreground">
-                {rarityRange(rarity)}
-              </span>
-            </DropdownMenuCheckboxItem>
-          ))}
+          <DropdownMenuRadioGroup
+            value={filters.rarities[0] ?? ALL}
+            onValueChange={(value) => {
+              const rarity = rarities.find((item) => item === value)
+              setFilters({ rarities: rarity ? [rarity] : [] })
+            }}
+          >
+            <DropdownMenuRadioItem value={ALL}>{m.filter_all_cards()}</DropdownMenuRadioItem>
+            {rarities.map((rarity) => (
+              <DropdownMenuRadioItem key={rarity} value={rarity}>
+                <span
+                  aria-hidden
+                  data-rarity={rarity}
+                  className="rarity-dot size-2.5 rounded-full"
+                />
+                {rarityLabel(rarity)}
+                <span className="ms-auto ps-3 text-xs text-muted-foreground">
+                  {rarityRange(rarity)}
+                </span>
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
         </DropdownMenuGroup>
         {activeCount > 0 ? (
           <>

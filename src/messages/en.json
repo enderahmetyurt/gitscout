@@ -323,5 +323,9 @@
   "duel_image_failed": "Couldn't copy the image",
   "duel_image_downloaded": "Clipboard isn't available here, so the image was downloaded",
   "skip_to_content": "Skip to content",
-  "about_disclaimer": "These scores measure GitHub activity, not how good a developer is. A great engineer can be quiet on GitHub, and a very active profile can outscore them."
+  "about_disclaimer": "These scores measure GitHub activity, not how good a developer is. A great engineer can be quiet on GitHub, and a very active profile can outscore them.",
+  "filter_all_positions": "All positions",
+  "filter_all_cards": "All cards",
+  "col_ovr": "OVR",
+  "col_ovr_label": "Overall"
 }

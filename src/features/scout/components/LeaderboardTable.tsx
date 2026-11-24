@@ -82,9 +82,9 @@ const columns = helper.columns([
   }),
   helper.accessor("ovr", {
     id: "ovr",
-    header: "OVR",
+    header: () => m.col_ovr(),
     sortDescFirst: true,
-    meta: { align: "center", label: () => "OVR" },
+    meta: { align: "center", label: () => m.col_ovr_label() },
     cell: ({ row }) => <RarityChip ovr={row.original.ovr} rarity={row.original.rarity} />
   }),
   ...statColumns

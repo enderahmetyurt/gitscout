@@ -323,5 +323,9 @@
   "duel_image_failed": "Görsel kopyalanamadı",
   "duel_image_downloaded": "Panoya erişilemedi, görsel indirildi",
   "skip_to_content": "İçeriğe atla",
-  "about_disclaimer": "Bu puanlar yazılımcının ne kadar iyi olduğunu değil, GitHub'daki görünür aktivitesini ölçer. Çok iyi bir yazılımcı GitHub'da sessiz olabilir; çok aktif bir profil de ondan yüksek puan alabilir."
+  "about_disclaimer": "Bu puanlar yazılımcının ne kadar iyi olduğunu değil, GitHub'daki görünür aktivitesini ölçer. Çok iyi bir yazılımcı GitHub'da sessiz olabilir; çok aktif bir profil de ondan yüksek puan alabilir.",
+  "filter_all_positions": "Tüm mevkiler",
+  "filter_all_cards": "Tüm kartlar",
+  "col_ovr": "PUAN",
+  "col_ovr_label": "Genel puan"
 }
