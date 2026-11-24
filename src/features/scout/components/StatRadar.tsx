@@ -1,20 +1,10 @@
 import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart } from "recharts"
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { Card, CardContent } from "@/components/ui/card"
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
 import type { ChartConfig } from "@/components/ui/chart"
 import { STAT_ORDER } from "@/features/scout/constants/scoring.constants"
-import type { ScoredPlayer } from "@/features/scout/types/player.types"
-
-/** Bu puanın altındaki stat gerçekten zayıf sayılır; üstündeyse "gelişime açık" demek yanıltıcı olur. */
-const WEAK_STAT_THRESHOLD = 70
+import type { ScoredPlayer, Stat } from "@/features/scout/types/player.types"
 
 const chartConfig = {
   value: {
@@ -33,35 +23,29 @@ export function StatRadar({ stats }: StatRadarProps) {
     label: stats[key].label,
     value: stats[key].value
   }))
-  const sorted = [...data].sort((a, b) => b.value - a.value)
-  const strongest = sorted[0]
-  const weakest = sorted[sorted.length - 1]
 
   return (
-    <Card>
-      <CardHeader className="items-center">
-        <CardTitle>Stat profili</CardTitle>
-        <CardDescription>Altı statın 30-99 ölçeğinde dağılımı</CardDescription>
-      </CardHeader>
-      <CardContent className="pb-0">
-        <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[260px] w-full">
+    <Card className="h-full justify-center py-4">
+      <CardContent className="px-2">
+        <ChartContainer
+          config={chartConfig}
+          className="mx-auto aspect-square max-h-[220px] w-full"
+          aria-label="Stat profili grafiği"
+        >
           <RadarChart
             data={data}
-            outerRadius="68%"
-            margin={{ top: 8, right: 40, bottom: 8, left: 40 }}
+            outerRadius="70%"
+            margin={{ top: 4, right: 36, bottom: 4, left: 36 }}
           >
             <ChartTooltip
               cursor={false}
-              content={
-                <ChartTooltipContent
-                  labelFormatter={(_, payload) => {
-                    const entry: unknown = payload[0]?.payload
-                    return typeof entry === "object" && entry !== null && "label" in entry
-                      ? String(entry.label)
-                      : ""
-                  }}
-                />
-              }
+              content={({ active, payload }) => {
+                const label: unknown = payload[0]?.payload?.label
+                const stat = STAT_ORDER.map((key) => stats[key]).find(
+                  (item) => item.label === label
+                )
+                return active && stat ? <StatTooltip stat={stat} /> : null
+              }}
             />
             <PolarAngleAxis
               dataKey="label"
@@ -81,18 +65,37 @@ export function StatRadar({ stats }: StatRadarProps) {
           </RadarChart>
         </ChartContainer>
       </CardContent>
-      {strongest && weakest ? (
-        <CardFooter className="flex-col gap-1 text-sm">
-          <p className="leading-none font-medium">
-            En güçlü: {strongest.label} ({strongest.value})
-          </p>
-          <p className="leading-none text-muted-foreground">
-            {weakest.value < WEAK_STAT_THRESHOLD
-              ? `Gelişime açık: ${weakest.label} (${weakest.value})`
-              : `Dengeli profil: en düşük stat bile ${weakest.value}`}
-          </p>
-        </CardFooter>
-      ) : null}
     </Card>
+  )
+}
+
+/** Puanın nereden geldiği: tek cümlelik özet ve her parçanın katkısı. */
+function StatTooltip({ stat }: { stat: Stat }) {
+  return (
+    <div className="flex w-64 flex-col gap-2 rounded-lg border bg-popover px-3 py-2.5 text-xs text-popover-foreground shadow-md">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="font-medium">{stat.label}</span>
+        <span className="text-base font-semibold">{stat.value}</span>
+      </div>
+      <p className="text-pretty text-muted-foreground">{stat.summary}</p>
+      <ul className="flex flex-col gap-1.5">
+        {stat.parts.map((part) => (
+          <li key={part.label} className="flex flex-col gap-1">
+            <span className="flex justify-between gap-2">
+              <span>{part.label}</span>
+              <span className="text-muted-foreground">
+                {Math.round(part.points)}/{part.max}
+              </span>
+            </span>
+            <span aria-hidden className="h-1 overflow-hidden rounded-full bg-muted">
+              <span
+                className="block h-full rounded-full bg-chart-1"
+                style={{ width: `${part.max === 0 ? 0 : (part.points / part.max) * 100}%` }}
+              />
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }

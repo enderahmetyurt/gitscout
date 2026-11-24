@@ -1,19 +1,18 @@
-import { TanStackDevtools } from "@tanstack/react-devtools"
 import type { QueryClient } from "@tanstack/react-query"
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanstack/react-router"
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
-import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url"
-import interCss from "@fontsource-variable/inter/index.css?url"
+import monoLatin from "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url"
+import monoCss from "@fontsource-variable/jetbrains-mono/index.css?url"
+import displayCss from "@fontsource-variable/space-grotesk/index.css?url"
 
 import { seoHeadMeta } from "@/config/seo.config"
 
 import appCss from "@/styles/tailwind.css?url"
 
-import TanStackQueryDevtools from "@/providers/devtools"
 import { Providers } from "@/providers/Providers"
 
 import { DefaultCatchBoundary } from "@/components/shared/DefaultCatchBoundary"
 import { NotFound } from "@/components/shared/NotFound"
+import { SiteFooter } from "@/components/shared/SiteFooter"
 import { SiteHeader } from "@/components/shared/SiteHeader"
 
 interface RouterContext {
@@ -29,15 +28,16 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      // Preloading the Latin file keeps the swap from shifting the first paint.
+      // Gövde yazı tipinin Latin dosyası önceden yüklenir ki ilk çizimde yazı kaymasın.
       {
         rel: "preload",
-        href: interLatin,
+        href: monoLatin,
         as: "font",
         type: "font/woff2",
         crossOrigin: "anonymous"
       },
-      { rel: "stylesheet", href: interCss },
+      { rel: "stylesheet", href: monoCss },
+      { rel: "stylesheet", href: displayCss },
       { rel: "icon", href: "/logo.webp" },
       { rel: "apple-touch-icon", href: "/logo.webp" },
       { rel: "manifest", href: "/site.webmanifest" }
@@ -54,30 +54,23 @@ function RootComponent() {
     <Providers>
       <SiteHeader />
       <Outlet />
+      <SiteFooter />
     </Providers>
   )
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="tr" className="h-full" suppressHydrationWarning>
+    // Site yalnızca koyu temada: kart tasarımı ve stat renkleri koyu zemine göre ayarlı.
+    <html lang="tr" className="dark h-full" style={{ colorScheme: "dark" }}>
       <head>
         <HeadContent />
       </head>
-      <body className="flex min-h-full flex-col font-sans antialiased" suppressHydrationWarning>
+      <body
+        className="flex min-h-full flex-col font-sans tabular-nums antialiased"
+        suppressHydrationWarning
+      >
         {children}
-        {import.meta.env.DEV ? (
-          <TanStackDevtools
-            config={{ position: "bottom-right" }}
-            plugins={[
-              {
-                name: "TanStack Router",
-                render: <TanStackRouterDevtoolsPanel />
-              },
-              TanStackQueryDevtools
-            ]}
-          />
-        ) : null}
         <Scripts />
       </body>
     </html>

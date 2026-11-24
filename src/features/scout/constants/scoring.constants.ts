@@ -25,42 +25,42 @@ export const STAT_ORDER: StatKey[] = ["act", "imp", "com", "rep", "con", "exp"]
 
 /**
  * Her stat logaritmik ölçekte `fullAt` değerinde tavan yapar.
- * Referanslar bilerek yüksek: dünya çapında tanınan geliştiriciler 90'lara,
- * aktif ama yerel ölçekte bilinen geliştiriciler 60-80 bandına düşsün.
+ * Tavanlar dünyanın en uç profillerine göre seçildi (ör. 300 bin takipçi, 500 bin yıldız):
+ * 99 yalnızca gerçekten benzersiz değerlerde çıkar, güçlü profiller 85-95 bandına yayılır.
  */
 
 /** Son 1 yıl: commit + PR + review + issue + private katkılar. */
 export const ACT = {
-  contributions: { max: 100, fullAt: 3_000 }
+  contributions: { max: 100, fullAt: 10_000 }
 }
 
 /** Kendi repoları + katkı payı oranında organizasyon repoları. */
 export const IMP = {
-  stars: { max: 75, fullAt: 50_000 },
-  forks: { max: 25, fullAt: 5_000 },
+  stars: { max: 75, fullAt: 500_000 },
+  forks: { max: 25, fullAt: 100_000 },
   /** Org reposunda son bir yılın commit'lerinin bu kadarı kullanıcınınsa yıldızların tamamı yazılır. */
   orgFullShare: 0.25
 }
 
 export const COM = {
-  followers: { max: 100, fullAt: 20_000 }
+  followers: { max: 100, fullAt: 300_000 }
 }
 
 /** Başkasının kodunu kabul etmesi: kodu okumadan elde edilebilecek en güçlü güven sinyali. */
 export const REP = {
-  externalPrs: { max: 60, fullAt: 500 },
-  reviews: { max: 40, fullAt: 500 }
+  externalPrs: { max: 60, fullAt: 2_000 },
+  reviews: { max: 40, fullAt: 2_000 }
 }
 
 export const CON = {
-  activeWeeks: { max: 50, fullAt: 48 },
-  streak: { max: 25, fullAt: 60 },
+  activeWeeks: { max: 50, fullAt: 52 },
+  streak: { max: 25, fullAt: 365 },
   years: { max: 25, span: 5, minContributions: 50 }
 }
 
 export const EXP = {
-  lifetime: { max: 60, fullAt: 30_000 },
-  accountAge: { max: 40, fullAtYears: 12 }
+  lifetime: { max: 60, fullAt: 100_000 },
+  accountAge: { max: 40, fullAtYears: 18 }
 }
 
 /** Rozetler için commit örneklemi. */
@@ -81,9 +81,11 @@ export const LANGUAGE_MIN_SHARE = 0.05
  */
 export const DISPLAY_CURVE: [number, number][] = [
   [0, 30],
-  [45, 71],
-  [70, 82],
-  [85, 89],
+  [20, 55],
+  [38, 70],
+  [57, 81],
+  [70, 86],
+  [82, 90],
   [100, 99]
 ]
 
@@ -134,6 +136,7 @@ export const LANGUAGE_GROUPS: Record<string, Exclude<Position, "Full Stack">> = 
   "Objective-C": "Mobile",
   "Jupyter Notebook": "Data",
   R: "Data",
+  Cuda: "Data",
   C: "Systems",
   "C++": "Systems",
   Rust: "Systems",
@@ -147,3 +150,14 @@ export const LANGUAGE_GROUPS: Record<string, Exclude<Position, "Full Stack">> = 
 
 /** Frontend ve Backend payları bu oranı geçerse Full Stack. */
 export const FULL_STACK_MIN_SHARE = 0.3
+
+/** Football Manager tarzı renk kademeleri: değer bu eşiğe eşit ya da üstündeyse o kademe. */
+export const STAT_TIERS = [
+  { tier: "elite", min: 90 },
+  { tier: "great", min: 80 },
+  { tier: "good", min: 70 },
+  { tier: "fair", min: 60 },
+  { tier: "poor", min: 0 }
+] as const
+
+export type StatTier = (typeof STAT_TIERS)[number]["tier"]

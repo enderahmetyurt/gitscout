@@ -1,4 +1,4 @@
-import { getRouteApi, Link } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import {
   createColumnHelper,
   createSortedRowModel,
@@ -9,18 +9,20 @@ import {
 } from "@tanstack/react-table"
 import type { SortingState } from "@tanstack/react-table"
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
+import { cn } from "cn"
 
 import { Badge } from "@/components/ui/badge"
 import { RarityChip } from "@/features/scout/components/RarityChip"
 import { STAT_LABELS, STAT_ORDER } from "@/features/scout/constants/scoring.constants"
+import { STAT_TIER_TEXT } from "@/features/scout/constants/stat-tier.constants"
+import { statTier } from "@/features/scout/helpers/stat-tier"
+import { useLeaderboardSearch } from "@/features/scout/hooks/use-leaderboard-search"
 import {
   LEADERBOARD_SORT_KEYS,
   leaderboardSearchDefaults
 } from "@/features/scout/schemas/leaderboard-search.schema"
 import type { LeaderboardSearch } from "@/features/scout/schemas/leaderboard-search.schema"
 import type { ScoredPlayer } from "@/features/scout/types/player.types"
-
-const routeApi = getRouteApi("/")
 
 const features = tableFeatures({
   rowSortingFeature,
@@ -36,7 +38,10 @@ const statColumns = STAT_ORDER.map((key) =>
     header: STAT_LABELS[key].short,
     sortDescFirst: true,
     meta: { align: "center", label: STAT_LABELS[key].label },
-    cell: (info) => info.getValue()
+    cell: (info) => {
+      const value = info.getValue()
+      return <span className={cn("font-medium", STAT_TIER_TEXT[statTier(value)])}>{value}</span>
+    }
   })
 )
 
@@ -120,8 +125,7 @@ type LeaderboardTableProps = {
 }
 
 export function LeaderboardTable({ players }: LeaderboardTableProps) {
-  const search = routeApi.useSearch()
-  const navigate = routeApi.useNavigate()
+  const { search, update } = useLeaderboardSearch()
   const sorting: SortingState = [{ id: search.sort, desc: search.dir === "desc" }]
 
   const table = useTable({
@@ -135,11 +139,7 @@ export function LeaderboardTable({ players }: LeaderboardTableProps) {
       const next = typeof updater === "function" ? updater(sorting) : updater
       const first = next[0]
       const sort = first && isSortKey(first.id) ? first.id : leaderboardSearchDefaults.sort
-      void navigate({
-        search: { sort, dir: first?.desc === false ? "asc" : "desc" },
-        replace: true,
-        resetScroll: false
-      })
+      update({ sort, dir: first?.desc === false ? "asc" : "desc" })
     }
   })
 

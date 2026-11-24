@@ -38,6 +38,13 @@
   --chart-1: #2f9e5b;
   --warning: oklch(0.7 0.15 75);
 
+  /* Football Manager tarzı stat renkleri: düşükten yükseğe kırmızı → yeşil. */
+  --stat-poor: #b91c1c;
+  --stat-fair: #c2410c;
+  --stat-good: #a16207;
+  --stat-great: #4d7c0f;
+  --stat-elite: #15803d;
+
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -72,6 +79,12 @@
   --chart-1: #36a362;
   --warning: oklch(0.8 0.15 80);
 
+  --stat-poor: #f87171;
+  --stat-fair: #fb923c;
+  --stat-good: #facc15;
+  --stat-great: #a3e635;
+  --stat-elite: #4ade80;
+
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 18%);
   --ring: oklch(0.556 0 0);
@@ -105,6 +118,11 @@
   --color-success: var(--success);
   --color-chart-1: var(--chart-1);
   --color-warning: var(--warning);
+  --color-stat-poor: var(--stat-poor);
+  --color-stat-fair: var(--stat-fair);
+  --color-stat-good: var(--stat-good);
+  --color-stat-great: var(--stat-great);
+  --color-stat-elite: var(--stat-elite);
 
   --color-border: var(--border);
   --color-input: var(--input);
@@ -115,8 +133,9 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  --font-inter: "Inter Variable", "Inter Fallback", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-inter);
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans: var(--font-mono);
+  --font-display: "Space Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
@@ -130,6 +149,10 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  h1 {
+    font-family: var(--font-display);
   }
 
   button:not(:disabled),
@@ -154,30 +177,47 @@
 [data-rarity] {
   --card-ink: #f6f1e4;
   --card-muted: rgb(246 241 228 / 0.66);
+  /* Kart içindeki çizgi, doku ve halka rengi; açık zeminli kartlarda koyu metale döner. */
+  --card-line: var(--frame-1);
+  /* Metal parlaması: çapraz bir ışık şeridi. Koyu kartlarda kapalı. */
+  --card-sheen: 0;
 }
 
 [data-rarity="bronze"] {
-  --frame-1: #e9b98a;
-  --frame-2: #a8683a;
-  --bg-1: #3d2717;
-  --bg-2: #22150c;
-  --card-accent: #f0c497;
+  --frame-1: #f7d6b5;
+  --frame-2: #8f5428;
+  --bg-1: #f6d5b3;
+  --bg-2: #e3b68c;
+  --card-accent: #2b1406;
+  --card-ink: #2b1406;
+  --card-muted: rgb(43 20 6 / 0.74);
+  --card-line: #7c4519;
+  --card-sheen: 0.45;
 }
 
+/* Bronz, gümüş ve altın FIFA'daki gibi açık, parlak metal zeminli; yazılar koyu. İkon koyu kalır. */
 [data-rarity="silver"] {
-  --frame-1: #c3cad3;
-  --frame-2: #6f7884;
-  --bg-1: #323b47;
-  --bg-2: #181d24;
-  --card-accent: #f1f4f7;
+  --frame-1: #f4f6f9;
+  --frame-2: #7f8996;
+  --bg-1: #f1f4f7;
+  --bg-2: #c2c9d2;
+  --card-accent: #161b22;
+  --card-ink: #161b22;
+  --card-muted: rgb(22 27 34 / 0.72);
+  --card-line: #6b7583;
+  --card-sheen: 0.6;
 }
 
 [data-rarity="gold"] {
-  --frame-1: #d8b95c;
-  --frame-2: #8f6d1f;
-  --bg-1: #3a2f12;
-  --bg-2: #1d1707;
-  --card-accent: #ecd27c;
+  --frame-1: #fff1b3;
+  --frame-2: #b0820f;
+  --bg-1: #fde68a;
+  --bg-2: #e6b843;
+  --card-accent: #2e2100;
+  --card-ink: #2e2100;
+  --card-muted: rgb(46 33 0 / 0.74);
+  --card-line: #9a6f0a;
+  --card-sheen: 0.55;
 }
 
 [data-rarity="icon"] {
@@ -200,14 +240,21 @@
 
   .scout-card-inner {
     background-color: var(--bg-1);
-    background-image: linear-gradient(180deg, var(--bg-1), var(--bg-2));
+    background-image:
+      linear-gradient(
+        120deg,
+        transparent 22%,
+        rgb(255 255 255 / var(--card-sheen)) 40%,
+        transparent 58%
+      ),
+      linear-gradient(170deg, var(--bg-1), var(--bg-2));
     box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--frame-1) 30%, transparent);
   }
 
   /* GitHub katkı grafiğinden esinlenen kare ızgara; üstte belirgin, altta kaybolur. */
   .scout-card-texture {
     background-image: radial-gradient(
-      color-mix(in oklab, var(--frame-1) 22%, transparent) 1px,
+      color-mix(in oklab, var(--card-line) 22%, transparent) 1px,
       transparent 1.5px
     );
     background-size: 12px 12px;
@@ -224,18 +271,36 @@
 
   .scout-card-chip {
     color: var(--card-ink);
-    background-color: color-mix(in oklab, var(--frame-1) 16%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--frame-1) 35%, transparent);
+    background-color: color-mix(in oklab, var(--card-line) 16%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--card-line) 35%, transparent);
+  }
+
+  /* Kart zemini her nadirlikte koyu: statlar koyu tema renklerini kullanır. */
+  .scout-card {
+    --stat-poor: #f87171;
+    --stat-fair: #fb923c;
+    --stat-good: #facc15;
+    --stat-great: #a3e635;
+    --stat-elite: #4ade80;
+  }
+
+  /* Açık metal zeminli kartlarda statlar koyu tonlarda. */
+  .scout-card:is([data-rarity="gold"], [data-rarity="silver"], [data-rarity="bronze"]) {
+    --stat-poor: #7f1d1d;
+    --stat-fair: #7c2d12;
+    --stat-good: #713f12;
+    --stat-great: #365314;
+    --stat-elite: #14532d;
   }
 
   .scout-card-avatar {
     box-shadow:
       0 0 0 3px var(--bg-1),
-      0 0 0 5px var(--frame-1);
+      0 0 0 5px var(--card-line);
   }
 
   .scout-card-rule {
-    border-color: color-mix(in oklab, var(--frame-1) 30%, transparent);
+    border-color: color-mix(in oklab, var(--card-line) 30%, transparent);
   }
 
   /* Sayı metin rengini taşır (okunabilirlik); nadirlik zemin tonu ve çerçeveyle anlatılır. */
@@ -276,5 +341,82 @@
       transparent
     );
     filter: blur(24px);
+  }
+}
+
+/* Her rozetin kendi tonu; açık zeminde koyu, koyu zeminde (tema ya da kart) açık okunur. */
+@layer components {
+  .badge-tint {
+    --badge-l: 0.5;
+    --badge-c: 0.15;
+    color: oklch(var(--badge-l) var(--badge-c) var(--badge-h, 250));
+    background-color: oklch(var(--badge-l) var(--badge-c) var(--badge-h, 250) / 0.12);
+    box-shadow: inset 0 0 0 1px oklch(var(--badge-l) var(--badge-c) var(--badge-h, 250) / 0.28);
+  }
+
+  .dark .badge-tint,
+  .scout-card .badge-tint {
+    --badge-l: 0.82;
+    --badge-c: 0.13;
+  }
+
+  .scout-card:is([data-rarity="gold"], [data-rarity="silver"], [data-rarity="bronze"]) .badge-tint {
+    --badge-l: 0.4;
+    --badge-c: 0.14;
+  }
+
+  [data-badge="night-owl"] {
+    --badge-h: 275;
+  }
+  [data-badge="early-bird"] {
+    --badge-h: 55;
+  }
+  [data-badge="weekend-warrior"] {
+    --badge-h: 195;
+  }
+  [data-badge="marathon"] {
+    --badge-h: 30;
+  }
+  [data-badge="green-tick"] {
+    --badge-h: 145;
+  }
+  [data-badge="polyglot"] {
+    --badge-h: 310;
+  }
+  [data-badge="conventional-disciple"] {
+    --badge-h: 240;
+  }
+  [data-badge="star-collector"] {
+    --badge-h: 85;
+  }
+  [data-badge="oss-ambassador"] {
+    --badge-h: 175;
+  }
+  [data-badge="test-obsessed"] {
+    --badge-h: 335;
+  }
+  [data-badge="commit-machine"] {
+    --badge-h: 15;
+  }
+  [data-badge="pr-machine"] {
+    --badge-h: 260;
+  }
+  [data-badge="code-reviewer"] {
+    --badge-h: 220;
+  }
+  [data-badge="community-leader"] {
+    --badge-h: 355;
+  }
+  [data-badge="team-player"] {
+    --badge-h: 205;
+  }
+  [data-badge="documenter"] {
+    --badge-h: 115;
+  }
+  [data-badge="veteran"] {
+    --badge-h: 70;
+  }
+  [data-badge="regular"] {
+    --badge-h: 160;
   }
 }

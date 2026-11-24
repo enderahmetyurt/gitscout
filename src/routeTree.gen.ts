@@ -10,14 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SiteDotwebmanifestRouteImport } from './routes/site[.]webmanifest'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as UUsernameRouteImport } from './routes/u/$username'
+import { Route as VsIndexRouteImport } from './routes/vs/index'
+import { Route as VsLeftRightRouteImport } from './routes/vs/$left.$right'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
@@ -40,51 +48,90 @@ const UUsernameRoute = UUsernameRouteImport.update({
   path: '/u/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VsIndexRoute = VsIndexRouteImport.update({
+  id: '/vs/',
+  path: '/vs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VsLeftRightRoute = VsLeftRightRouteImport.update({
+  id: '/vs/$left/$right',
+  path: '/vs/$left/$right',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/u/$username': typeof UUsernameRoute
+  '/vs/': typeof VsIndexRoute
+  '/vs/$left/$right': typeof VsLeftRightRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/u/$username': typeof UUsernameRoute
+  '/vs': typeof VsIndexRoute
+  '/vs/$left/$right': typeof VsLeftRightRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/u/$username': typeof UUsernameRoute
+  '/vs/': typeof VsIndexRoute
+  '/vs/$left/$right': typeof VsLeftRightRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/robots.txt' | '/site.webmanifest' | '/sitemap.xml' | '/u/$username'
-  fileRoutesByTo: FileRoutesByTo
-  to:
-    '/' | '/robots.txt' | '/site.webmanifest' | '/sitemap.xml' | '/u/$username'
-  id:
-    | '__root__'
     | '/'
+    | '/leaderboard'
     | '/robots.txt'
     | '/site.webmanifest'
     | '/sitemap.xml'
     | '/u/$username'
+    | '/vs/'
+    | '/vs/$left/$right'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/leaderboard'
+    | '/robots.txt'
+    | '/site.webmanifest'
+    | '/sitemap.xml'
+    | '/u/$username'
+    | '/vs'
+    | '/vs/$left/$right'
+  id:
+    | '__root__'
+    | '/'
+    | '/leaderboard'
+    | '/robots.txt'
+    | '/site.webmanifest'
+    | '/sitemap.xml'
+    | '/u/$username'
+    | '/vs/'
+    | '/vs/$left/$right'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LeaderboardRoute: typeof LeaderboardRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SiteDotwebmanifestRoute: typeof SiteDotwebmanifestRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   UUsernameRoute: typeof UUsernameRoute
+  VsIndexRoute: typeof VsIndexRoute
+  VsLeftRightRoute: typeof VsLeftRightRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -94,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/robots.txt': {
@@ -124,15 +178,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vs/': {
+      id: '/vs/'
+      path: '/vs'
+      fullPath: '/vs/'
+      preLoaderRoute: typeof VsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vs/$left/$right': {
+      id: '/vs/$left/$right'
+      path: '/vs/$left/$right'
+      fullPath: '/vs/$left/$right'
+      preLoaderRoute: typeof VsLeftRightRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LeaderboardRoute: LeaderboardRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SiteDotwebmanifestRoute: SiteDotwebmanifestRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   UUsernameRoute: UUsernameRoute,
+  VsIndexRoute: VsIndexRoute,
+  VsLeftRightRoute: VsLeftRightRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

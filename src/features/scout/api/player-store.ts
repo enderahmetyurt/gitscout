@@ -59,12 +59,6 @@ export async function getPlayers(): Promise<StoredPlayer[]> {
   return Object.values(state.valid)
 }
 
-/** Kayıtlı bütün kullanıcı adları; biçimi eskimiş kayıtlar dahil. */
-export async function getAllLogins(): Promise<string[]> {
-  const state = await readState()
-  return [...Object.keys(state.valid), ...Object.keys(state.stale)]
-}
-
 export async function getStaleCount(): Promise<number> {
   const state = await readState()
   return Object.keys(state.stale).length

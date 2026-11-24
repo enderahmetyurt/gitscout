@@ -1,7 +1,11 @@
 import type { Ref } from "react"
 
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { cn } from "cn"
+
+import { BadgeIcon } from "@/features/scout/components/BadgeIcon"
 import { RARITY_LABELS, STAT_ORDER } from "@/features/scout/constants/scoring.constants"
+import { STAT_TIER_TEXT } from "@/features/scout/constants/stat-tier.constants"
+import { statTier } from "@/features/scout/helpers/stat-tier"
 import type { ScoredPlayer } from "@/features/scout/types/player.types"
 
 type PlayerCardProps = {
@@ -71,25 +75,19 @@ export function PlayerCard({ player, ref }: PlayerCardProps) {
           {STAT_ORDER.map((key) => {
             const stat = player.stats[key]
             return (
-              <Tooltip key={key}>
-                <TooltipTrigger
-                  render={<div tabIndex={0} />}
-                  className="flex cursor-help flex-col items-center gap-0.5 rounded-md py-1 outline-none focus-visible:ring-2 focus-visible:ring-current/50"
+              <div key={key} className="flex flex-col items-center gap-0.5 py-1">
+                <dt lang="en" className="scout-card-muted text-[10px] font-semibold tracking-wider">
+                  {stat.short}
+                </dt>
+                <dd
+                  className={cn(
+                    "text-lg leading-none font-semibold tabular-nums",
+                    STAT_TIER_TEXT[statTier(stat.value)]
+                  )}
                 >
-                  <dt
-                    lang="en"
-                    className="scout-card-muted text-[10px] font-semibold tracking-wider"
-                  >
-                    {stat.short}
-                  </dt>
-                  <dd className="text-lg leading-none font-semibold tabular-nums">{stat.value}</dd>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <span>
-                    <span className="font-semibold">{stat.label}:</span> {stat.summary}
-                  </span>
-                </TooltipContent>
-              </Tooltip>
+                  {stat.value}
+                </dd>
+              </div>
             )
           })}
         </dl>
@@ -107,9 +105,11 @@ export function PlayerCard({ player, ref }: PlayerCardProps) {
                 <li
                   key={badge.id}
                   title={badge.name}
-                  className="scout-card-chip grid size-6 place-items-center rounded-full text-xs"
+                  data-badge={badge.id}
+                  className="badge-tint grid size-6 place-items-center rounded-full"
                 >
-                  <span aria-label={badge.name}>{badge.emoji}</span>
+                  <BadgeIcon id={badge.id} className="size-3.5" />
+                  <span className="sr-only">{badge.name}</span>
                 </li>
               ))}
             </ul>

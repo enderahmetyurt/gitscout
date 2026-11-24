@@ -8,7 +8,10 @@ import {
 import {
   computeOvr,
   computePosition,
+  computePositionBreakdown,
+  computeRanking,
   computeRarity,
+  computeTopRepos,
   scorePlayer
 } from "@/features/scout/helpers/score-player"
 import type { PlayerFacts, StoredPlayer } from "@/features/scout/types/player.types"
@@ -74,7 +77,8 @@ describe("nadirlik ve genel puan", () => {
 describe("gösterim eğrisi", () => {
   it("ham puanı FIFA ölçeğine taşır ve sıralamayı korur", () => {
     expect(toDisplayScore(0)).toBe(30)
-    expect(toDisplayScore(45)).toBe(71)
+    expect(toDisplayScore(38)).toBe(70)
+    expect(toDisplayScore(82)).toBe(90)
     expect(toDisplayScore(100)).toBe(99)
     expect(toDisplayScore(60)).toBeLessThanOrEqual(toDisplayScore(61))
     expect(toDisplayScore(60)).toBeLessThan(toDisplayScore(70))
@@ -112,6 +116,34 @@ describe("mevki", () => {
     })
     expect(computePosition(facts)).toBe("Full Stack")
   })
+
+  it("tek bir dev HTML reposu, yıldızlı Python repolarını ezmez", () => {
+    const facts = makeFacts({
+      ownedRepos: [
+        repo([{ name: "HTML", size: 10_000_000 }]),
+        { ...repo([{ name: "Python", size: 50 }]), stars: 5_000 },
+        { ...repo([{ name: "Python", size: 50 }]), stars: 2_000 }
+      ]
+    })
+    expect(computePosition(facts)).toBe("Backend")
+  })
+
+  it("notebook içeren repolar Python'u Data yapar ve dökümde dil başına repo sayılır", () => {
+    const facts = makeFacts({
+      ownedRepos: [
+        repo([
+          { name: "Python", size: 80 },
+          { name: "Jupyter Notebook", size: 20 }
+        ]),
+        repo([{ name: "Python", size: 100 }])
+      ]
+    })
+    const breakdown = computePositionBreakdown(facts)
+    expect(breakdown.pythonAsData).toBe(true)
+    expect(breakdown.repoCount).toBe(2)
+    expect(breakdown.roles[0]?.group).toBe("Data")
+    expect(breakdown.languages.find((language) => language.name === "Python")?.repos).toBe(2)
+  })
 })
 
 describe("organizasyon yıldızları", () => {
@@ -138,9 +170,78 @@ describe("organizasyon yıldızları", () => {
   })
 })
 
+describe("öne çıkan repolar", () => {
+  const owned = (name: string, stars: number) => ({
+    name,
+    isArchived: false,
+    pushedAt: NOW.toISOString(),
+    stars,
+    forks: 0,
+    hasDescription: true,
+    hasHomepage: false,
+    topicCount: 0,
+    license: null,
+    readmeBytes: 0,
+    languages: [
+      { name: "Go", size: 10 },
+      { name: "TypeScript", size: 90 }
+    ]
+  })
+
+  it("kendi ve org repolarını yıldıza göre sıralar, en fazla 3 tane döner", () => {
+    const facts = makeFacts({
+      login: "ada",
+      ownedRepos: ["a", "b", "c", "d", "e"].map((name, index) => owned(name, index * 100)),
+      activeRepos: [
+        {
+          nameWithOwner: "acme/lib",
+          isOrg: true,
+          stars: 250,
+          forks: 10,
+          languages: [],
+          yearCommits: 100,
+          userYearCommits: 20,
+          hasTests: false,
+          hasCi: false,
+          checkStates: [],
+          userCommitsLastYear: 20
+        }
+      ]
+    })
+    const repos = computeTopRepos(facts)
+    expect(repos.map((repo) => repo.fullName)).toEqual(["ada/e", "ada/d", "acme/lib"])
+    expect(repos[0]?.language).toBe("TypeScript")
+    expect(repos[2]?.isOrg).toBe(true)
+  })
+})
+
 describe("kararlılık", () => {
   it("aynı girdiye aynı unvanı verir", () => {
     const facts = makeFacts({ login: "omergulcicek" })
     expect(scorePlayer(stored(facts), NOW).title).toBe(scorePlayer(stored(facts), NOW).title)
+  })
+})
+
+describe("sıralama", () => {
+  it("eşit puanlılar aynı sırayı paylaşır, mevki sırası kendi içinde sayılır", () => {
+    const player = (login: string, ovr: number, position: "Frontend" | "Data") => ({
+      ...scorePlayer(stored(makeFacts({ login })), NOW),
+      ovr,
+      position
+    })
+    const all = [
+      player("a", 90, "Frontend"),
+      player("b", 90, "Data"),
+      player("c", 80, "Frontend"),
+      player("d", 70, "Frontend")
+    ]
+    const target = all[2]
+    if (!target) throw new Error("oyuncu yok")
+    expect(computeRanking(target, all)).toEqual({
+      overall: 3,
+      total: 4,
+      inPosition: 2,
+      positionTotal: 3
+    })
   })
 })

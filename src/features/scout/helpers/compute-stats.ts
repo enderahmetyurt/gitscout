@@ -107,7 +107,7 @@ export function creditedStars(facts: PlayerFacts) {
 }
 
 /** Dil payları: kendi repoları ve aktif organizasyon repoları birlikte, her repo bir kez. */
-export function languageShares(facts: PlayerFacts): { name: string; share: number }[] {
+function languageShares(facts: PlayerFacts): { name: string; share: number }[] {
   const sizes = new Map<string, number>()
   const add = (languages: { name: string; size: number }[]) => {
     for (const language of languages) {
@@ -227,7 +227,7 @@ function consistency(facts: PlayerFacts): Stat {
     part(
       "En uzun seri",
       `${streak} gün üst üste. Tam puan: ${CON.streak.fullAt} gün`,
-      streak / CON.streak.fullAt,
+      logScale(streak, CON.streak.fullAt),
       CON.streak.max
     ),
     part(

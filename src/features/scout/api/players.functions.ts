@@ -4,15 +4,14 @@ import { z } from "zod"
 
 import { fetchPlayerFacts } from "@/features/scout/api/fetch-player-facts.api"
 import {
-  getAllLogins,
   getPlayers,
   getStaleCount,
   getStoredPlayer,
   savePlayer
 } from "@/features/scout/api/player-store"
-import { scorePlayer } from "@/features/scout/helpers/score-player"
+import { computeRanking, scorePlayer } from "@/features/scout/helpers/score-player"
 import { playerRequestSchema, usernameSchema } from "@/features/scout/schemas/player.schema"
-import type { ScoredPlayer, StoredPlayer } from "@/features/scout/types/player.types"
+import type { PlayerDetail, ScoredPlayer, StoredPlayer } from "@/features/scout/types/player.types"
 
 type Leaderboard = {
   players: ScoredPlayer[]
@@ -46,33 +45,15 @@ async function fetchAndSave(login: string, previous: StoredPlayer | null) {
   return stored
 }
 
-/**
- * Bütün oyuncuları GitHub'dan sırayla yeniden çeker. Formül ya da veri biçimi değiştiğinde kullanılır.
- * Sırayla çalışır ki GitHub'ın eşzamanlı istek sınırına takılmasın.
- */
-export const refreshAllPlayers = createServerFn({ method: "POST" }).handler(
-  async (): Promise<{ refreshed: string[]; failed: { login: string; reason: string }[] }> => {
-    const logins = await getAllLogins()
-    const refreshed: string[] = []
-    const failed: { login: string; reason: string }[] = []
-    for (const login of logins) {
-      try {
-        await fetchAndSave(login, await getStoredPlayer(login))
-        refreshed.push(login)
-      } catch (error) {
-        failed.push({ login, reason: error instanceof Error ? error.message : "Bilinmeyen hata" })
-      }
-    }
-    return { refreshed, failed }
-  }
-)
-
 export const getPlayer = createServerFn({ method: "GET" })
   .validator(z.object({ username: usernameSchema }))
-  .handler(async ({ data }): Promise<ScoredPlayer> => {
+  .handler(async ({ data }): Promise<PlayerDetail> => {
     const stored = await getStoredPlayer(data.username)
     if (!stored) throw notFound()
-    return scorePlayer(stored)
+    const now = new Date()
+    const player = scorePlayer(stored, now)
+    const all = (await getPlayers()).map((item) => scorePlayer(item, now))
+    return { ...player, ranking: computeRanking(player, all) }
   })
 
 /** Oyuncu kayıtlıysa istek atmadan döner; yoksa ya da `refresh` istenirse GitHub'dan çekip kaydeder. */

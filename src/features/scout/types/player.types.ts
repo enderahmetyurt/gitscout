@@ -124,11 +124,76 @@ export type Rarity = "bronze" | "silver" | "gold" | "icon"
 export type Position =
   "Frontend" | "Backend" | "Full Stack" | "DevOps" | "Mobile" | "Data" | "Systems" | "Game Dev"
 
+export type BadgeId =
+  | "night-owl"
+  | "early-bird"
+  | "weekend-warrior"
+  | "marathon"
+  | "green-tick"
+  | "polyglot"
+  | "conventional-disciple"
+  | "star-collector"
+  | "oss-ambassador"
+  | "test-obsessed"
+  | "commit-machine"
+  | "pr-machine"
+  | "code-reviewer"
+  | "community-leader"
+  | "team-player"
+  | "documenter"
+  | "veteran"
+  | "regular"
+
 export type Badge = {
-  id: string
-  emoji: string
+  id: BadgeId
   name: string
   detail: string
+}
+
+export type RoleGroup = Exclude<Position, "Full Stack">
+
+/** Mevkinin nasıl hesaplandığını detay sayfasında açıklamak için. Paylar yıldız ağırlıklıdır. */
+export type PositionBreakdown = {
+  repoCount: number
+  /** Python'un Data sayılıp sayılmadığı (notebook/CUDA içeren repolar nedeniyle). */
+  pythonAsData: boolean
+  roles: { group: RoleGroup; share: number }[]
+  languages: { name: string; group: RoleGroup | null; share: number; repos: number }[]
+}
+
+/** Detay sayfasındaki "öne çıkan repolar" listesi; yalnızca public repolar. */
+export type TopRepo = {
+  fullName: string
+  stars: number
+  forks: number
+  language: string | null
+  /** Organizasyon reposu: oyuncunun sahibi olmadığı ama son bir yılda katkı verdiği repo. */
+  isOrg: boolean
+}
+
+/** Detay sayfasındaki "Son 1 yıl" bloğu için ham sayılar. */
+/** Kariyer boyu sayılar; kapışmadaki "Rakamlar" tablosu için. */
+type CareerTotals = {
+  followers: number
+  stars: number
+  contributions: number
+}
+
+type YearSummary = {
+  commits: number
+  prs: number
+  reviews: number
+  issues: number
+  activeDays: number
+  longestStreak: number
+}
+
+/** Oyuncunun kayıtlı oyuncular arasındaki yeri; yalnızca detay sayfası için hesaplanır. */
+export type PlayerRanking = {
+  overall: number
+  total: number
+  inPosition: number
+  positionTotal: number
 }
 
 export type ScoredPlayer = {
@@ -137,10 +202,18 @@ export type ScoredPlayer = {
   avatarUrl: string
   club: string
   position: Position
+  positionBreakdown: PositionBreakdown
+  topRepos: TopRepo[]
   ovr: number
   rarity: Rarity
   title: string
+  /** En güçlü ve en zayıf stattan üretilen tek cümlelik tanım. */
+  archetype: string
   stats: Record<StatKey, Stat>
+  year: YearSummary
+  career: CareerTotals
   badges: Badge[]
   fetchedAt: string
 }
+
+export type PlayerDetail = ScoredPlayer & { ranking: PlayerRanking }

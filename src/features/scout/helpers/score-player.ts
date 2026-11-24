@@ -2,68 +2,155 @@ import {
   FULL_STACK_MIN_SHARE,
   LANGUAGE_GROUPS,
   RARITY_THRESHOLDS,
+  STAT_ORDER,
   STAT_WEIGHTS
 } from "@/features/scout/constants/scoring.constants"
-import {
-  TITLE_PREFIX_BY_BADGE,
-  TITLE_PREFIX_BY_RARITY,
-  TITLE_SUFFIX_BY_STAT
-} from "@/features/scout/constants/titles.constants"
+import { TITLES } from "@/features/scout/constants/titles.constants"
+import { computeArchetype } from "@/features/scout/helpers/archetype"
 import { computeBadges } from "@/features/scout/helpers/compute-badges"
 import type { BadgeClock } from "@/features/scout/helpers/compute-badges"
 import {
   computeStats,
-  languageShares,
+  creditedStars,
+  longestStreak,
   toDisplayScore
 } from "@/features/scout/helpers/compute-stats"
 import type {
-  Badge,
   PlayerFacts,
+  PlayerRanking,
   Position,
+  PositionBreakdown,
   Rarity,
+  RoleGroup,
   ScoredPlayer,
   Stat,
   StatKey,
-  StoredPlayer
+  StoredPlayer,
+  TopRepo
 } from "@/features/scout/types/player.types"
 
-/** Aynı kullanıcıya her seferinde aynı seçimi yapmak için basit, kararlı bir hash. */
-function hash(text: string): number {
-  let value = 0
-  for (const char of text.toLowerCase()) {
-    value = (value * 31 + char.charCodeAt(0)) >>> 0
+/** En yüksek stata bu kadar yakın statlar unvan için eşit sayılır. */
+const TITLE_TIE_MARGIN = 1
+
+/** Python bu dillerle aynı repodaysa veri/yapay zekâ işidir. */
+const DATA_MARKERS = new Set(["Jupyter Notebook", "Cuda"])
+/** Python repolarının (ağırlıklı) bu kadarı veri işaretliyse oyuncunun bütün Python'u Data sayılır. */
+const DATA_PROFILE_SHARE = 0.3
+
+/** Yıldızsız deneme repoları neredeyse hiç saymaz; popüler repolar logaritmik olarak ağır basar. */
+const repoWeight = (stars: number) => 0.1 + Math.log10(1 + stars)
+
+/**
+ * Her repo kendi dil dağılımıyla, yıldızına göre ağırlıklı katkı yapar.
+ * Toplam bayta bakmak, üretilmiş dev bir HTML dosyası olan tek bir reponun bütün profili ele geçirmesine yol açıyordu.
+ */
+export function computePositionBreakdown(facts: PlayerFacts): PositionBreakdown {
+  const ownedNames = new Set(
+    facts.ownedRepos.map((repo) => `${facts.login}/${repo.name}`.toLowerCase())
+  )
+  const repos = [
+    ...facts.ownedRepos,
+    ...facts.activeRepos.filter(
+      (repo) => repo.isOrg && !ownedNames.has(repo.nameWithOwner.toLowerCase())
+    )
+  ].filter((repo) => repo.languages.some((language) => language.size > 0))
+  const hasData = (repo: (typeof repos)[number]) =>
+    repo.languages.some((language) => DATA_MARKERS.has(language.name))
+  const pythonRepos = repos.filter((repo) =>
+    repo.languages.some((language) => language.name === "Python")
+  )
+  const pythonWeight = pythonRepos.reduce((sum, repo) => sum + repoWeight(repo.stars), 0)
+  const dataWeight = pythonRepos
+    .filter(hasData)
+    .reduce((sum, repo) => sum + repoWeight(repo.stars), 0)
+  const isDataProfile = pythonWeight > 0 && dataWeight / pythonWeight >= DATA_PROFILE_SHARE
+
+  const roles = new Map<RoleGroup, number>()
+  const languages = new Map<string, { group: RoleGroup | null; weight: number; repos: number }>()
+  let total = 0
+  for (const repo of repos) {
+    const size = repo.languages.reduce((sum, language) => sum + language.size, 0)
+    const weight = repoWeight(repo.stars)
+    const pythonIsData = isDataProfile || hasData(repo)
+    for (const language of repo.languages) {
+      if (language.size === 0) continue
+      const group =
+        (language.name === "Python" && pythonIsData ? "Data" : LANGUAGE_GROUPS[language.name]) ??
+        null
+      const value = (language.size / size) * weight
+      total += value
+      const entry = languages.get(language.name) ?? { group, weight: 0, repos: 0 }
+      entry.weight += value
+      entry.repos += 1
+      if (group) {
+        entry.group = group
+        roles.set(group, (roles.get(group) ?? 0) + value)
+      }
+      languages.set(language.name, entry)
+    }
   }
-  return value
+
+  const known = [...roles.values()].reduce((sum, value) => sum + value, 0)
+  return {
+    repoCount: repos.length,
+    pythonAsData: isDataProfile,
+    roles: [...roles.entries()]
+      .map(([group, value]) => ({ group, share: known === 0 ? 0 : value / known }))
+      .sort((a, b) => b.share - a.share),
+    languages: [...languages.entries()]
+      .map(([name, entry]) => ({
+        name,
+        group: entry.group,
+        share: total === 0 ? 0 : entry.weight / total,
+        repos: entry.repos
+      }))
+      .sort((a, b) => b.share - a.share)
+  }
 }
 
-function pick<T>(items: readonly T[], seed: number, fallback: T): T {
-  return items[seed % items.length] ?? fallback
-}
-
-export function computePosition(facts: PlayerFacts): Position {
-  const totals = new Map<Exclude<Position, "Full Stack">, number>()
-  for (const language of languageShares(facts)) {
-    const group = LANGUAGE_GROUPS[language.name]
-    if (!group) continue
-    totals.set(group, (totals.get(group) ?? 0) + language.share)
-  }
-  const known = [...totals.values()].reduce((sum, share) => sum + share, 0)
-  if (known === 0) return "Full Stack"
-
-  const share = (group: Exclude<Position, "Full Stack">) => (totals.get(group) ?? 0) / known
+function positionFrom(breakdown: PositionBreakdown): Position {
+  const [top] = breakdown.roles
+  if (!top) return "Full Stack"
+  const share = (group: RoleGroup) =>
+    breakdown.roles.find((role) => role.group === group)?.share ?? 0
   if (share("Frontend") >= FULL_STACK_MIN_SHARE && share("Backend") >= FULL_STACK_MIN_SHARE) {
     return "Full Stack"
   }
+  return top.group
+}
 
-  let best: Exclude<Position, "Full Stack"> = "Frontend"
-  let bestShare = -1
-  for (const [group, value] of totals) {
-    if (value > bestShare) {
-      best = group
-      bestShare = value
-    }
-  }
-  return best
+export function computePosition(facts: PlayerFacts): Position {
+  return positionFrom(computePositionBreakdown(facts))
+}
+
+const TOP_REPO_COUNT = 3
+
+const mainLanguage = (languages: { name: string; size: number }[]) =>
+  languages.reduce<{ name: string; size: number } | null>(
+    (best, language) => (best && best.size >= language.size ? best : language),
+    null
+  )?.name ?? null
+
+/** Kendi repoları ve katkı verdiği organizasyon repoları arasından en çok yıldız alanlar. */
+export function computeTopRepos(facts: PlayerFacts): TopRepo[] {
+  const owned = facts.ownedRepos.map((repo) => ({
+    fullName: `${facts.login}/${repo.name}`,
+    stars: repo.stars,
+    forks: repo.forks,
+    language: mainLanguage(repo.languages),
+    isOrg: false
+  }))
+  const ownedNames = new Set(owned.map((repo) => repo.fullName.toLowerCase()))
+  const org = facts.activeRepos
+    .filter((repo) => repo.isOrg && !ownedNames.has(repo.nameWithOwner.toLowerCase()))
+    .map((repo) => ({
+      fullName: repo.nameWithOwner,
+      stars: repo.stars,
+      forks: repo.forks,
+      language: mainLanguage(repo.languages),
+      isOrg: true
+    }))
+  return [...owned, ...org].sort((a, b) => b.stars - a.stars).slice(0, TOP_REPO_COUNT)
 }
 
 function computeClub(facts: PlayerFacts): string {
@@ -82,21 +169,35 @@ export function computeRarity(ovr: number): Rarity {
   return RARITY_THRESHOLDS.find((threshold) => ovr >= threshold.min)?.rarity ?? "bronze"
 }
 
-function computeTitle(
-  login: string,
-  stats: Record<StatKey, Stat>,
-  badges: Badge[],
-  rarity: Rarity
-): string {
-  const seed = hash(login)
-  const prefixPool =
-    badges.map((badge) => TITLE_PREFIX_BY_BADGE[badge.id]).find((pool) => pool !== undefined) ??
-    TITLE_PREFIX_BY_RARITY[rarity]
+/** Aynı kullanıcıya her seferinde aynı seçimi yapmak için basit, kararlı bir hash. */
+function hash(text: string): number {
+  let value = 0
+  for (const char of text) value = (value * 31 + char.charCodeAt(0)) >>> 0
+  return value
+}
 
-  const topStat = Object.values(stats).reduce((best, stat) => (stat.raw > best.raw ? stat : best))
-  const prefix = pick(prefixPool, seed, "Yükselen")
-  const suffix = pick(TITLE_SUFFIX_BY_STAT[topStat.key], seed >>> 3, "Oyuncu")
-  return `${prefix} ${suffix}`
+/**
+ * Unvan en güçlü stattan gelir. Üst düzey oyuncularda birden çok stat tavana dayandığı için
+ * eşitlik kullanıcı adına göre kararlı biçimde bozulur; böylece efsaneler aynı unvana yığılmaz.
+ */
+function computeTitle(login: string, stats: Record<StatKey, Stat>, rarity: Rarity): string {
+  const top = Math.max(...STAT_ORDER.map((key) => stats[key].raw))
+  const tied = STAT_ORDER.filter((key) => stats[key].raw >= top - TITLE_TIE_MARGIN)
+  const seed = hash(login)
+  const key = tied[seed % tied.length] ?? "act"
+  const pool: readonly string[] = TITLES[key][rarity]
+  return pool[(seed >>> 4) % pool.length] ?? "Oyuncu"
+}
+
+/** Oyuncunun genel ve kendi mevkisindeki sırası; eşit puanlılar aynı sırayı paylaşır. */
+export function computeRanking(player: ScoredPlayer, all: ScoredPlayer[]): PlayerRanking {
+  const samePosition = all.filter((other) => other.position === player.position)
+  return {
+    overall: 1 + all.filter((other) => other.ovr > player.ovr).length,
+    total: all.length,
+    inPosition: 1 + samePosition.filter((other) => other.ovr > player.ovr).length,
+    positionTotal: samePosition.length
+  }
 }
 
 /** Saklanan gerçeklerden kartın tamamını üretir. Saf fonksiyon: aynı girdi, aynı kart. */
@@ -112,17 +213,34 @@ export function scorePlayer(player: StoredPlayer, now = new Date()): ScoredPlaye
       ? { offsetMinutes: facts.utcOffsetMinutes }
       : null
   const badges = computeBadges(facts, clock, now)
+  const positionBreakdown = computePositionBreakdown(facts)
 
   return {
     login: facts.login,
     name: facts.name?.trim() || facts.login,
     avatarUrl: facts.avatarUrl,
     club: computeClub(facts),
-    position: computePosition(facts),
+    position: positionFrom(positionBreakdown),
+    positionBreakdown,
+    topRepos: computeTopRepos(facts),
     ovr,
     rarity,
-    title: computeTitle(facts.login, stats, badges, rarity),
+    title: computeTitle(facts.login, stats, rarity),
+    archetype: computeArchetype(stats, rarity),
     stats,
+    year: {
+      commits: facts.lastYear.commits,
+      prs: facts.lastYear.prs,
+      reviews: facts.lastYear.reviews,
+      issues: facts.lastYear.issues,
+      activeDays: facts.calendar.filter((day) => day.count > 0).length,
+      longestStreak: longestStreak(facts.calendar)
+    },
+    career: {
+      followers: facts.followers,
+      stars: Math.round(creditedStars(facts)),
+      contributions: facts.yearly.reduce((sum, year) => sum + year.total, 0)
+    },
     badges,
     fetchedAt: player.fetchedAt
   }
