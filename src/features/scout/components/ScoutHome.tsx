@@ -6,8 +6,8 @@ import { getLangParam } from "@/helpers/localized-url"
 import { buttonVariants } from "@/components/ui/button"
 import { AddPlayerForm } from "@/features/scout/components/AddPlayerForm"
 import { EmptyLeaderboard } from "@/features/scout/components/EmptyLeaderboard"
+import { FeaturedCard } from "@/features/scout/components/FeaturedCard"
 import { LeaderboardTable } from "@/features/scout/components/LeaderboardTable"
-import { PlayerCard } from "@/features/scout/components/PlayerCard"
 import { RarityLegend } from "@/features/scout/components/RarityLegend"
 import { STAT_ORDER } from "@/features/scout/constants/scoring.constants"
 import { statLabel, statShort } from "@/features/scout/helpers/player-text"
@@ -22,7 +22,6 @@ export function ScoutHome() {
   const { players: allPlayers } = data
   // Sunucu listeyi genel puana göre sıralı döner.
   const players = allPlayers.slice(0, HOME_LIMIT)
-  const leader = players[0]
 
   return (
     <main
@@ -52,17 +51,12 @@ export function ScoutHome() {
             ))}
           </dl>
         </section>
-        {leader ? (
-          // Ödül önden görünsün: geniş ekranda zirvedeki oyuncunun kartı başlığın yanında.
-          <Link
-            to="/{-$lang}/u/$username"
-            params={{ lang: getLangParam(), username: leader.login }}
-            aria-label={m.duel_open_card({ name: leader.name })}
-            className="card-lift hidden w-80 rounded-[28px] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 lg:block"
-          >
-            <PlayerCard player={leader} />
-          </Link>
-        ) : null}
+        {/* Ödül önden görünsün: geniş ekranda vitrin kartı başlığın yanında. */}
+        <FeaturedCard
+          players={allPlayers}
+          recentLogins={data.recentLogins}
+          seed={data.featuredSeed}
+        />
       </div>
 
       <section className="flex flex-col gap-4" aria-labelledby="leaderboard-heading">

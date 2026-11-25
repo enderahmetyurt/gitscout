@@ -386,6 +386,18 @@
       display: inline-block;
       animation: score-tick 220ms var(--ease-out);
     }
+
+    /* Ana sayfa vitrininde "Başka kart": yeni kart hafif dönerek yerine oturur. */
+    .card-swap {
+      animation: card-swap 460ms var(--ease-out);
+    }
+  }
+
+  /* Hareketi azaltma tercihinde kart yalnızca belirir. */
+  @media (prefers-reduced-motion: reduce) {
+    .card-swap {
+      animation: duel-fade 200ms ease;
+    }
   }
 
   /* Kartın arkasındaki nadirlik renginde ışıma. */
@@ -493,6 +505,20 @@
   from {
     opacity: 0;
     transform: translateX(24px) scale(0.97);
+  }
+}
+
+@keyframes card-swap {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) rotate(-4deg) scale(0.96);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(0) rotate(1.5deg) scale(1.01);
+  }
+  80% {
+    transform: rotate(-0.5deg);
   }
 }
 

@@ -6,6 +6,7 @@ import { fetchPlayerFacts } from "@/features/scout/api/fetch-player-facts.api"
 import { GithubError } from "@/features/scout/api/get-github-data.api"
 import {
   countRecentPlayers,
+  getRecentLogins,
   getScoredPlayer,
   getScoredPlayers,
   insertPlayer
@@ -18,25 +19,41 @@ import type { PlayerDetail, ScoredPlayer } from "@/features/scout/types/player.t
 
 type Leaderboard = {
   players: ScoredPlayer[]
+  /** Son 24 saatte eklenenler; vitrinde daha sık çıkarlar. */
+  recentLogins: string[]
+  /**
+   * Vitrin tohumu: Unix saat numarası. Sunucuda hesaplanıp veriyle gider, böylece
+   * sunucuda çizilen kart ile tarayıcıdaki kart saat dönümünde bile aynı kalır.
+   */
+  featuredSeed: number
 }
+
+const HOUR_MS = 60 * 60_000
 
 /**
  * Aynı sunucu örneği bu süre içinde gelen istekleri veritabanına gitmeden karşılar. Veri haftada bir yenilenir;
  * yeni eklenen kart, ekleyen kişinin örneğinde hemen, diğer örneklerde en geç bu süre sonra listeye girer.
  */
 const LIST_CACHE_MS = 5 * 60_000
-let listCache: { at: number; players: ScoredPlayer[] } | null = null
+let listCache: { at: number; players: ScoredPlayer[]; recentLogins: string[] } | null = null
+
+async function cachedList() {
+  if (listCache && Date.now() - listCache.at < LIST_CACHE_MS) return listCache
+  const [players, recentLogins] = await Promise.all([getScoredPlayers(), getRecentLogins()])
+  listCache = { at: Date.now(), players, recentLogins }
+  return listCache
+}
 
 async function cachedPlayers(): Promise<ScoredPlayer[]> {
-  if (listCache && Date.now() - listCache.at < LIST_CACHE_MS) return listCache.players
-  const players = await getScoredPlayers()
-  listCache = { at: Date.now(), players }
-  return players
+  return (await cachedList()).players
 }
 
 /** Kayıtlı bütün oyuncular, genel puana göre sıralı. GitHub'a istek atmaz. */
 export const getLeaderboard = createServerFn({ method: "GET" }).handler(
-  async (): Promise<Leaderboard> => ({ players: await cachedPlayers() })
+  async (): Promise<Leaderboard> => {
+    const { players, recentLogins } = await cachedList()
+    return { players, recentLogins, featuredSeed: Math.floor(Date.now() / HOUR_MS) }
+  }
 )
 
 export const getPlayer = createServerFn({ method: "GET" })

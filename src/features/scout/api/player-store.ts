@@ -98,6 +98,15 @@ export async function getSitemapPlayers(): Promise<{ login: string; fetchedAt: D
   return rows.map((row) => ({ login: row.login, fetchedAt: row.fetched_at }))
 }
 
+/** Son 24 saatte eklenen oyuncuların kullanıcı adları; ana sayfa vitrininde öne çıkarılırlar. */
+export async function getRecentLogins(): Promise<string[]> {
+  const sql = getDb()
+  const rows = z
+    .array(z.object({ login: z.string() }))
+    .parse(await sql`select login from players where created_at > now() - interval '24 hours'`)
+  return rows.map((row) => row.login)
+}
+
 /** Son bir saatte eklenen oyuncu sayısı; kişisel veri tutmadan toplu eklemeyi sınırlar. */
 export async function countRecentPlayers(): Promise<number> {
   const sql = getDb()

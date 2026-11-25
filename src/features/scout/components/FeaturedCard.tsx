@@ -1,0 +1,56 @@
+import { useState } from "react"
+
+import { Link } from "@tanstack/react-router"
+import { Shuffle } from "lucide-react"
+
+import { getLangParam } from "@/helpers/localized-url"
+
+import { Button } from "@/components/ui/button"
+import { PlayerCard } from "@/features/scout/components/PlayerCard"
+import { featuredOrder } from "@/features/scout/helpers/featured-players"
+import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import * as m from "@/paraglide/messages.js"
+
+type FeaturedCardProps = {
+  players: ScoredPlayer[]
+  recentLogins: string[]
+  seed: number
+}
+
+/**
+ * Ana sayfa vitrini: saatin kartı, Gold ve üstü kartlardan seçilir. "Başka kart" sıradaki
+ * kartı yalnızca tarayıcıda açar; sunucuda çizilen ilk kart her zaman saatin kartıdır.
+ */
+export function FeaturedCard({ players, recentLogins, seed }: FeaturedCardProps) {
+  const [offset, setOffset] = useState(0)
+  const order = featuredOrder(players, new Set(recentLogins), seed)
+  const player = order[offset % Math.max(order.length, 1)]
+  if (!player) return null
+
+  return (
+    <div className="hidden w-80 flex-col gap-3 lg:flex">
+      <Link
+        to="/{-$lang}/u/$username"
+        params={{ lang: getLangParam(), username: player.login }}
+        aria-label={m.duel_open_card({ name: player.name })}
+        className="card-lift rounded-[28px] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      >
+        {/* `key` her değişimde animasyonu yeniden başlatır; ilk yüklemede animasyon yok, LCP etkilenmez. */}
+        <div key={offset} className={offset > 0 ? "card-swap" : undefined}>
+          <PlayerCard player={player} />
+        </div>
+      </Link>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground" aria-live="polite">
+          {offset === 0 ? m.featured_label() : m.featured_label_next({ name: player.name })}
+        </p>
+        {order.length > 1 ? (
+          <Button variant="ghost" size="sm" onClick={() => setOffset((value) => value + 1)}>
+            <Shuffle aria-hidden />
+            {m.featured_next()}
+          </Button>
+        ) : null}
+      </div>
+    </div>
+  )
+}
