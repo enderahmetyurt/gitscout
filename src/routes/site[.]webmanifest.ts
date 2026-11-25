@@ -15,13 +15,9 @@ export const Route = createFileRoute("/site.webmanifest")({
           // Site yalnızca koyu temada; ana ekrandan açılışta da aynı zemin görünsün.
           background_color: "#0a0a0a",
           theme_color: "#0a0a0a",
-          // FIXME: add 192x192 and 512x512 icons to make the app installable.
           icons: [
-            {
-              src: "/logo.webp",
-              sizes: "96x96",
-              type: "image/webp"
-            }
+            { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
+            { src: "/icon-512.png", sizes: "512x512", type: "image/png" }
           ]
         }
 

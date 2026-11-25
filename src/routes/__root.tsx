@@ -43,8 +43,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       },
       { rel: "stylesheet", href: monoCss },
       { rel: "stylesheet", href: displayCss },
-      { rel: "icon", href: "/logo.webp" },
-      { rel: "apple-touch-icon", href: "/logo.webp" },
+      { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
+      { rel: "icon", href: "/logo.svg", type: "image/svg+xml" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "manifest", href: "/site.webmanifest" }
     ]
   }),
