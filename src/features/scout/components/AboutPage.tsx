@@ -2,25 +2,28 @@ import { useEffect } from "react"
 import type { ReactNode } from "react"
 
 import { useLocation } from "@tanstack/react-router"
-import { ExternalLink, Info } from "lucide-react"
-import { cn } from "cn"
+import { ExternalLink } from "lucide-react"
 
 import { siteConfig } from "@/config/site.config"
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from "@/components/ui/accordion"
 import { RarityLegend } from "@/features/scout/components/RarityLegend"
-import { WeightsDonut } from "@/features/scout/components/WeightsDonut"
 import {
   ACT,
   COM,
-  CON,
-  EXP,
+  FULL_STACK_MIN_SHARE,
   IMP,
   REFRESH,
   REP,
   STAT_ORDER,
   STAT_WEIGHTS
 } from "@/features/scout/constants/scoring.constants"
-import { number, percent, statLabel, statShort } from "@/features/scout/helpers/player-text"
+import { number, percent, statLabel } from "@/features/scout/helpers/player-text"
 import type { StatKey } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
 
@@ -33,31 +36,37 @@ const STAT_DESCRIPTIONS: Record<StatKey, () => string> = {
   exp: m.about_stat_exp
 }
 
-/** Tam puan eşikleri puanlama sabitlerinden okunur; formül değişince sayfa da güncellenir. */
-function fullMarks(key: StatKey): string {
-  switch (key) {
-    case "act":
-      return m.about_full_act({ full: number(ACT.contributions.fullAt) })
-    case "imp":
-      return m.about_full_imp({
-        stars: number(IMP.stars.fullAt),
-        forks: number(IMP.forks.fullAt)
+/** Sayılar sabitlerden okunur; mesajlar render sırasında çağrıldığı için dil değişince güncellenir. */
+function faqItems() {
+  return [
+    { id: "low", question: m.about_faq_low_q(), answer: m.about_faq_low_a() },
+    {
+      id: "refresh",
+      question: m.about_faq_refresh_q(),
+      answer: m.about_faq_refresh_a({ days: REFRESH.maxAgeDays })
+    },
+    {
+      id: "bots",
+      question: m.about_faq_bots_q(),
+      answer: m.about_faq_bots_a({
+        daily: number(ACT.dailyCap),
+        repo: number(ACT.repoYearCap)
       })
-    case "com":
-      return m.about_full_com({ full: number(COM.followers.fullAt) })
-    case "rep":
-      return m.about_full_rep({
-        prs: number(REP.externalPrs.fullAt),
-        reviews: number(REP.reviews.fullAt)
+    },
+    {
+      id: "org",
+      question: m.about_faq_org_q(),
+      answer: m.about_faq_org_a({
+        share: percent(IMP.orgFullShare * 100),
+        weight: percent(REP.ownOrgPrWeight * 100)
       })
-    case "con":
-      return m.about_full_con({ years: number(CON.years.span) })
-    case "exp":
-      return m.about_full_exp({
-        years: number(EXP.activeYears.fullAt),
-        full: number(EXP.lifetime.fullAt)
-      })
-  }
+    },
+    {
+      id: "role",
+      question: m.about_faq_role_q(),
+      answer: m.about_faq_role_a({ share: percent(FULL_STACK_MIN_SHARE * 100) })
+    }
+  ]
 }
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
@@ -95,62 +104,51 @@ export function AboutPage() {
       <div className="flex flex-col gap-3">
         <h1 className="text-4xl font-semibold tracking-tight text-balance">{m.about_title()}</h1>
         <p className="text-pretty text-muted-foreground">{m.about_lead()}</p>
-        <p className="surface flex items-start gap-2 px-4 py-3 text-sm text-pretty">
-          <Info aria-hidden className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-          {m.about_disclaimer()}
-        </p>
       </div>
 
-      <Section id="about-stats" title={m.about_stats_title()}>
-        <p className={bodyClass}>{m.about_stats_intro()}</p>
-
-        <div className="flex flex-col gap-2">
-          <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
-            {m.about_weights_title()}
-          </p>
-          <WeightsDonut />
-        </div>
-
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {STAT_ORDER.map((key) => (
-            <li key={key} className="surface flex flex-col gap-2 p-4">
-              <div className="flex items-center gap-2">
-                <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-semibold">
-                  {statShort(key)}
-                </span>
-                <span className="font-medium">{statLabel(key)}</span>
-                <span className="ms-auto text-xs text-muted-foreground">
-                  {percent(STAT_WEIGHTS[key] * 100)}
-                </span>
-              </div>
-              <p className={bodyClass}>{STAT_DESCRIPTIONS[key]()}</p>
-              <p className="mt-auto border-t pt-2 text-xs text-muted-foreground">
-                {fullMarks(key)}
-              </p>
-            </li>
-          ))}
-        </ul>
-        <p className={bodyClass}>{m.about_rating_note({ days: REFRESH.maxAgeDays })}</p>
+      <Section id="about-story" title={m.about_story_title()}>
+        <p className={bodyClass}>{m.about_story_1()}</p>
       </Section>
 
-      <Section id="about-ovr" title={m.about_ovr_title()}>
-        <p className={bodyClass}>{m.about_ovr_body()}</p>
+      <Section id="about-stats" title={m.about_stats_title()}>
+        <p className={bodyClass}>{m.about_score_intro()}</p>
+        <dl className="surface divide-y">
+          {STAT_ORDER.map((key) => (
+            <div
+              key={key}
+              className="grid grid-cols-[1fr_auto] items-baseline gap-x-3 gap-y-0.5 px-4 py-2.5 text-sm sm:grid-cols-[6.5rem_1fr_auto]"
+            >
+              <dt className="order-1 font-medium">{statLabel(key)}</dt>
+              <dd className="order-2 text-muted-foreground tabular-nums sm:order-3">
+                {percent(STAT_WEIGHTS[key] * 100)}
+              </dd>
+              <dd className="order-3 col-span-2 text-pretty text-muted-foreground sm:order-2 sm:col-span-1">
+                {STAT_DESCRIPTIONS[key]()}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <p className={bodyClass}>
+          {m.about_score_note({ followers: number(COM.followers.fullAt) })}
+        </p>
         <RarityLegend />
       </Section>
 
-      <Section id="about-position" title={m.about_position_title()}>
-        <p className={bodyClass}>{m.about_position_body()}</p>
-      </Section>
-
-      <Section id="about-badges" title={m.about_badges_title()}>
-        <p className={bodyClass}>{m.about_badges_body()}</p>
+      <Section id="about-faq" title={m.about_faq_title()}>
+        <Accordion className="surface px-4">
+          {faqItems().map((item) => (
+            <AccordionItem key={item.id} value={item.id}>
+              <AccordionTrigger>{item.question}</AccordionTrigger>
+              <AccordionContent className="text-pretty text-muted-foreground">
+                {item.answer}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       </Section>
 
       <Section id="about-privacy" title={m.about_privacy_title()}>
-        <ul className={cn("flex list-disc flex-col gap-2 pl-5", bodyClass)}>
-          <li>{m.about_privacy_source()}</li>
-          <li>{m.about_privacy_private()}</li>
-        </ul>
+        <p className={bodyClass}>{m.about_privacy_body()}</p>
         {/* "Kartının kaldırılmasını mı istiyorsun?" bağlantıları buraya iner; aynı kırmızıyla eşleşir. */}
         <div id="remove-card" className="flex scroll-mt-24 flex-col gap-1">
           <h3 className="text-sm font-semibold text-destructive">{m.remove_card_link()}</h3>
