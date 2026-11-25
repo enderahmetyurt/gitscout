@@ -1,4 +1,4 @@
-/** Bayrağı gösterilen ülkeler. Yeni ülke eklenince `CountryFlag` içine bayrağı da çizilir. */
+/** Bayrağı gösterilen ülkeler. Yeni ülke eklenince bayrağı `COUNTRY_FLAGS` içine de eklenir. */
 export const COUNTRIES = [
   "TR",
   "AR",

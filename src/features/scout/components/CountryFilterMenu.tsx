@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { CountryFlag } from "@/features/scout/components/CountryFlag"
+import { COUNTRY_FLAGS, FLAG_CLASS } from "@/features/scout/constants/country-flag.constants"
 import { UNKNOWN_COUNTRY } from "@/features/scout/constants/player-country.constants"
 import { parseCountry } from "@/features/scout/helpers/filter-params"
 import { countPlayerCountries, countryName } from "@/features/scout/helpers/player-country"
@@ -34,6 +34,8 @@ export function CountryFilterMenu({ players }: CountryFilterMenuProps) {
   const { filters, setFilters } = useLeaderboardSearch()
   const { countries, unknown } = countPlayerCountries(players)
   const selected = filters.country
+  const SelectedFlag =
+    selected && selected !== UNKNOWN_COUNTRY ? COUNTRY_FLAGS[selected] : undefined
 
   return (
     <DropdownMenu>
@@ -41,9 +43,9 @@ export function CountryFilterMenu({ players }: CountryFilterMenuProps) {
         aria-label={m.filter_country()}
         className={buttonVariants({ variant: "outline", size: "sm" })}
       >
-        {selected && selected !== UNKNOWN_COUNTRY ? (
+        {selected && SelectedFlag && selected !== UNKNOWN_COUNTRY ? (
           <>
-            <CountryFlag country={selected} />
+            <SelectedFlag aria-hidden className={FLAG_CLASS} />
             {countryName(selected)}
           </>
         ) : (
@@ -53,7 +55,7 @@ export function CountryFilterMenu({ players }: CountryFilterMenuProps) {
           </>
         )}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="max-h-80 w-52 overscroll-contain">
+      <DropdownMenuContent align="end" className="max-h-80 w-auto min-w-56 overscroll-contain">
         <DropdownMenuGroup>
           <DropdownMenuLabel>{m.filter_country()}</DropdownMenuLabel>
           <DropdownMenuRadioGroup
@@ -64,13 +66,16 @@ export function CountryFilterMenu({ players }: CountryFilterMenuProps) {
               {m.filter_all_countries()}
               <Count value={players.length} />
             </DropdownMenuRadioItem>
-            {countries.map(({ country, count }) => (
-              <DropdownMenuRadioItem key={country} value={country}>
-                <CountryFlag country={country} />
-                {countryName(country)}
-                <Count value={count} />
-              </DropdownMenuRadioItem>
-            ))}
+            {countries.map(({ country, count }) => {
+              const Flag = COUNTRY_FLAGS[country]
+              return (
+                <DropdownMenuRadioItem key={country} value={country}>
+                  <Flag aria-hidden className={FLAG_CLASS} />
+                  <span className="whitespace-nowrap">{countryName(country)}</span>
+                  <Count value={count} />
+                </DropdownMenuRadioItem>
+              )
+            })}
             {unknown > 0 ? (
               <>
                 <DropdownMenuSeparator />

@@ -3,36 +3,42 @@ import { useRef, useState } from "react"
 import { toCanvas } from "html-to-image"
 
 const PIXEL_RATIO = 2
-/** Kartın etrafındaki koyu zemin ve altındaki adres şeridi (CSS piksel). */
-const PADDING = 24
-const FOOTER = 36
-const BACKGROUND = "#0a0a0a"
 const SITE = "gitscout.io"
 
 /**
- * Kartı koyu bir zemine yerleştirip altına site adresini yazar; paylaşılan görsel nereden geldiğini söyler.
- * Kart DOM'u tuvale çizilir (avatar CORS'a izin verdiği için mümkün), sonra çerçeveli görsele aktarılır.
+ * Rozetler sayfada açıklamalarıyla anlamlı, indirilen görselde ise ne oldukları anlaşılmıyor.
+ * Bu yüzden görselde rozetler çıkarılır, yerlerine kulüp adıyla aynı satıra site adresi yazılır;
+ * paylaşılan kart ek bir çerçeveye gerek kalmadan nereden geldiğini söyler.
  */
 async function renderShareImage(node: HTMLElement): Promise<string> {
-  const card = await toCanvas(node, { pixelRatio: PIXEL_RATIO, cacheBust: true })
-  const pad = PADDING * PIXEL_RATIO
-  const footer = FOOTER * PIXEL_RATIO
-  const canvas = document.createElement("canvas")
-  canvas.width = card.width + pad * 2
-  canvas.height = card.height + pad * 2 + footer
+  const canvas = await toCanvas(node, {
+    pixelRatio: PIXEL_RATIO,
+    cacheBust: true,
+    filter: (child) => !(child instanceof HTMLElement && child.hasAttribute("data-card-badges"))
+  })
   const context = canvas.getContext("2d")
   if (!context) throw new Error("Tuval açılamadı")
 
-  context.fillStyle = BACKGROUND
-  context.fillRect(0, 0, canvas.width, canvas.height)
-  context.drawImage(card, pad, pad)
+  const club = node.querySelector<HTMLElement>("[data-card-club]")
+  const row = club?.parentElement
+  if (club && row) {
+    // Ölçüler ekrandaki karttan alınır ve tuvale oranlanır; küçük ekranlardaki `zoom` da böylece hesaba katılır.
+    const cardRect = node.getBoundingClientRect()
+    const rowRect = row.getBoundingClientRect()
+    const clubRect = club.getBoundingClientRect()
+    const scale = canvas.width / cardRect.width
+    const style = getComputedStyle(club)
 
-  const fontFamily = getComputedStyle(document.body).fontFamily
-  context.font = `600 ${15 * PIXEL_RATIO}px ${fontFamily}`
-  context.fillStyle = "#a3a3a3"
-  context.textAlign = "center"
-  context.textBaseline = "middle"
-  context.fillText(SITE, canvas.width / 2, pad + card.height + footer / 2 + pad / 4)
+    context.font = `${style.fontWeight} ${parseFloat(style.fontSize) * scale}px ${style.fontFamily}`
+    context.fillStyle = style.color
+    context.textAlign = "right"
+    context.textBaseline = "middle"
+    context.fillText(
+      SITE,
+      (rowRect.right - cardRect.left) * scale,
+      (clubRect.top + clubRect.height / 2 - cardRect.top) * scale
+    )
+  }
 
   return canvas.toDataURL("image/png")
 }

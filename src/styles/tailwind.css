@@ -38,6 +38,7 @@
   --chart-home: #3f8fd8;
   --chart-away: #bf7c24;
   --warning: oklch(0.7 0.15 75);
+  --github-star: oklch(0.72 0.17 75);
 
   /* Football Manager tarzı stat renkleri: düşükten yükseğe kırmızı → yeşil. */
   --stat-poor: #b91c1c;
@@ -81,6 +82,7 @@
   --chart-home: #3f8fd8;
   --chart-away: #bf7c24;
   --warning: oklch(0.8 0.15 80);
+  --github-star: oklch(0.85 0.17 90);
 
   --stat-poor: #f87171;
   --stat-fair: #fb923c;
@@ -122,6 +124,7 @@
   --color-chart-home: var(--chart-home);
   --color-chart-away: var(--chart-away);
   --color-warning: var(--warning);
+  --color-github-star: var(--github-star);
   --color-stat-poor: var(--stat-poor);
   --color-stat-fair: var(--stat-fair);
   --color-stat-good: var(--stat-good);

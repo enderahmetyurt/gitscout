@@ -19,12 +19,16 @@ export function playerCountryFilter(login: string): CountryFilter {
   return playerCountry(login) ?? UNKNOWN_COUNTRY
 }
 
-const COUNTRY_NAMES: Record<CountryCode, () => string> = {
-  TR: m.country_tr
+/** Uzun resmi adı menüyü taşıran ülkeler kısa adlarıyla yazılır ("Amerika Birleşik Devletleri" yerine "ABD"). */
+const SHORT_NAMES: Partial<Record<CountryCode, () => string>> = {
+  US: m.country_us
 }
 
+/** Ülke adı geçerli dilde, tarayıcının ve Node'un kendi ülke adları listesinden ("Almanya" / "Germany"). */
 export function countryName(country: CountryCode): string {
-  return COUNTRY_NAMES[country]()
+  const short = SHORT_NAMES[country]
+  if (short) return short()
+  return new Intl.DisplayNames([getLocale()], { type: "region" }).of(country) ?? country
 }
 
 type CountryCount = { country: CountryCode; count: number }

@@ -3,8 +3,10 @@ import type { Ref } from "react"
 import { cn } from "cn"
 
 import { BadgeIcon } from "@/features/scout/components/BadgeIcon"
+import { COUNTRY_FLAGS, FLAG_CLASS } from "@/features/scout/constants/country-flag.constants"
 import { STAT_ORDER } from "@/features/scout/constants/scoring.constants"
 import { STAT_TIER_TEXT } from "@/features/scout/constants/stat-tier.constants"
+import { countryName, playerCountry } from "@/features/scout/helpers/player-country"
 import {
   badgeName,
   clubLabel,
@@ -25,6 +27,9 @@ type PlayerCardProps = {
 const TURKISH_CHARS = /[çğıöşüÇĞİÖŞÜ]/
 
 export function PlayerCard({ player, ref }: PlayerCardProps) {
+  const country = playerCountry(player.login)
+  const Flag = country ? COUNTRY_FLAGS[country] : undefined
+
   return (
     <figure
       ref={ref}
@@ -41,34 +46,44 @@ export function PlayerCard({ player, ref }: PlayerCardProps) {
       </figcaption>
 
       {/* İç çerçeve: dış radius = iç radius (20px) + padding (8px). */}
-      <div className="scout-card-inner relative flex flex-1 flex-col rounded-[20px] px-5 pt-5 pb-4">
+      <div className="scout-card-inner relative flex min-h-0 flex-1 flex-col rounded-[20px] px-5 pt-5 pb-4">
         <div
           aria-hidden
           className="scout-card-texture pointer-events-none absolute inset-0 rounded-[20px]"
         />
 
         <div className="relative flex items-start justify-between">
-          <div className="flex flex-col">
+          {/* Kart sabit yükseklikte: bayrak akışa girerse alt satır taşar. Avatarın kavisli köşesindeki boşluğa yerleşir. */}
+          <div className="relative flex flex-col">
             <span className="scout-card-accent text-6xl leading-none font-bold tracking-tighter tabular-nums">
               {player.ovr}
             </span>
             <span lang="en" className="mt-1.5 text-xs font-semibold tracking-widest uppercase">
               {player.position}
             </span>
+            {country && Flag ? (
+              <Flag
+                role="img"
+                aria-label={countryName(country)}
+                title={countryName(country)}
+                className={cn(FLAG_CLASS, "absolute top-full left-0 mt-2 h-5")}
+              />
+            ) : null}
           </div>
           <span className="scout-card-chip rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide uppercase">
             {rarityLabel(player.rarity)}
           </span>
         </div>
 
-        <div className="relative mt-3 flex justify-center">
+        {/* Kart sabit yükseklikte: ad iki satıra sarılınca alt satır taşmasın diye boşluğu avatar küçülerek verir. */}
+        <div className="relative mt-3 flex h-38 min-h-0 shrink justify-center">
           <img
             src={player.avatarUrl}
             alt={m.avatar_alt({ name: player.name })}
             crossOrigin="anonymous"
             width={152}
             height={152}
-            className="scout-card-avatar size-38 rounded-full object-cover"
+            className="scout-card-avatar aspect-square h-full w-auto rounded-full object-cover"
           />
         </div>
 
@@ -107,13 +122,14 @@ export function PlayerCard({ player, ref }: PlayerCardProps) {
 
         <div className="relative mt-auto flex items-center justify-between pt-3 text-[11px]">
           <span
+            data-card-club
             lang="en"
             className="scout-card-muted truncate font-semibold tracking-wide uppercase"
           >
             {clubLabel(player.club)}
           </span>
           {player.badges.length > 0 ? (
-            <ul className="flex shrink-0 gap-1" aria-label={m.badges_heading()}>
+            <ul data-card-badges className="flex shrink-0 gap-1" aria-label={m.badges_heading()}>
               {player.badges.slice(0, 4).map((badge) => (
                 <li
                   key={badge.id}

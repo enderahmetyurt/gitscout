@@ -1,0 +1,52 @@
+import {
+  AR,
+  CN,
+  DK,
+  FI,
+  FR,
+  GB,
+  GR,
+  IE,
+  IN,
+  IT,
+  NL,
+  NO,
+  RU,
+  SG,
+  SK,
+  TR,
+  US
+} from "country-flag-icons/react/3x2"
+
+import type { CountryCode } from "@/features/scout/constants/player-country.constants"
+
+/**
+ * Emoji bayraklar Windows'ta harf olarak görünür; bu yüzden paketteki SVG'ler kullanılır.
+ * Tek tek içe aktarılır ki pakete yalnızca listedeki ülkelerin bayrakları girsin.
+ */
+export const COUNTRY_FLAGS: Record<CountryCode, typeof TR> = {
+  AR,
+  CN,
+  DK,
+  FI,
+  FR,
+  GB,
+  GR,
+  IE,
+  IN,
+  IT,
+  NL,
+  NO,
+  RU,
+  SG,
+  SK,
+  TR,
+  US
+}
+
+/**
+ * Hepsi 3:2 oranlı; açık renkli bayraklar zeminde kaybolmasın diye ince bir kenar çizgisi alır.
+ * `size-auto`, menü ve düğmelerin sınıfında `size-` geçmeyen SVG'leri 16×16 kareye zorlamasını kapatır.
+ */
+export const FLAG_CLASS =
+  "inline-block size-auto h-2.5 shrink-0 rounded-[2px] outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
