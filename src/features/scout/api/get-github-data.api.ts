@@ -110,6 +110,7 @@ const PROFILE_QUERY = /* GraphQL */ `
       name
       bio
       company
+      location
       avatarUrl
       createdAt
       followers {

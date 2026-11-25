@@ -26,6 +26,8 @@ const playerFactsSchema = z.object({
   avatarUrl: z.string(),
   bio: z.string().nullable(),
   company: z.string().nullable(),
+  /** GitHub profilindeki serbest metin konum; eski kayıtlarda yok. */
+  location: z.string().nullable().optional(),
   followers: z.number(),
   createdAt: z.string(),
   topOrg: z.string().nullable(),

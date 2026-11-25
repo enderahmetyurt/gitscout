@@ -30,7 +30,6 @@
   "home_top": "İlk {count}",
   "home_full_table": "Tüm tablo ({count})",
   "recent_title": "Son eklenenler",
-  "recent_updated": "Son eklenen {time} · {count} geliştirici",
   "recent_last_hour": "Son 1 saatte {count} geliştirici katıldı",
   "just_now": "az önce",
   "featured_label": "Saatin kartı",

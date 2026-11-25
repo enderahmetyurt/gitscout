@@ -117,7 +117,7 @@ function isSortKey(id: string): id is LeaderboardSearch["sort"] {
 }
 
 function PlayerCell({ player }: { player: ListPlayer }) {
-  const country = playerCountry(player.login)
+  const country = playerCountry(player)
   const Flag = country ? COUNTRY_FLAGS[country] : undefined
   return (
     <Link

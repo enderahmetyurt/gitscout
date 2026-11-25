@@ -14,6 +14,7 @@ import {
   longestStreak,
   toExactDisplayScore
 } from "@/features/scout/helpers/compute-stats"
+import { countryFromLocation } from "@/features/scout/helpers/location-country"
 import type {
   ListPlayer,
   PlayerFacts,
@@ -265,6 +266,7 @@ export function scorePlayer(player: StoredPlayer, now = new Date()): ScoredPlaye
     name: facts.name?.trim() || facts.login,
     avatarUrl: facts.avatarUrl,
     club: computeClub(facts),
+    country: countryFromLocation(facts.location),
     position: positionFrom(positionBreakdown),
     positionBreakdown,
     topRepos: computeTopRepos(facts),

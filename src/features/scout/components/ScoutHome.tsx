@@ -62,7 +62,12 @@ export function ScoutHome() {
         />
       </div>
 
-      <RecentlyAdded players={allPlayers} latest={data.latest} generatedAt={data.generatedAt} />
+      <RecentlyAdded
+        players={allPlayers}
+        latest={data.latest}
+        lastHourCount={data.lastHourCount}
+        generatedAt={data.generatedAt}
+      />
 
       <section className="flex flex-col gap-4" aria-labelledby="leaderboard-heading">
         <div className="flex flex-wrap items-center justify-between gap-3">

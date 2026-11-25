@@ -29,6 +29,8 @@ type Leaderboard = {
   featuredSeed: number
   /** En son eklenenler, yeniden eskiye. */
   latest: LatestAddition[]
+  /** Verinin üretildiği andan önceki bir saatte eklenen oyuncu sayısı. */
+  lastHourCount: number
   /**
    * Verinin üretildiği an. "5 dk önce" gibi göreli zamanlar buna göre yazılır; sunucu ile
    * tarayıcı aynı metni üretir.
@@ -52,6 +54,7 @@ type ListSnapshot = {
   players: ListPlayer[]
   recentLogins: string[]
   latest: LatestAddition[]
+  lastHourCount: number
 }
 
 let listCache: ListSnapshot | null = null
@@ -67,7 +70,8 @@ function loadList(): Promise<ListSnapshot> {
     const players = await getListPlayers()
     const recentLogins = await getRecentLogins()
     const latest = await getLatestAdditions(LATEST_LIMIT)
-    listCache = { at: Date.now(), players, recentLogins, latest }
+    const lastHourCount = await countRecentPlayers()
+    listCache = { at: Date.now(), players, recentLogins, latest, lastHourCount }
     return listCache
   })().finally(() => {
     listLoading = null
@@ -113,11 +117,12 @@ export const getBadgePlayer = createServerOnlyFn(
 /** Kayıtlı bütün oyuncular, genel puana göre sıralı. GitHub'a istek atmaz. */
 export const getLeaderboard = createServerFn({ method: "GET" }).handler(
   async (): Promise<Leaderboard> => {
-    const { at, players, recentLogins, latest } = await cachedList()
+    const { at, players, recentLogins, latest, lastHourCount } = await cachedList()
     return {
       players,
       recentLogins,
       latest,
+      lastHourCount,
       featuredSeed: Math.floor(Date.now() / HOUR_MS),
       generatedAt: new Date(at).toISOString()
     }

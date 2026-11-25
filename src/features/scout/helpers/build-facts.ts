@@ -188,6 +188,7 @@ export function buildFacts(input: BuildFactsInput): PlayerFacts {
     avatarUrl: user.avatarUrl,
     bio: user.bio,
     company: user.company,
+    location: user.location,
     followers: user.followers.totalCount,
     createdAt: user.createdAt,
     topOrg: topOrganization(user),

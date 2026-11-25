@@ -51,7 +51,8 @@ export type CountryFilter = CountryCode | typeof UNKNOWN_COUNTRY
  * Elle seçilmiş liste. Ülke, kişinin yaşadığı yer değil nereli olduğudur: Singapur'da yaşayan Evan You Çin,
  * Japonya'da yaşayan Dan Abramov Rusya sayılır. Türkler GitHub konumu ve adla, yabancılar Wikipedia, kendi
  * siteleri ya da röportajlarla teyit edildi; kesin olmayanlar listeye girmez ve "Belirsiz" görünür.
- * Konum serbest metin olduğu için veritabanına yazılmaz. Anahtarlar küçük harfli GitHub kullanıcı adıdır.
+ * Listede olmayanların ülkesi GitHub konumundan çıkarılır (`countryFromLocation`); bu liste her zaman önce gelir,
+ * çünkü konum yaşanılan yeri gösterir. Anahtarlar küçük harfli GitHub kullanıcı adıdır.
  */
 const PLAYERS_BY_COUNTRY: Record<CountryCode, readonly string[]> = {
   TR: [

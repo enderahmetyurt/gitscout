@@ -23,7 +23,7 @@ export function LeaderboardPage() {
     (player) =>
       (filters.positions.length === 0 || filters.positions.includes(player.position)) &&
       (filters.rarities.length === 0 || filters.rarities.includes(player.rarity)) &&
-      (filters.country === undefined || playerCountryFilter(player.login) === filters.country)
+      (filters.country === undefined || playerCountryFilter(player) === filters.country)
   )
   const players = rankPool.filter((player) => matchesPlayer(player, query))
 

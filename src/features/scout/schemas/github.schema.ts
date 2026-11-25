@@ -41,6 +41,7 @@ const profileResponseSchema = z.object({
       name: z.string().nullable(),
       bio: z.string().nullable(),
       company: z.string().nullable(),
+      location: z.string().nullable(),
       avatarUrl: z.string(),
       createdAt: z.string(),
       followers: z.object({ totalCount: z.number() }),

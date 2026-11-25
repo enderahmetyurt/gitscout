@@ -30,7 +30,6 @@
   "home_top": "Top {count}",
   "home_full_table": "Full table ({count})",
   "recent_title": "Recently added",
-  "recent_updated": "Latest card {time} · {count} developers",
   "recent_last_hour": {
     "declarations": ["input count", "local countPlural = count: plural"],
     "selectors": ["countPlural"],

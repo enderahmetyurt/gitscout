@@ -8,14 +8,20 @@ import {
 
 describe("oyuncu ülkesi", () => {
   it("kullanıcı adını büyük-küçük harf ayırmadan eşler", () => {
-    expect(playerCountry("OmerGulcicek")).toBe("TR")
-    expect(playerCountry("Gaearon")).toBe("RU")
-    expect(playerCountry("octocat")).toBeUndefined()
+    expect(playerCountry({ login: "OmerGulcicek" })).toBe("TR")
+    expect(playerCountry({ login: "Gaearon" })).toBe("RU")
+    expect(playerCountry({ login: "octocat" })).toBeUndefined()
+  })
+
+  it("listede yoksa GitHub konumundan çıkarılan ülkeyi kullanır, elle atanan önde gelir", () => {
+    expect(playerCountry({ login: "octocat", country: "DE" })).toBe("DE")
+    expect(playerCountry({ login: "fatih", country: "DE" })).toBe("TR")
+    expect(playerCountry({ login: "octocat", country: "XX" })).toBeUndefined()
   })
 
   it("ülkesi bilinmeyeni belirsiz sayar", () => {
-    expect(playerCountryFilter("octocat")).toBe("unknown")
-    expect(playerCountryFilter("fatih")).toBe("TR")
+    expect(playerCountryFilter({ login: "octocat" })).toBe("unknown")
+    expect(playerCountryFilter({ login: "fatih" })).toBe("TR")
   })
 
   it("ülkeleri sayar, belirsizleri ayrı tutar", () => {

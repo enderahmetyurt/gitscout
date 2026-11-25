@@ -1,3 +1,5 @@
+import type { CountryCode } from "@/features/scout/constants/player-country.constants"
+
 /** Ham GitHub verisinden çıkarılmış, skorlamaya giren gerçekler. Formüller değişince bunlardan yeniden hesaplanır. */
 
 export type CheckState = "SUCCESS" | "FAILURE" | "ERROR" | "PENDING" | "EXPECTED"
@@ -96,6 +98,8 @@ export type PlayerFacts = {
   avatarUrl: string
   bio: string | null
   company: string | null
+  /** GitHub profilindeki serbest metin konum; yenilenmemiş kayıtlarda yok. */
+  location?: string | null
   followers: number
   createdAt: string
   topOrg: string | null
@@ -272,6 +276,8 @@ export type ScoredPlayer = {
   avatarUrl: string
   /** Şirket ya da organizasyon; ikisi de yoksa null (serbest oyuncu). */
   club: string | null
+  /** GitHub konumundan çıkarılan ülke; bulunamazsa yok. Elle atanmış ülke bunun önüne geçer. */
+  country?: CountryCode
   position: Position
   positionBreakdown: PositionBreakdown
   topRepos: TopRepo[]

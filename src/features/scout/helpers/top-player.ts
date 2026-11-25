@@ -26,7 +26,7 @@ export function toTopPlayer(player: ListPlayer, index: number): TopPlayer {
     ovr: player.ovr,
     rarity: player.rarity,
     position: player.position,
-    country: playerCountry(player.login) ?? null,
+    country: playerCountry(player) ?? null,
     stats: {
       act: stats.act.value,
       imp: stats.imp.value,

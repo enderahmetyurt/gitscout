@@ -1,7 +1,10 @@
 import { Link } from "@tanstack/react-router"
+import { cn } from "cn"
 
 import { getLangParam } from "@/helpers/localized-url"
 
+import { COUNTRY_FLAGS, FLAG_CLASS } from "@/features/scout/constants/country-flag.constants"
+import { countryName, playerCountry } from "@/features/scout/helpers/player-country"
 import { formatRelative } from "@/features/scout/helpers/relative-time"
 import type { ListPlayer } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
@@ -10,20 +13,20 @@ import { getLocale } from "@/paraglide/runtime.js"
 type RecentlyAddedProps = {
   players: ListPlayer[]
   latest: { login: string; addedAt: string }[]
+  lastHourCount: number
   /** Göreli zamanların hesaplandığı an; sunucu ile tarayıcı aynı metni üretsin diye veriyle gelir. */
   generatedAt: string
 }
 
 /** Ana sayfada son eklenen kartlar ve sitenin ne kadar güncel olduğu. */
-export function RecentlyAdded({ players, latest, generatedAt }: RecentlyAddedProps) {
+export function RecentlyAdded({ players, latest, lastHourCount, generatedAt }: RecentlyAddedProps) {
   const locale = getLocale()
   const byLogin = new Map(players.map((player) => [player.login.toLowerCase(), player]))
   const entries = latest.flatMap((entry) => {
     const player = byLogin.get(entry.login.toLowerCase())
     return player ? [{ player, addedAt: entry.addedAt }] : []
   })
-  const newest = entries[0]
-  if (!newest) return null
+  if (entries.length === 0) return null
 
   const timeAgo = (addedAt: string) => formatRelative(addedAt, generatedAt, locale) ?? m.just_now()
 
@@ -34,38 +37,56 @@ export function RecentlyAdded({ players, latest, generatedAt }: RecentlyAddedPro
           {m.recent_title()}
         </h2>
         <p className="text-sm text-muted-foreground">
-          {m.recent_updated({ time: timeAgo(newest.addedAt), count: players.length })}
+          {m.recent_last_hour({ count: lastHourCount })}
         </p>
       </div>
       {/* Dar ekranda şerit kendi içinde kayar; geniş ekranda sekiz kart tek satıra sığar. */}
       <ul className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:mx-0 lg:grid lg:grid-cols-8 lg:overflow-visible lg:px-0 lg:pb-0">
-        {entries.map(({ player, addedAt }) => (
-          <li key={player.login} className="w-28 shrink-0 snap-start lg:w-auto">
-            <Link
-              to="/{-$lang}/u/$username"
-              params={{ lang: getLangParam(), username: player.login }}
-              aria-label={m.duel_open_card({ name: player.name })}
-              data-rarity={player.rarity}
-              className="scout-card card-lift flex rounded-xl p-1 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        {entries.map(({ player, addedAt }) => {
+          const country = playerCountry(player)
+          const Flag = country ? COUNTRY_FLAGS[country] : undefined
+          return (
+            <li
+              key={player.login}
+              className="flex w-28 shrink-0 snap-start flex-col gap-1.5 lg:w-auto"
             >
-              <span className="scout-card-inner flex w-full flex-col items-center gap-1.5 rounded-lg px-2 py-3">
-                <img
-                  src={player.avatarUrl}
-                  alt=""
-                  width={48}
-                  height={48}
-                  loading="lazy"
-                  className="size-12 rounded-full bg-muted"
-                />
-                <span className="w-full truncate text-center text-xs font-semibold">
-                  {player.name}
+              <Link
+                to="/{-$lang}/u/$username"
+                params={{ lang: getLangParam(), username: player.login }}
+                aria-label={m.duel_open_card({ name: player.name })}
+                data-rarity={player.rarity}
+                className="scout-card card-lift flex rounded-xl p-1 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              >
+                <span className="scout-card-inner relative flex w-full flex-col items-center gap-1.5 rounded-lg px-2 py-3">
+                  {/* Avatar ortada durur; bayrak sol üst köşedeki boşluğa yerleşir, akışı itmez. */}
+                  {country && Flag ? (
+                    <Flag
+                      role="img"
+                      aria-label={countryName(country)}
+                      title={countryName(country)}
+                      className={cn(FLAG_CLASS, "absolute top-2 left-2 h-3")}
+                    />
+                  ) : null}
+                  <img
+                    src={player.avatarUrl}
+                    alt=""
+                    width={48}
+                    height={48}
+                    loading="lazy"
+                    className="size-12 rounded-full bg-muted"
+                  />
+                  <span className="w-full truncate text-center text-xs font-semibold">
+                    {player.name}
+                  </span>
+                  <span className="text-lg leading-none font-bold tabular-nums">{player.ovr}</span>
                 </span>
-                <span className="text-lg leading-none font-bold tabular-nums">{player.ovr}</span>
-                <span className="scout-card-muted text-[11px]">{timeAgo(addedAt)}</span>
+              </Link>
+              <span className="text-center text-[11px] text-muted-foreground">
+                {timeAgo(addedAt)}
               </span>
-            </Link>
-          </li>
-        ))}
+            </li>
+          )
+        })}
       </ul>
     </section>
   )
