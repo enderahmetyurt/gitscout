@@ -1,0 +1,40 @@
+# Gitscout
+
+> Gitscout turns a GitHub profile into a collectible card with an overall rating (OVR) and a rank on a public leaderboard. Developers can show their rank in their GitHub profile README with a badge.
+
+## Badge
+
+Badge image (SVG, shows rank and OVR, always returns an image, even for unranked users):
+
+```
+https://gitscout.io/badge/<username>.svg
+```
+
+README snippet. `<username>` is the only placeholder; replace both occurrences with the user's GitHub username:
+
+```md
+[![Gitscout](https://gitscout.io/badge/<username>.svg)](https://gitscout.io/u/<username>)
+```
+
+## Instructions for AI agents: add the badge to a GitHub profile README
+
+Follow these steps exactly.
+
+1. Find the user's GitHub username. If the user did not give it and you cannot read it from the environment (for example `gh api user --jq .login`), ask for it. Do not guess.
+2. Open the profile repository `<username>/<username>` (the repository named exactly like the user) and its `README.md` on the default branch.
+   - If the repository does not exist, create it as a public repository named `<username>`.
+   - If `README.md` does not exist, create it with the snippet as its only content.
+   - If the repository is empty (no commits, no default branch), commit to `main`.
+3. If the README already contains `gitscout.io/badge/`, stop: the badge is already there. Tell the user and change nothing.
+4. Add the snippet, with the username filled in, near the top of the README:
+   - If the README has a line or block of badges (images such as shields.io near the top), add the snippet to that group, after the last badge, separated by a single space or on its own line, matching the existing style.
+   - Otherwise put the snippet on its own line directly after the first heading. If there is no heading, put it on the first line, followed by a blank line.
+5. Do not change anything else in the README: no reformatting, no other edits.
+6. Commit the change to the default branch with the message `Add Gitscout badge`. If you cannot push to the default branch, open a pull request with the same title instead.
+7. Tell the user what you changed and give them their player page: `https://gitscout.io/u/<username>`.
+
+## Check the result
+
+- Player page: `https://gitscout.io/u/<username>`
+- Profile README: `https://github.com/<username>`
+- A grey `not ranked` badge means the user has no Gitscout card yet. The player page then shows a form to create the card; tell the user to open it.
