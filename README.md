@@ -1,4 +1,4 @@
-<video src="https://github.com/omergulcicek/gitscout/raw/master/docs/gitscout-promo.mp4" controls muted width="100%"></video>
+[![Gitscout promo video: GitHub's scout report](docs/promo-poster.jpg)](docs/gitscout-promo.mp4)
 
 # Gitscout
 
@@ -130,4 +130,4 @@ Everything comes from GitHub's public API. Private repos are never read and no c
 
 ---
 
-Made by [Ömer Gülçiçek](https://github.com/omergulcicek).
+Made by [Ömer Gülçiçek](https://github.com/omergulcicek). Built with [ViraStack Start](https://virastack.com/start), a TanStack Start starter with AI coding rules.
