@@ -9,6 +9,7 @@ import { EmptyLeaderboard } from "@/features/scout/components/EmptyLeaderboard"
 import { FeaturedCard } from "@/features/scout/components/FeaturedCard"
 import { LeaderboardTable } from "@/features/scout/components/LeaderboardTable"
 import { RarityLegend } from "@/features/scout/components/RarityLegend"
+import { RecentlyAdded } from "@/features/scout/components/RecentlyAdded"
 import { STAT_ORDER } from "@/features/scout/constants/scoring.constants"
 import { statLabel, statShort } from "@/features/scout/helpers/player-text"
 import { useLeaderboard } from "@/features/scout/hooks/use-leaderboard"
@@ -58,6 +59,8 @@ export function ScoutHome() {
           seed={data.featuredSeed}
         />
       </div>
+
+      <RecentlyAdded players={allPlayers} latest={data.latest} generatedAt={data.generatedAt} />
 
       <section className="flex flex-col gap-4" aria-labelledby="leaderboard-heading">
         <div className="flex flex-wrap items-center justify-between gap-3">

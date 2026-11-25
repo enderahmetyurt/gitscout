@@ -107,6 +107,17 @@ export async function getRecentLogins(): Promise<string[]> {
   return rows.map((row) => row.login)
 }
 
+/** En son eklenen oyuncular, yeniden eskiye; ana sayfadaki "Son eklenenler" şeridi için. */
+export async function getLatestAdditions(
+  limit: number
+): Promise<{ login: string; addedAt: string }[]> {
+  const sql = getDb()
+  const rows = z
+    .array(z.object({ login: z.string(), created_at: z.date() }))
+    .parse(await sql`select login, created_at from players order by created_at desc limit ${limit}`)
+  return rows.map((row) => ({ login: row.login, addedAt: row.created_at.toISOString() }))
+}
+
 /** Son bir saatte eklenen oyuncu sayısı; kişisel veri tutmadan toplu eklemeyi sınırlar. */
 export async function countRecentPlayers(): Promise<number> {
   const sql = getDb()

@@ -1,0 +1,72 @@
+import { Link } from "@tanstack/react-router"
+
+import { getLangParam } from "@/helpers/localized-url"
+
+import { formatRelative } from "@/features/scout/helpers/relative-time"
+import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import * as m from "@/paraglide/messages.js"
+import { getLocale } from "@/paraglide/runtime.js"
+
+type RecentlyAddedProps = {
+  players: ScoredPlayer[]
+  latest: { login: string; addedAt: string }[]
+  /** Göreli zamanların hesaplandığı an; sunucu ile tarayıcı aynı metni üretsin diye veriyle gelir. */
+  generatedAt: string
+}
+
+/** Ana sayfada son eklenen kartlar ve sitenin ne kadar güncel olduğu. */
+export function RecentlyAdded({ players, latest, generatedAt }: RecentlyAddedProps) {
+  const locale = getLocale()
+  const byLogin = new Map(players.map((player) => [player.login.toLowerCase(), player]))
+  const entries = latest.flatMap((entry) => {
+    const player = byLogin.get(entry.login.toLowerCase())
+    return player ? [{ player, addedAt: entry.addedAt }] : []
+  })
+  const newest = entries[0]
+  if (!newest) return null
+
+  const timeAgo = (addedAt: string) => formatRelative(addedAt, generatedAt, locale) ?? m.just_now()
+
+  return (
+    <section className="flex flex-col gap-4" aria-labelledby="recent-heading">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h2 id="recent-heading" className="text-xl font-semibold">
+          {m.recent_title()}
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          {m.recent_updated({ time: timeAgo(newest.addedAt), count: players.length })}
+        </p>
+      </div>
+      {/* Dar ekranda şerit kendi içinde kayar; geniş ekranda sekiz kart tek satıra sığar. */}
+      <ul className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:mx-0 lg:grid lg:grid-cols-8 lg:overflow-visible lg:px-0 lg:pb-0">
+        {entries.map(({ player, addedAt }) => (
+          <li key={player.login} className="w-28 shrink-0 snap-start lg:w-auto">
+            <Link
+              to="/{-$lang}/u/$username"
+              params={{ lang: getLangParam(), username: player.login }}
+              aria-label={m.duel_open_card({ name: player.name })}
+              data-rarity={player.rarity}
+              className="scout-card card-lift flex rounded-xl p-1 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            >
+              <span className="scout-card-inner flex w-full flex-col items-center gap-1.5 rounded-lg px-2 py-3">
+                <img
+                  src={player.avatarUrl}
+                  alt=""
+                  width={48}
+                  height={48}
+                  loading="lazy"
+                  className="size-12 rounded-full bg-muted"
+                />
+                <span className="w-full truncate text-center text-xs font-semibold">
+                  {player.name}
+                </span>
+                <span className="text-lg leading-none font-bold tabular-nums">{player.ovr}</span>
+                <span className="scout-card-muted text-[11px]">{timeAgo(addedAt)}</span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}

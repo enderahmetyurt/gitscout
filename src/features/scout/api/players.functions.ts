@@ -6,6 +6,7 @@ import { fetchPlayerFacts } from "@/features/scout/api/fetch-player-facts.api"
 import { GithubError } from "@/features/scout/api/get-github-data.api"
 import {
   countRecentPlayers,
+  getLatestAdditions,
   getRecentLogins,
   getScoredPlayer,
   getScoredPlayers,
@@ -26,21 +27,40 @@ type Leaderboard = {
    * sunucuda çizilen kart ile tarayıcıdaki kart saat dönümünde bile aynı kalır.
    */
   featuredSeed: number
+  /** En son eklenenler, yeniden eskiye. */
+  latest: LatestAddition[]
+  /**
+   * Verinin üretildiği an. "5 dk önce" gibi göreli zamanlar buna göre yazılır; sunucu ile
+   * tarayıcı aynı metni üretir.
+   */
+  generatedAt: string
 }
 
+type LatestAddition = { login: string; addedAt: string }
+
 const HOUR_MS = 60 * 60_000
+const LATEST_LIMIT = 8
 
 /**
  * Aynı sunucu örneği bu süre içinde gelen istekleri veritabanına gitmeden karşılar. Veri haftada bir yenilenir;
  * yeni eklenen kart, ekleyen kişinin örneğinde hemen, diğer örneklerde en geç bu süre sonra listeye girer.
  */
 const LIST_CACHE_MS = 5 * 60_000
-let listCache: { at: number; players: ScoredPlayer[]; recentLogins: string[] } | null = null
+let listCache: {
+  at: number
+  players: ScoredPlayer[]
+  recentLogins: string[]
+  latest: LatestAddition[]
+} | null = null
 
 async function cachedList() {
   if (listCache && Date.now() - listCache.at < LIST_CACHE_MS) return listCache
-  const [players, recentLogins] = await Promise.all([getScoredPlayers(), getRecentLogins()])
-  listCache = { at: Date.now(), players, recentLogins }
+  const [players, recentLogins, latest] = await Promise.all([
+    getScoredPlayers(),
+    getRecentLogins(),
+    getLatestAdditions(LATEST_LIMIT)
+  ])
+  listCache = { at: Date.now(), players, recentLogins, latest }
   return listCache
 }
 
@@ -51,8 +71,14 @@ async function cachedPlayers(): Promise<ScoredPlayer[]> {
 /** Kayıtlı bütün oyuncular, genel puana göre sıralı. GitHub'a istek atmaz. */
 export const getLeaderboard = createServerFn({ method: "GET" }).handler(
   async (): Promise<Leaderboard> => {
-    const { players, recentLogins } = await cachedList()
-    return { players, recentLogins, featuredSeed: Math.floor(Date.now() / HOUR_MS) }
+    const { at, players, recentLogins, latest } = await cachedList()
+    return {
+      players,
+      recentLogins,
+      latest,
+      featuredSeed: Math.floor(Date.now() / HOUR_MS),
+      generatedAt: new Date(at).toISOString()
+    }
   }
 )
 
