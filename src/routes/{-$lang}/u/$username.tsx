@@ -4,10 +4,10 @@ import { siteConfig } from "@/config/site.config"
 
 import { hreflangLinks } from "@/helpers/localized-url"
 
-import { Pending } from "@/components/shared/Pending"
 import { playerQueryOptions } from "@/features/scout/api/players.queries"
 import { AddPlayerForm } from "@/features/scout/components/AddPlayerForm"
 import { PlayerDetail } from "@/features/scout/components/PlayerDetail"
+import { PlayerDetailSkeleton } from "@/features/scout/components/PlayerDetailSkeleton"
 import * as m from "@/paraglide/messages.js"
 
 export const Route = createFileRoute("/{-$lang}/u/$username")({
@@ -41,7 +41,7 @@ export const Route = createFileRoute("/{-$lang}/u/$username")({
       links: hreflangLinks(`/u/${params.username}`)
     }
   },
-  pendingComponent: Pending,
+  pendingComponent: PlayerDetailSkeleton,
   notFoundComponent: PlayerNotFound,
   component: PlayerPage
 })

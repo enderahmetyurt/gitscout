@@ -226,6 +226,7 @@
   "ranking": "Genel {overall}./{total} · {position} {inPosition}./{positionTotal}",
   "github_profile": "(GitHub profili, yeni sekmede açılır)",
   "player_heading": "{name}, {rarity} kart, genel {ovr}",
+  "player_loading": "Kart yükleniyor",
   "stats_heading": "İstatistikler",
   "badges_heading": "Rozetler",
   "badges_empty": "Henüz kazanılmış rozet yok.",

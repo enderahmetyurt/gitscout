@@ -233,6 +233,7 @@
   "ranking": "Overall #{overall}/{total} · {position} #{inPosition}/{positionTotal}",
   "github_profile": "(GitHub profile, opens in a new tab)",
   "player_heading": "{name}, {rarity} card, overall {ovr}",
+  "player_loading": "Loading card",
   "stats_heading": "Stats",
   "badges_heading": "Badges",
   "badges_empty": "No badges earned yet.",
