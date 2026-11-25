@@ -6,6 +6,12 @@ import type { Locale } from "@/paraglide/runtime.js"
 
 const OG_LOCALES: Record<Locale, string> = { en: "en_US", tr: "tr_TR" }
 
+/** Site geneli önizleme görselinin metni dile göre değişir; İngilizce olan varsayılan `og.png`. */
+const OG_IMAGES: Record<Locale, string> = {
+  en: siteConfig.ogImage,
+  tr: siteConfig.ogImage.replace(/og\.png$/, "og-tr.png")
+}
+
 /** Shared SEO fields used by the root route `head()` and social meta tags. */
 const defaultSeo = {
   title: siteConfig.name,
@@ -16,12 +22,11 @@ const defaultSeo = {
     type: "website",
     title: siteConfig.name,
     siteName: siteConfig.name,
-    images: [{ url: siteConfig.ogImage, width: 1200, height: 630, alt: siteConfig.name }]
+    images: [{ width: 1200, height: 630, alt: siteConfig.name }]
   },
   twitter: {
     card: "summary_large_image",
-    title: siteConfig.name,
-    images: [siteConfig.ogImage]
+    title: siteConfig.name
   }
 } as const
 
@@ -30,6 +35,7 @@ export function seoHeadMeta() {
   const og = defaultSeo.openGraph
   const twitter = defaultSeo.twitter
   const description = m.site_description()
+  const image = OG_IMAGES[getLocale()]
 
   return [
     { title: defaultSeo.title },
@@ -42,10 +48,10 @@ export function seoHeadMeta() {
     { property: "og:title", content: og.title },
     { property: "og:description", content: description },
     { property: "og:site_name", content: og.siteName },
-    { property: "og:image", content: og.images[0].url },
+    { property: "og:image", content: image },
     { name: "twitter:card", content: twitter.card },
     { name: "twitter:title", content: twitter.title },
     { name: "twitter:description", content: description },
-    { name: "twitter:image", content: twitter.images[0] }
+    { name: "twitter:image", content: image }
   ]
 }
