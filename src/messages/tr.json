@@ -19,6 +19,7 @@
   "error_github_rate_limit": "GitHub istek limiti doldu, biraz sonra tekrar dene.",
   "error_github_token": "GitHub token'ı eksik ya da geçersiz.",
   "error_github_request": "GitHub'a ulaşılamadı, tekrar dene.",
+  "error_too_many_requests": "Kısa sürede çok fazla kart ekledin. 10 dakika sonra tekrar dene.",
   "error_generic": "Bir şeyler ters gitti, tekrar dene.",
   "username_required": "Kullanıcı adı gir",
   "username_too_long": "Kullanıcı adı en fazla 39 karakter olabilir",
