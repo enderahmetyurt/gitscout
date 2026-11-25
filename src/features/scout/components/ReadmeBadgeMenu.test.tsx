@@ -8,16 +8,18 @@ import { ReadmeBadgeMenu } from "@/features/scout/components/ReadmeBadgeMenu"
 
 async function openMenu() {
   const user = userEvent.setup()
-  render(<ReadmeBadgeMenu login="octocat" />)
+  render(<ReadmeBadgeMenu login="octocat" ovr={82} rarity="gold" />)
   await user.click(screen.getByRole("button", { name: /readme badge/i }))
   return user
 }
 
 describe("ReadmeBadgeMenu", () => {
-  it("rozetin önizlemesini gösterir", async () => {
+  it("rozetin önizlemesini ağ isteği olmadan sayfadaki puandan üretir", async () => {
     await openMenu()
 
-    expect(await screen.findByAltText(/octocat/i)).toHaveAttribute("src", "/badge/octocat.svg")
+    const src = (await screen.findByAltText(/octocat/i)).getAttribute("src") ?? ""
+    expect(src).toMatch(/^data:image\/svg\+xml/)
+    expect(decodeURIComponent(src)).toContain("82 rating · gold")
   })
 
   it("AI ajanı için komutu kopyalar", async () => {

@@ -15,13 +15,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
+import { playerBadgeSvg, svgDataUri } from "@/features/scout/helpers/player-badge"
 import { readmeBadgeMarkdown } from "@/features/scout/helpers/readme-badge"
+import type { Rarity } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
 
-type ReadmeBadgeMenuProps = { login: string }
+type ReadmeBadgeMenuProps = { login: string; ovr: number; rarity: Rarity }
 
-/** Profil README'sine rozet eklemek için iki yol: AI ajanına verilecek komut ya da hazır Markdown. */
-export function ReadmeBadgeMenu({ login }: ReadmeBadgeMenuProps) {
+/**
+ * Profil README'sine rozet eklemek için iki yol: AI ajanına verilecek komut ya da hazır Markdown.
+ * Önizleme sayfadaki puan ve nadirlikten yerelde üretilir; gerçek rozet adresine istek atılmaz.
+ */
+export function ReadmeBadgeMenu({ login, ovr, rarity }: ReadmeBadgeMenuProps) {
   const copy = (via: "prompt" | "markdown") => {
     trackEvent({ name: "readme_badge_copied", login, via })
     const text =
@@ -46,7 +51,7 @@ export function ReadmeBadgeMenu({ login }: ReadmeBadgeMenuProps) {
         <DropdownMenuGroup>
           <DropdownMenuLabel className="flex justify-center">
             <img
-              src={`/badge/${login}.svg`}
+              src={svgDataUri(playerBadgeSvg({ ovr, rarity }))}
               alt={m.readme_badge_preview({ username: login })}
               height={20}
               className="h-5 w-auto"

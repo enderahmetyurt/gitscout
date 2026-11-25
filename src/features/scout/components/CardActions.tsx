@@ -71,7 +71,7 @@ export function CardActions({ player, onDownload, isDownloading }: CardActionsPr
         <Swords aria-hidden />
         {m.duel_button()}
       </Link>
-      <ReadmeBadgeMenu login={player.login} />
+      <ReadmeBadgeMenu login={player.login} ovr={player.ovr} rarity={player.rarity} />
     </div>
   )
 }
