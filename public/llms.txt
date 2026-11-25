@@ -23,7 +23,8 @@ Follow these steps exactly.
 1. Find the user's GitHub username. If the user did not give it and you cannot read it from the environment (for example `gh api user --jq .login`), ask for it. Do not guess.
 2. Open the profile repository `<username>/<username>` (the repository named exactly like the user) and its `README.md` on the default branch.
    - If the repository does not exist, create it as a public repository named `<username>`.
-   - If `README.md` does not exist, create it.
+   - If `README.md` does not exist, create it with the snippet as its only content.
+   - If the repository is empty (no commits, no default branch), commit to `main`.
 3. If the README already contains `gitscout.io/badge/`, stop: the badge is already there. Tell the user and change nothing.
 4. Add the snippet, with the username filled in, near the top of the README:
    - If the README has a line or block of badges (images such as shields.io near the top), add the snippet to that group, after the last badge, separated by a single space or on its own line, matching the existing style.
