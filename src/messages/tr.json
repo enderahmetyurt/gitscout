@@ -369,8 +369,12 @@
   "meta_duel_pair_description": "{left} ve {right} Gitscout'ta stat stat karşılaştırıldı.",
   "meta_about_description": "Gitscout'un herkese açık GitHub verisini altı stata ve genel puana nasıl çevirdiği, verilerinin nasıl kullanıldığı.",
   "badge_label": "Gitscout",
-  "badge_value": "#{rank} · OVR {ovr}",
-  "badge_not_ranked": "sırada değil",
+  "badge_value": "{ovr} puan · {tier}",
+  "badge_not_ranked": "puan yok",
+  "badge_tier_icon": "ikon",
+  "badge_tier_gold": "altın",
+  "badge_tier_silver": "gümüş",
+  "badge_tier_bronze": "bronz",
   "avatar_alt": "Gitscout - {name}",
   "github_star_button": "GitHub'da yıldız ver",
   "github_star_count": "{count} yıldız",
@@ -378,6 +382,6 @@
   "github_star_hero_after": "ver",
   "github_star_word": "yıldız",
   "rank_overall": "Genel",
-  "badges_show_all": "Tümünü gör ({count})",
+  "badges_show_all": "Tümünü gör (+{count} daha)",
   "badges_show_less": "Daha az göster"
 }

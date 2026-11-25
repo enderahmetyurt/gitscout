@@ -376,8 +376,12 @@
   "meta_duel_pair_description": "{left} and {right} compared stat by stat on Gitscout.",
   "meta_about_description": "How Gitscout turns public GitHub activity into six stats and an overall rating, and how your data is handled.",
   "badge_label": "Gitscout",
-  "badge_value": "#{rank} · OVR {ovr}",
-  "badge_not_ranked": "not ranked",
+  "badge_value": "{ovr} rating · {tier}",
+  "badge_not_ranked": "no rating",
+  "badge_tier_icon": "icon",
+  "badge_tier_gold": "gold",
+  "badge_tier_silver": "silver",
+  "badge_tier_bronze": "bronze",
   "avatar_alt": "Gitscout - {name}",
   "github_star_button": "Star on GitHub",
   "github_star_count": "{count} stars",
@@ -385,6 +389,6 @@
   "github_star_hero_after": "on GitHub",
   "github_star_word": "star",
   "rank_overall": "Overall",
-  "badges_show_all": "Show all ({count})",
+  "badges_show_all": "Show all (+{count} more)",
   "badges_show_less": "Show less"
 }

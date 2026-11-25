@@ -55,7 +55,7 @@ export function BadgeList({ badges }: BadgeListProps) {
           aria-expanded={expanded}
           onClick={() => setExpanded((value) => !value)}
         >
-          {expanded ? m.badges_show_less() : m.badges_show_all({ count: badges.length })}
+          {expanded ? m.badges_show_less() : m.badges_show_all({ count: hiddenCount })}
         </Button>
       ) : null}
     </section>

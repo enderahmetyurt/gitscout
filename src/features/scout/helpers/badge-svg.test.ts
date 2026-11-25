@@ -4,16 +4,16 @@ import { renderBadgeSvg } from "@/features/scout/helpers/badge-svg"
 
 describe("README rozeti", () => {
   it("nadirliğin rengini ve metni taşır", () => {
-    const svg = renderBadgeSvg({ label: "Gitscout", value: "#12 · OVR 81", tone: "gold" })
+    const svg = renderBadgeSvg({ label: "Gitscout", value: "81 rating · gold", tone: "gold" })
     expect(svg).toContain('fill="#e6b843"')
-    expect(svg).toContain("#12 · OVR 81")
-    expect(svg).toContain('aria-label="Gitscout: #12 · OVR 81"')
+    expect(svg).toContain("81 rating · gold")
+    expect(svg).toContain('aria-label="Gitscout: 81 rating · gold"')
   })
 
   it("uzun metinde genişlik büyür", () => {
     const width = (svg: string) => Number(/width="(\d+)"/.exec(svg)?.[1])
-    const short = renderBadgeSvg({ label: "Gitscout", value: "#1", tone: "icon" })
-    const long = renderBadgeSvg({ label: "Gitscout", value: "#1234 · OVR 99", tone: "icon" })
+    const short = renderBadgeSvg({ label: "Gitscout", value: "81", tone: "icon" })
+    const long = renderBadgeSvg({ label: "Gitscout", value: "99 rating · bronze", tone: "icon" })
     expect(width(long)).toBeGreaterThan(width(short))
   })
 

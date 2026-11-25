@@ -4,7 +4,7 @@
 
 ## Badge
 
-Badge image (SVG, shows rank and OVR, always returns an image, even for unranked users):
+Badge image (SVG, shows rating and tier, always returns an image, even for unranked users):
 
 ```
 https://gitscout.io/badge/<username>.svg
