@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/card.png" alt="Gitscout card of Ömer Gülçiçek: 78 overall, Gold, Frontend" width="300" />
+  <img src="docs/card.webp" alt="Gitscout card of Ömer Gülçiçek: 78 overall, Gold, Frontend" width="300" />
 </p>
 
 # Gitscout
