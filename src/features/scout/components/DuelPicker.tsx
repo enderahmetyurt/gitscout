@@ -7,7 +7,7 @@ import { getLangParam } from "@/helpers/localized-url"
 
 import { PlayerCombobox } from "@/features/scout/components/PlayerCombobox"
 import { useLeaderboard } from "@/features/scout/hooks/use-leaderboard"
-import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import type { ListPlayer } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
 
 const routeApi = getRouteApi("/{-$lang}/vs/")
@@ -17,14 +17,14 @@ export function DuelPicker() {
   const { data } = useLeaderboard()
   const search = routeApi.useSearch()
   const navigate = useNavigate()
-  const [left, setLeft] = useState<ScoredPlayer | null>(
+  const [left, setLeft] = useState<ListPlayer | null>(
     () =>
       data.players.find((player) => player.login.toLowerCase() === search.left?.toLowerCase()) ??
       null
   )
-  const [right, setRight] = useState<ScoredPlayer | null>(null)
+  const [right, setRight] = useState<ListPlayer | null>(null)
 
-  const choose = (side: "left" | "right", player: ScoredPlayer | null) => {
+  const choose = (side: "left" | "right", player: ListPlayer | null) => {
     const nextLeft = side === "left" ? player : left
     const nextRight = side === "right" ? player : right
     setLeft(nextLeft)

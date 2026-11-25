@@ -3,12 +3,12 @@ import { Link } from "@tanstack/react-router"
 import { getLangParam } from "@/helpers/localized-url"
 
 import { formatRelative } from "@/features/scout/helpers/relative-time"
-import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import type { ListPlayer } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
 import { getLocale } from "@/paraglide/runtime.js"
 
 type RecentlyAddedProps = {
-  players: ScoredPlayer[]
+  players: ListPlayer[]
   latest: { login: string; addedAt: string }[]
   /** Göreli zamanların hesaplandığı an; sunucu ile tarayıcı aynı metni üretsin diye veriyle gelir. */
   generatedAt: string

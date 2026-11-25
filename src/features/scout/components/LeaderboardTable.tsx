@@ -24,7 +24,7 @@ import {
   leaderboardSearchDefaults
 } from "@/features/scout/schemas/leaderboard-search.schema"
 import type { LeaderboardSearch } from "@/features/scout/schemas/leaderboard-search.schema"
-import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import type { ListPlayer } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
 
 const features = tableFeatures({
@@ -34,7 +34,7 @@ const features = tableFeatures({
 })
 
 /** Sıra, seçili filtrelerin içindeki genel puan sırasıdır; isim aramasından ve sütun sıralamasından etkilenmez. */
-type RankedPlayer = ScoredPlayer & { rank: number }
+type RankedPlayer = ListPlayer & { rank: number }
 
 const helper = createColumnHelper<typeof features, RankedPlayer>()
 
@@ -112,7 +112,7 @@ function isSortKey(id: string): id is LeaderboardSearch["sort"] {
   return LEADERBOARD_SORT_KEYS.some((key) => key === id)
 }
 
-function PlayerCell({ player }: { player: ScoredPlayer }) {
+function PlayerCell({ player }: { player: ListPlayer }) {
   return (
     <Link
       to="/{-$lang}/u/$username"
@@ -137,12 +137,12 @@ function PlayerCell({ player }: { player: ScoredPlayer }) {
 }
 
 type LeaderboardTableProps = {
-  players: ScoredPlayer[]
+  players: ListPlayer[]
   /**
    * Sıra numarasının sayıldığı liste: seçili filtrelerden geçen herkes, isim aramasından önce.
    * Sunucudan genel puana göre sıralı gelir.
    */
-  rankPool: ScoredPlayer[]
+  rankPool: ListPlayer[]
 }
 
 export function LeaderboardTable({ players, rankPool }: LeaderboardTableProps) {

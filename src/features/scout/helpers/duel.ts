@@ -1,5 +1,5 @@
 import { STAT_ORDER } from "@/features/scout/constants/scoring.constants"
-import type { ScoredPlayer, StatKey } from "@/features/scout/types/player.types"
+import type { ListPlayer, StatKey } from "@/features/scout/types/player.types"
 
 export type DuelSide = "left" | "right"
 
@@ -20,7 +20,7 @@ export type Duel = {
 }
 
 /** İki oyuncuyu stat stat karşılaştırır. Daha çok stat kazanan alır; eşitlikte genel puan bakılır. */
-export function computeDuel(left: ScoredPlayer, right: ScoredPlayer): Duel {
+export function computeDuel(left: ListPlayer, right: ListPlayer): Duel {
   const rounds = STAT_ORDER.map((key): DuelRound => {
     const a = left.stats[key].value
     const b = right.stats[key].value

@@ -31,7 +31,7 @@ import { useCountUp } from "@/features/scout/hooks/use-count-up"
 import { useImageCopy } from "@/features/scout/hooks/use-image-copy"
 import { useLeaderboard } from "@/features/scout/hooks/use-leaderboard"
 import { usePlayer } from "@/features/scout/hooks/use-player"
-import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import type { ListPlayer } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
 
 type DuelViewProps = {
@@ -219,7 +219,7 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
 }
 
 type DuelCornerProps = {
-  player: ScoredPlayer
+  player: ListPlayer
   isWinner: boolean
   side: DuelSide
   /** Kartın üstündeki arama: bu tarafı başka bir geliştiriciyle değiştirir. */
@@ -253,7 +253,7 @@ function DuelCorner({ player, isWinner, side, picker }: DuelCornerProps) {
 }
 
 /** Mobil için küçük kart: kart türünün rengi, fotoğraf ve isim. */
-function MiniCorner({ player, picker }: { player: ScoredPlayer; picker: ReactNode }) {
+function MiniCorner({ player, picker }: { player: ListPlayer; picker: ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-2">
       {picker}
@@ -279,7 +279,7 @@ function MiniCorner({ player, picker }: { player: ScoredPlayer; picker: ReactNod
   )
 }
 
-function Scoreboard({ duel, winner }: { duel: Duel; winner: ScoredPlayer | null }) {
+function Scoreboard({ duel, winner }: { duel: Duel; winner: ListPlayer | null }) {
   const left = useCountUp(duel.score.left)
   const right = useCountUp(duel.score.right)
   const done = left === duel.score.left && right === duel.score.right
@@ -375,7 +375,7 @@ function RoundBar({ value, wins, side }: { value: number; wins: boolean; side: D
   )
 }
 
-function Receipts({ left, right }: { left: ScoredPlayer; right: ScoredPlayer }) {
+function Receipts({ left, right }: { left: ListPlayer; right: ListPlayer }) {
   const rows = [
     { label: m.duel_row_commits(), left: left.year.commits, right: right.year.commits },
     { label: m.duel_row_prs(), left: left.year.prs, right: right.year.prs },

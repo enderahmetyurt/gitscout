@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest"
 
 import { featuredOrder } from "@/features/scout/helpers/featured-players"
-import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import type { ListPlayer } from "@/features/scout/types/player.types"
 
 // Seçim yalnızca kullanıcı adına ve kart türüne bakar.
-const player = (login: string, rarity: ScoredPlayer["rarity"]) =>
-  ({ login, rarity }) as ScoredPlayer
+const player = (login: string, rarity: ListPlayer["rarity"]) => ({ login, rarity }) as ListPlayer
 
 const players = [
   player("ikon", "icon"),
@@ -14,7 +13,7 @@ const players = [
   player("gumus", "silver"),
   player("bronz", "bronze")
 ]
-const logins = (list: ScoredPlayer[]) => list.map((entry) => entry.login)
+const logins = (list: ListPlayer[]) => list.map((entry) => entry.login)
 
 describe("vitrin sırası", () => {
   it("yalnızca Gold ve üstü kartları sıraya alır", () => {

@@ -15,6 +15,7 @@ import {
   toExactDisplayScore
 } from "@/features/scout/helpers/compute-stats"
 import type {
+  ListPlayer,
   PlayerFacts,
   PlayerRanking,
   Position,
@@ -232,9 +233,9 @@ function computeTitle(login: string, stats: Record<StatKey, Stat>, rarity: Rarit
  * Oyuncunun genel ve kendi mevkisindeki sırası. Ondalıklı puana göre sayılır; aynı sırayı
  * yalnızca ondalıklı puanı da eşit olanlar paylaşır.
  */
-export function computeRanking(player: ScoredPlayer, all: ScoredPlayer[]): PlayerRanking {
+export function computeRanking(player: ListPlayer, all: ListPlayer[]): PlayerRanking {
   const samePosition = all.filter((other) => other.position === player.position)
-  const ahead = (other: ScoredPlayer) => other.ovrExact > player.ovrExact
+  const ahead = (other: ListPlayer) => other.ovrExact > player.ovrExact
   return {
     overall: 1 + all.filter(ahead).length,
     total: all.length,

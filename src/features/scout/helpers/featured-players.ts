@@ -1,7 +1,7 @@
-import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import type { ListPlayer } from "@/features/scout/types/player.types"
 
 /** Vitrine yalnızca bu kart türleri çıkar; hiçbiri yoksa herkes aday olur. */
-const FEATURED_RARITIES = new Set<ScoredPlayer["rarity"]>(["icon", "gold"])
+const FEATURED_RARITIES = new Set<ListPlayer["rarity"]>(["icon", "gold"])
 
 /** Son 24 saatte eklenen bir kartın seçilme ağırlığı; diğerleri 1. */
 const RECENT_WEIGHT = 3
@@ -24,10 +24,10 @@ function seededRandom(seed: number): () => number {
  * İlk eleman "saatin kartı", sonrakiler "Başka kart" ile sırayla gelir.
  */
 export function featuredOrder(
-  players: ScoredPlayer[],
+  players: ListPlayer[],
   recentLogins: ReadonlySet<string>,
   seed: number
-): ScoredPlayer[] {
+): ListPlayer[] {
   const elite = players.filter((player) => FEATURED_RARITIES.has(player.rarity))
   const pool = elite.length > 0 ? elite : players
   const random = seededRandom(seed)

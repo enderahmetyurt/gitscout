@@ -3,9 +3,14 @@ import { z } from "zod"
 import { getDb, getRefreshDb } from "@/lib/db"
 
 import { REFRESH, SCORE_VERSION } from "@/features/scout/constants/scoring.constants"
+import { toListPlayer } from "@/features/scout/helpers/list-player"
 import { scorePlayer } from "@/features/scout/helpers/score-player"
-import { scoredPlayerSchema, storedPlayerSchema } from "@/features/scout/schemas/player.schema"
-import type { ScoredPlayer, StoredPlayer } from "@/features/scout/types/player.types"
+import {
+  listPlayerSchema,
+  scoredPlayerSchema,
+  storedPlayerSchema
+} from "@/features/scout/schemas/player.schema"
+import type { ListPlayer, ScoredPlayer, StoredPlayer } from "@/features/scout/types/player.types"
 
 /**
  * Oyuncular Supabase'deki `gitscout.players` tablosunda durur. Her oyuncu GitHub'dan bir kez çekilir ve
@@ -64,15 +69,37 @@ async function rescore(logins: string[]): Promise<ScoredPlayer[]> {
 }
 
 /** Bütün oyuncular, genel puana göre sıralı. */
-export async function getScoredPlayers(): Promise<ScoredPlayer[]> {
-  const sql = getDb()
-  const rows = z
-    .array(summaryRowSchema)
-    .parse(await sql`select login, scored, score_version from players order by ovr desc, login`)
+const listRowSchema = z.object({
+  login: z.string(),
+  summary: listPlayerSchema,
+  score_version: z.number()
+})
 
-  const current = rows.filter((row) => row.score_version === SCORE_VERSION).map((row) => row.scored)
+/**
+ * Bütün oyuncular, liste ekranlarının ihtiyacı kadar veriyle, genel puana göre sıralı. Hafifletme
+ * SQL'de yapılır: veritabanı uzak bölgede olduğu için taşınan her bayt istek süresine yansır.
+ * Rol dağılımı, repolar, arşetip ve stat parçaları atılır; statlardan yalnızca görünen puan kalır.
+ */
+export async function getListPlayers(): Promise<ListPlayer[]> {
+  const sql = getDb()
+  const rows = z.array(listRowSchema).parse(
+    await sql`
+      select login, score_version,
+        (scored - 'positionBreakdown' - 'topRepos' - 'archetype' - 'stats')
+          || jsonb_build_object('stats', (
+            select jsonb_object_agg(k, jsonb_build_object('key', k, 'value', v -> 'value'))
+            from jsonb_each(scored -> 'stats') as s(k, v)
+          )) as summary
+      from players
+      order by ovr desc, login
+    `
+  )
+
+  const current = rows
+    .filter((row) => row.score_version === SCORE_VERSION)
+    .map((row) => row.summary)
   const outdated = rows.filter((row) => row.score_version !== SCORE_VERSION).map((row) => row.login)
-  const players = [...current, ...(await rescore(outdated))]
+  const players = [...current, ...(await rescore(outdated)).map(toListPlayer)]
   return players.sort((a, b) => b.ovrExact - a.ovrExact || a.login.localeCompare(b.login))
 }
 

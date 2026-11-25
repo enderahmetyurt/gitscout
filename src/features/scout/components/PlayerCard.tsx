@@ -13,11 +13,11 @@ import {
   titleText
 } from "@/features/scout/helpers/player-text"
 import { statTier } from "@/features/scout/helpers/stat-tier"
-import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import type { ListPlayer } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
 
 type PlayerCardProps = {
-  player: ScoredPlayer
+  player: ListPlayer
   ref?: Ref<HTMLElement>
 }
 

@@ -7,19 +7,19 @@ import { GithubError } from "@/features/scout/api/get-github-data.api"
 import {
   countRecentPlayers,
   getLatestAdditions,
+  getListPlayers,
   getRecentLogins,
   getScoredPlayer,
-  getScoredPlayers,
   insertPlayer
 } from "@/features/scout/api/player-store"
 import { NEW_PLAYERS_PER_HOUR } from "@/features/scout/constants/scoring.constants"
 import { computeBenchmarks } from "@/features/scout/helpers/benchmarks"
 import { computeRanking } from "@/features/scout/helpers/score-player"
 import { addPlayerSchema, usernameSchema } from "@/features/scout/schemas/player.schema"
-import type { PlayerDetail, ScoredPlayer } from "@/features/scout/types/player.types"
+import type { ListPlayer, PlayerDetail, ScoredPlayer } from "@/features/scout/types/player.types"
 
 type Leaderboard = {
-  players: ScoredPlayer[]
+  players: ListPlayer[]
   /** Son 24 saatte eklenenler; vitrinde daha sık çıkarlar. */
   recentLogins: string[]
   /**
@@ -46,25 +46,41 @@ const LATEST_LIMIT = 8
  * yeni eklenen kart, ekleyen kişinin örneğinde hemen, diğer örneklerde en geç bu süre sonra listeye girer.
  */
 const LIST_CACHE_MS = 5 * 60_000
-let listCache: {
+
+type ListSnapshot = {
   at: number
-  players: ScoredPlayer[]
+  players: ListPlayer[]
   recentLogins: string[]
   latest: LatestAddition[]
-} | null = null
-
-async function cachedList() {
-  if (listCache && Date.now() - listCache.at < LIST_CACHE_MS) return listCache
-  const [players, recentLogins, latest] = await Promise.all([
-    getScoredPlayers(),
-    getRecentLogins(),
-    getLatestAdditions(LATEST_LIMIT)
-  ])
-  listCache = { at: Date.now(), players, recentLogins, latest }
-  return listCache
 }
 
-async function cachedPlayers(): Promise<ScoredPlayer[]> {
+let listCache: ListSnapshot | null = null
+let listLoading: Promise<ListSnapshot> | null = null
+
+/**
+ * Liste sorgusu ~400 KB taşır ve uzak bölgedeki veritabanından birkaç saniye sürebilir. Aynı anda gelen
+ * istekler (SSR, istemci, yeni sekme) aynı yüklemeyi bekler; sorgular da sırayla gider. Transaction
+ * pooler'da aynı bağlantıda üst üste binen sorgular takılıp sunucuyu kilitliyordu.
+ */
+function loadList(): Promise<ListSnapshot> {
+  listLoading ??= (async () => {
+    const players = await getListPlayers()
+    const recentLogins = await getRecentLogins()
+    const latest = await getLatestAdditions(LATEST_LIMIT)
+    listCache = { at: Date.now(), players, recentLogins, latest }
+    return listCache
+  })().finally(() => {
+    listLoading = null
+  })
+  return listLoading
+}
+
+async function cachedList(): Promise<ListSnapshot> {
+  if (listCache && Date.now() - listCache.at < LIST_CACHE_MS) return listCache
+  return loadList()
+}
+
+async function cachedPlayers(): Promise<ListPlayer[]> {
   return (await cachedList()).players
 }
 

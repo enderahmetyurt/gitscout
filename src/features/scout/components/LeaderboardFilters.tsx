@@ -16,11 +16,11 @@ import { rarityLabel } from "@/features/scout/helpers/player-text"
 import { rarityRange } from "@/features/scout/helpers/rarity-range"
 import { useLeaderboardSearch } from "@/features/scout/hooks/use-leaderboard-search"
 import { POSITIONS, RARITIES } from "@/features/scout/schemas/leaderboard-search.schema"
-import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import type { ListPlayer } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
 
 type LeaderboardFiltersProps = {
-  players: ScoredPlayer[]
+  players: ListPlayer[]
 }
 
 /** Radyo grubunda "hepsi" seçeneğinin değeri; filtreyi kaldırır. */

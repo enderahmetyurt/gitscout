@@ -288,6 +288,19 @@ export type ScoredPlayer = {
   fetchedAt: string
 }
 
+/** Listelerde bir statın yalnızca kartta görünen puanı; ham puan ve parçalar detay sayfasında. */
+export type ListStat = Pick<Stat, "key" | "value">
+
+/**
+ * Liste ekranlarının (ana sayfa, liderlik, kapışma) ihtiyacı kadar oyuncu verisi. Rol dağılımı,
+ * öne çıkan repolar, arşetip ve stat parçaları yalnızca detay sayfasında kullanılır; listeyi
+ * ~4 kat hafifletmek için taşınmaz. Tam `ScoredPlayer` bu tipe her yerde uyar.
+ */
+export type ListPlayer = Omit<
+  ScoredPlayer,
+  "positionBreakdown" | "topRepos" | "archetype" | "stats"
+> & { stats: Record<StatKey, ListStat> }
+
 export type BenchmarkKey = "commits" | "activeDays" | "longestStreak" | "stars" | "followers"
 
 /** Bir ölçüde oyuncunun diğer geliştiricilere göre yeri. */

@@ -10,12 +10,12 @@ import {
 import type { ChartConfig } from "@/components/ui/chart"
 import { RADAR_ORDER } from "@/features/scout/constants/scoring.constants"
 import { statLabel } from "@/features/scout/helpers/player-text"
-import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import type { ListPlayer } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
 
 type DuelRadarProps = {
-  left: ScoredPlayer
-  right: ScoredPlayer
+  left: ListPlayer
+  right: ListPlayer
 }
 
 /** İki oyuncunun altı statı aynı grafikte: hangi yönde kimin üstün olduğu tek bakışta. */

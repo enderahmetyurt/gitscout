@@ -8,11 +8,11 @@ import { getLangParam } from "@/helpers/localized-url"
 import { Button } from "@/components/ui/button"
 import { PlayerCard } from "@/features/scout/components/PlayerCard"
 import { featuredOrder } from "@/features/scout/helpers/featured-players"
-import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import type { ListPlayer } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
 
 type FeaturedCardProps = {
-  players: ScoredPlayer[]
+  players: ListPlayer[]
   recentLogins: string[]
   seed: number
 }

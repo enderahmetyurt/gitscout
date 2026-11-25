@@ -11,14 +11,14 @@ import {
 import { RarityChip } from "@/features/scout/components/RarityChip"
 import { matchesPlayer } from "@/features/scout/helpers/search-text"
 import { usernameSchema } from "@/features/scout/schemas/player.schema"
-import type { ScoredPlayer } from "@/features/scout/types/player.types"
+import type { ListPlayer } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
 
 type PlayerComboboxProps = {
   id: string
-  players: ScoredPlayer[]
-  value: ScoredPlayer | null
-  onChange: (player: ScoredPlayer | null) => void
+  players: ListPlayer[]
+  value: ListPlayer | null
+  onChange: (player: ListPlayer | null) => void
   placeholder: string
   autoFocus?: boolean
   /** Listede olmayan geçerli bir kullanıcı adı yazılınca kartını çıkarma seçeneği gösterilir. */
@@ -72,7 +72,7 @@ export function PlayerCombobox({
           )}
         </ComboboxEmpty>
         <ComboboxList>
-          {(player: ScoredPlayer) => (
+          {(player: ListPlayer) => (
             <ComboboxItem key={player.login} value={player}>
               <img
                 src={player.avatarUrl}
