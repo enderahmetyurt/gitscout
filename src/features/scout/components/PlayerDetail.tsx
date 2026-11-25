@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowUpRight } from "lucide-react"
 
 import { getLangParam } from "@/helpers/localized-url"
 
+import { GithubStarLink } from "@/components/shared/GithubStarLink"
 import { buttonVariants } from "@/components/ui/button"
 import { BadgeIcon } from "@/features/scout/components/BadgeIcon"
 import { Benchmarks } from "@/features/scout/components/Benchmarks"
@@ -86,6 +87,7 @@ export function PlayerDetail({ username }: PlayerDetailProps) {
               <ArrowUpRight aria-hidden className="size-4" />
               <span className="sr-only"> {m.github_profile()}</span>
             </a>
+            <GithubStarLink placement="card" />
           </div>
         </aside>
 

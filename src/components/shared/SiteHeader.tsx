@@ -3,6 +3,7 @@ import { cn } from "cn"
 
 import { getLangParam } from "@/helpers/localized-url"
 
+import { GithubStarButton } from "@/components/shared/GithubStarButton"
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher"
 import * as m from "@/paraglide/messages.js"
 
@@ -43,6 +44,7 @@ export function SiteHeader() {
             {m.nav_about()}
           </Link>
           <LanguageSwitcher />
+          <GithubStarButton />
         </nav>
       </div>
     </header>

@@ -370,5 +370,12 @@
   "badge_label": "Gitscout",
   "badge_value": "#{rank} · OVR {ovr}",
   "badge_not_ranked": "not ranked",
-  "avatar_alt": "Gitscout - {name}"
+  "avatar_alt": "Gitscout - {name}",
+  "github_star_button": "Star on GitHub",
+  "github_star_count": "{count} stars",
+  "github_star_hero_before": "Open source · Give it a",
+  "github_star_hero_after": "on GitHub",
+  "github_star_card_before": "Like it? Give it a",
+  "github_star_card_after": "on GitHub",
+  "github_star_word": "star"
 }

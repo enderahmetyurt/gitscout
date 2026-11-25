@@ -370,5 +370,12 @@
   "badge_label": "Gitscout",
   "badge_value": "#{rank} · OVR {ovr}",
   "badge_not_ranked": "sırada değil",
-  "avatar_alt": "Gitscout - {name}"
+  "avatar_alt": "Gitscout - {name}",
+  "github_star_button": "GitHub'da yıldız ver",
+  "github_star_count": "{count} yıldız",
+  "github_star_hero_before": "Açık kaynak · GitHub'da",
+  "github_star_hero_after": "ver",
+  "github_star_card_before": "Beğendiysen GitHub'da",
+  "github_star_card_after": "ver",
+  "github_star_word": "yıldız"
 }

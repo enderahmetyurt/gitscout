@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react"
 
 import { getLangParam } from "@/helpers/localized-url"
 
+import { GithubStarLink } from "@/components/shared/GithubStarLink"
 import { buttonVariants } from "@/components/ui/button"
 import { AddPlayerForm } from "@/features/scout/components/AddPlayerForm"
 import { EmptyLeaderboard } from "@/features/scout/components/EmptyLeaderboard"
@@ -39,6 +40,7 @@ export function ScoutHome() {
           <div className="max-w-xl">
             <AddPlayerForm />
           </div>
+          <GithubStarLink placement="hero" className="self-start" />
           {/* İki dilde de aynı düzen: kelime uzunluğu değişse de 3×2 ızgara taşmaz. */}
           <dl
             className="grid max-w-xl grid-cols-2 gap-x-4 gap-y-1.5 text-sm sm:grid-cols-3"
