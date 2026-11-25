@@ -19,12 +19,32 @@ export function isAuthorizedCron(header: string | null): boolean {
   return expected.length === received.length && timingSafeEqual(expected, received)
 }
 
-type RefreshResult = { refreshed: string[]; postponed: string[]; failed: string[] }
+type RefreshResult = {
+  refreshed: string[]
+  postponed: string[]
+  failed: string[]
+  /** Süre dolduğu ya da GitHub kotası bittiği için bu çalışmada denenmeyenler; sonraki çalışmada sıradalar. */
+  skipped: string[]
+}
 
-/** En eski birkaç kartı sırayla GitHub'dan yeniden çeker. Bir kartın hatası diğerlerini durdurmaz. */
-export async function refreshStalePlayers(): Promise<RefreshResult> {
-  const result: RefreshResult = { refreshed: [], postponed: [], failed: [] }
-  for (const login of await getStaleLogins(REFRESH.perRun)) {
+/** Kota ya da token hatası bir sonraki kartta da tekrarlanır; çalışma orada durur. */
+const isFatal = (error: unknown) =>
+  error instanceof GithubError && (error.kind === "rate-limit" || error.kind === "missing-token")
+
+/**
+ * En eski kartları sırayla GitHub'dan yeniden çeker; süre ya da kart sınırı dolunca durur.
+ * Bir kartın hatası diğerlerini durdurmaz, kota ya da token hatası ise çalışmayı bitirir.
+ */
+export async function refreshStalePlayers(clock: () => number = Date.now): Promise<RefreshResult> {
+  const result: RefreshResult = { refreshed: [], postponed: [], failed: [], skipped: [] }
+  const startedAt = clock()
+  const logins = await getStaleLogins(REFRESH.maxPerRun)
+
+  for (const [index, login] of logins.entries()) {
+    if (clock() - startedAt >= REFRESH.timeBudgetMs) {
+      result.skipped.push(...logins.slice(index))
+      break
+    }
     try {
       const facts = await fetchPlayerFacts(login)
       await replacePlayerFacts(login, {
@@ -37,13 +57,13 @@ export async function refreshStalePlayers(): Promise<RefreshResult> {
       if (error instanceof GithubError && error.kind === "not-found") {
         await postponePlayer(login)
         result.postponed.push(login)
-      } else {
-        console.error(
-          "[refresh] yenilenemedi",
-          login,
-          error instanceof Error ? error.message : error
-        )
-        result.failed.push(login)
+        continue
+      }
+      console.error("[refresh] yenilenemedi", login, error instanceof Error ? error.message : error)
+      result.failed.push(login)
+      if (isFatal(error)) {
+        result.skipped.push(...logins.slice(index + 1))
+        break
       }
     }
   }
