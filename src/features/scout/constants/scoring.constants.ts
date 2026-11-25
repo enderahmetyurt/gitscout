@@ -8,8 +8,12 @@ import type { Position, Rarity, StatKey } from "@/features/scout/types/player.ty
  */
 export const SCORE_VERSION = 4
 
-/** Saatte en fazla bu kadar yeni oyuncu eklenir: GitHub token limitini ve veritabanını korur. */
-export const NEW_PLAYERS_PER_HOUR = 120
+/**
+ * Saatte en fazla bu kadar yeni oyuncu eklenir: GitHub token limitini ve veritabanını korur.
+ * Kart başına ~9 GraphQL puanı; 5000 puanlık saatlik kotada ~550 kart eder, gerisi geçersiz
+ * aramalar, büyük profiller ve saatlik yenileme için pay.
+ */
+export const NEW_PLAYERS_PER_HOUR = 300
 
 /**
  * Otomatik yenileme: verisi `maxAgeDays` günden eski kartlar, en eskiden başlayarak her çalışmada
