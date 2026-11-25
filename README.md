@@ -1,4 +1,4 @@
-[![Gitscout promo video: GitHub's scout report](docs/promo-poster.jpg)](docs/gitscout-promo.mp4)
+[![Gitscout: a collectible GitHub card, radar chart, top repos and the leaderboard](docs/gitscout-preview.png)](https://gitscout.io)
 
 # Gitscout
 
