@@ -84,6 +84,14 @@ async function cachedPlayers(): Promise<ListPlayer[]> {
   return (await cachedList()).players
 }
 
+/** Önbellekteki listenin ilk `limit` oyuncusu ve verinin anı; herkese açık `/api/top.json` için. */
+export async function getTopPlayers(
+  limit: number
+): Promise<{ generatedAt: string; players: ListPlayer[] }> {
+  const { at, players } = await cachedList()
+  return { generatedAt: new Date(at).toISOString(), players: players.slice(0, limit) }
+}
+
 /** Kayıtlı bütün oyuncular, genel puana göre sıralı. GitHub'a istek atmaz. */
 export const getLeaderboard = createServerFn({ method: "GET" }).handler(
   async (): Promise<Leaderboard> => {

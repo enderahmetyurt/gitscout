@@ -1,0 +1,43 @@
+name: README leaderboard
+
+on:
+  schedule:
+    # Her gün 06:00 UTC (09:00 TSİ).
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: readme-leaderboard
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Update README
+        run: node scripts/update-readme.ts
+
+      # Sıralama değişmediyse dosya aynı kalır ve commit atılmaz.
+      - name: Commit changes
+        run: |
+          if git diff --quiet -- README.md; then
+            echo "Sıralama değişmedi."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "docs: README ilk 100 güncellendi"
+          git push

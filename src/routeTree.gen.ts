@@ -13,6 +13,7 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SiteDotwebmanifestRouteImport } from './routes/site[.]webmanifest'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as Char123LangChar125RouteImport } from './routes/{-$lang}'
+import { Route as ApiTopDotjsonRouteImport } from './routes/api/top[.]json'
 import { Route as Char123LangChar125IndexRouteImport } from './routes/{-$lang}/index'
 import { Route as Char123LangChar125AboutRouteImport } from './routes/{-$lang}/about'
 import { Route as Char123LangChar125LeaderboardRouteImport } from './routes/{-$lang}/leaderboard'
@@ -40,6 +41,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const Char123LangChar125Route = Char123LangChar125RouteImport.update({
   id: '/{-$lang}',
   path: '/{-$lang}',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTopDotjsonRoute = ApiTopDotjsonRouteImport.update({
+  id: '/api/top.json',
+  path: '/api/top.json',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Char123LangChar125IndexRoute = Char123LangChar125IndexRouteImport.update({
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/{-$lang}': typeof Char123LangChar125RouteWithChildren
+  '/api/top.json': typeof ApiTopDotjsonRoute
   '/{-$lang}/about': typeof Char123LangChar125AboutRoute
   '/{-$lang}/leaderboard': typeof Char123LangChar125LeaderboardRoute
   '/{-$lang}/': typeof Char123LangChar125IndexRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/top.json': typeof ApiTopDotjsonRoute
   '/{-$lang}/about': typeof Char123LangChar125AboutRoute
   '/{-$lang}/leaderboard': typeof Char123LangChar125LeaderboardRoute
   '/{-$lang}': typeof Char123LangChar125IndexRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/{-$lang}': typeof Char123LangChar125RouteWithChildren
+  '/api/top.json': typeof ApiTopDotjsonRoute
   '/{-$lang}/about': typeof Char123LangChar125AboutRoute
   '/{-$lang}/leaderboard': typeof Char123LangChar125LeaderboardRoute
   '/{-$lang}/': typeof Char123LangChar125IndexRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/site.webmanifest'
     | '/sitemap.xml'
     | '/{-$lang}'
+    | '/api/top.json'
     | '/{-$lang}/about'
     | '/{-$lang}/leaderboard'
     | '/{-$lang}/'
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/site.webmanifest'
     | '/sitemap.xml'
+    | '/api/top.json'
     | '/{-$lang}/about'
     | '/{-$lang}/leaderboard'
     | '/{-$lang}'
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/site.webmanifest'
     | '/sitemap.xml'
     | '/{-$lang}'
+    | '/api/top.json'
     | '/{-$lang}/about'
     | '/{-$lang}/leaderboard'
     | '/{-$lang}/'
@@ -179,6 +191,7 @@ export interface RootRouteChildren {
   SiteDotwebmanifestRoute: typeof SiteDotwebmanifestRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   Char123LangChar125Route: typeof Char123LangChar125RouteWithChildren
+  ApiTopDotjsonRoute: typeof ApiTopDotjsonRoute
   ApiCronRefreshRoute: typeof ApiCronRefreshRoute
 }
 
@@ -210,6 +223,13 @@ declare module '@tanstack/react-router' {
       path: '/{-$lang}'
       fullPath: '/{-$lang}'
       preLoaderRoute: typeof Char123LangChar125RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/top.json': {
+      id: '/api/top.json'
+      path: '/api/top.json'
+      fullPath: '/api/top.json'
+      preLoaderRoute: typeof ApiTopDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/{-$lang}/': {
@@ -299,6 +319,7 @@ const rootRouteChildren: RootRouteChildren = {
   SiteDotwebmanifestRoute: SiteDotwebmanifestRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   Char123LangChar125Route: Char123LangChar125RouteWithChildren,
+  ApiTopDotjsonRoute: ApiTopDotjsonRoute,
   ApiCronRefreshRoute: ApiCronRefreshRoute,
 }
 export const routeTree = rootRouteImport

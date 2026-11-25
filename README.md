@@ -15,6 +15,13 @@ Type a GitHub username and Gitscout reads the public profile: contributions, rep
 
 Scores come from simple formulas, not AI. They measure visible GitHub activity, not how good a developer is.
 
+## Top 100
+
+The 100 highest-rated developers on Gitscout, refreshed every day from [the leaderboard](https://gitscout.io/leaderboard). ACT: Activity, IMP: Impact, COM: Community, REP: Reputation, CON: Consistency, EXP: Experience.
+
+<!-- LEADERBOARD:START -->
+<!-- LEADERBOARD:END -->
+
 ## Privacy
 
 Everything comes from GitHub's public API. Private repos are never read and no contact details are stored. Anyone can add any username; if you'd rather not be listed, [open an issue](https://github.com/omergulcicek/gitscout/issues/new) and your card will be removed.
