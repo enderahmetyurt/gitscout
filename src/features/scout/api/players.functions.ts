@@ -84,13 +84,17 @@ async function cachedPlayers(): Promise<ListPlayer[]> {
   return (await cachedList()).players
 }
 
-/** Önbellekteki listenin ilk `limit` oyuncusu ve verinin anı; herkese açık `/api/top.json` için. */
-export async function getTopPlayers(
-  limit: number
-): Promise<{ generatedAt: string; players: ListPlayer[] }> {
-  const { at, players } = await cachedList()
-  return { generatedAt: new Date(at).toISOString(), players: players.slice(0, limit) }
-}
+/**
+ * Önbellekteki listenin ilk `limit` oyuncusu ve verinin anı; herkese açık `/api/top.json` için.
+ * `createServerOnlyFn` şart: düz bir fonksiyon, rota dosyası üzerinden veritabanı istemcisini tarayıcı
+ * paketine taşıyor ve sayfa açılışta çöküyordu.
+ */
+export const getTopPlayers = createServerOnlyFn(
+  async (limit: number): Promise<{ generatedAt: string; players: ListPlayer[] }> => {
+    const { at, players } = await cachedList()
+    return { generatedAt: new Date(at).toISOString(), players: players.slice(0, limit) }
+  }
+)
 
 /**
  * README rozeti için oyuncunun genel sıradaki yeri; kayıtlı değilse `null`. Önbellekteki listeden
