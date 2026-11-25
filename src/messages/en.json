@@ -348,5 +348,12 @@
   "footer_built_after": "",
   "about_weights_title": "Share of the overall rating",
   "about_weights_center": "Overall",
-  "about_rating_note": "Cards are refreshed from GitHub automatically every {days} days. Scoring is watched as new cards come in; if a mistake or unfairness turns up, the formula is fixed and everyone's rating is recalculated."
+  "about_rating_note": "Cards are refreshed from GitHub automatically every {days} days. Scoring is watched as new cards come in; if a mistake or unfairness turns up, the formula is fixed and everyone's rating is recalculated.",
+  "meta_home": "Gitscout · GitHub profile cards and leaderboard",
+  "meta_leaderboard_description": "Developers ranked by their Gitscout rating. Filter by role and tier, and see who leads each stat.",
+  "meta_duel_description": "Pick two developers and compare their Gitscout cards stat by stat.",
+  "meta_duel_pair": "{left} vs {right} · Gitscout",
+  "meta_duel_pair_description": "{left} and {right} compared stat by stat on Gitscout.",
+  "meta_about_description": "How Gitscout turns public GitHub activity into six stats and an overall rating, and how your data is handled.",
+  "avatar_alt": "Gitscout - {name}"
 }

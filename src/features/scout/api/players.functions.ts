@@ -40,9 +40,12 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(
 )
 
 export const getPlayer = createServerFn({ method: "GET" })
-  .validator(z.object({ username: usernameSchema }))
+  // Geçersiz kullanıcı adı doğrulama hatası (500) değil, "bulunamadı" (404) sayılır.
+  .validator(z.object({ username: z.string() }))
   .handler(async ({ data }): Promise<PlayerDetail> => {
-    const player = await getScoredPlayer(data.username)
+    const username = usernameSchema.safeParse(data.username)
+    if (!username.success) throw notFound()
+    const player = await getScoredPlayer(username.data)
     if (!player) throw notFound()
     const all = await cachedPlayers()
     return {

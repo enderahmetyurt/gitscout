@@ -59,6 +59,7 @@ function PlayerNotFound() {
       tabIndex={-1}
       className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center gap-4 px-6 py-24 text-center outline-none"
     >
+      <meta name="robots" content="noindex" />
       <h1 className="text-3xl font-bold">{m.player_not_found_title({ username })}</h1>
       <p className="text-muted-foreground">{m.player_not_found_description()}</p>
       <div className="w-full text-left">

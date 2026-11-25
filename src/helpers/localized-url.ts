@@ -15,9 +15,10 @@ export function localizedUrl(path: string, locale: Locale) {
   return `${siteConfig.url}${localizeHref(path, { locale })}`
 }
 
-/** The `hreflang` alternates of a page, for a route's `head().links`. */
+/** The canonical URL and `hreflang` alternates of a page, for a route's `head().links`. */
 export function hreflangLinks(path: string) {
   return [
+    { rel: "canonical", href: localizedUrl(path, getLocale()) },
     ...locales.map((locale) => ({
       rel: "alternate",
       hrefLang: locale,

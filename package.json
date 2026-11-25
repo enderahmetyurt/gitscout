@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "TanStack Start + React 19 + Tailwind CSS 4 boilerplate focused on clean architecture, UI/UX, and agent-ready developer experience.",
+  "description": "Turn any GitHub profile into a collectible card and see where it ranks.",
   "license": "MIT",
   "virastack": {
     "template": "tanstack",

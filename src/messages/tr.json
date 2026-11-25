@@ -348,5 +348,12 @@
   "footer_built_after": " ile geliştirildi",
   "about_weights_title": "Genel puandaki payları",
   "about_weights_center": "Genel puan",
-  "about_rating_note": "Kartlar {days} günde bir GitHub'dan otomatik olarak yenilenir. Puanlama, yeni kartlar eklendikçe izleniyor; bir hata ya da haksızlık fark edilirse formül düzeltilir ve herkesin puanı baştan hesaplanır."
+  "about_rating_note": "Kartlar {days} günde bir GitHub'dan otomatik olarak yenilenir. Puanlama, yeni kartlar eklendikçe izleniyor; bir hata ya da haksızlık fark edilirse formül düzeltilir ve herkesin puanı baştan hesaplanır.",
+  "meta_home": "Gitscout · GitHub profil kartı ve liderlik tablosu",
+  "meta_leaderboard_description": "Geliştiriciler Gitscout puanına göre sıralı. Rol ve seviyeye göre filtrele, her statın liderini gör.",
+  "meta_duel_description": "İki geliştirici seç, Gitscout kartlarını stat stat karşılaştır.",
+  "meta_duel_pair": "{left} - {right} kapışması · Gitscout",
+  "meta_duel_pair_description": "{left} ve {right} Gitscout'ta stat stat karşılaştırıldı.",
+  "meta_about_description": "Gitscout'un herkese açık GitHub verisini altı stata ve genel puana nasıl çevirdiği, verilerinin nasıl kullanıldığı.",
+  "avatar_alt": "Gitscout - {name}"
 }

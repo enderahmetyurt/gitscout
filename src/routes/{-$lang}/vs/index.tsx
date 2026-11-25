@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 
+import { pageMeta } from "@/config/seo.config"
+
 import { hreflangLinks } from "@/helpers/localized-url"
 
 import { Pending } from "@/components/shared/Pending"
@@ -11,7 +13,10 @@ import * as m from "@/paraglide/messages.js"
 export const Route = createFileRoute("/{-$lang}/vs/")({
   validateSearch: duelSearchSchema,
   loader: ({ context }) => context.queryClient.ensureQueryData(leaderboardQueryOptions()),
-  head: () => ({ meta: [{ title: m.meta_duel() }], links: hreflangLinks("/vs") }),
+  head: () => ({
+    meta: pageMeta(m.meta_duel(), m.meta_duel_description()),
+    links: hreflangLinks("/vs")
+  }),
   pendingComponent: Pending,
   component: DuelPicker
 })

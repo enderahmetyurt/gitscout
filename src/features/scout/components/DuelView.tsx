@@ -267,7 +267,7 @@ function MiniCorner({ player, picker }: { player: ScoredPlayer; picker: ReactNod
         <span className="scout-card-inner flex w-full flex-col items-center gap-2 rounded-xl px-2 py-3">
           <img
             src={player.avatarUrl}
-            alt=""
+            alt={m.avatar_alt({ name: player.name })}
             width={64}
             height={64}
             className="size-16 rounded-full bg-muted"

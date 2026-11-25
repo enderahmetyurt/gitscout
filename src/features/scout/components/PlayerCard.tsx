@@ -64,7 +64,7 @@ export function PlayerCard({ player, ref }: PlayerCardProps) {
         <div className="relative mt-3 flex justify-center">
           <img
             src={player.avatarUrl}
-            alt=""
+            alt={m.avatar_alt({ name: player.name })}
             crossOrigin="anonymous"
             width={152}
             height={152}

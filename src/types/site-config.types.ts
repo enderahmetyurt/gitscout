@@ -3,10 +3,8 @@ export type SiteConfig = {
   shortName: string
   description: string
   url: string
-  apiUrl: string
   ogImage: string
   links: {
     github: string
-    twitter: string
   }
 }

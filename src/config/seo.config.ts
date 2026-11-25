@@ -30,6 +30,22 @@ const defaultSeo = {
   }
 } as const
 
+/** A page's own title and description, also used for its social previews. */
+export function pageMeta(title: string, description?: string) {
+  return [
+    { title },
+    { property: "og:title", content: title },
+    { name: "twitter:title", content: title },
+    ...(description
+      ? [
+          { name: "description", content: description },
+          { property: "og:description", content: description },
+          { name: "twitter:description", content: description }
+        ]
+      : [])
+  ]
+}
+
 /** Flatten `defaultSeo` into TanStack Router `head().meta` entries. */
 export function seoHeadMeta() {
   const og = defaultSeo.openGraph
@@ -42,7 +58,6 @@ export function seoHeadMeta() {
     { name: "description", content: description },
     { name: "author", content: defaultSeo.creator },
     { name: "creator", content: defaultSeo.creator },
-    { name: "robots", content: "index, follow" },
     { property: "og:type", content: og.type },
     { property: "og:locale", content: OG_LOCALES[getLocale()] },
     { property: "og:title", content: og.title },

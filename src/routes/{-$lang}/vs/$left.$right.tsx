@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 
+import { pageMeta } from "@/config/seo.config"
+
 import { getLangParam, hreflangLinks } from "@/helpers/localized-url"
 
 import { Pending } from "@/components/shared/Pending"
@@ -16,7 +18,10 @@ export const Route = createFileRoute("/{-$lang}/vs/$left/$right")({
       context.queryClient.ensureQueryData(leaderboardQueryOptions())
     ]),
   head: ({ params }) => ({
-    meta: [{ title: `${params.left} vs ${params.right} · Gitscout` }],
+    meta: pageMeta(
+      m.meta_duel_pair({ left: params.left, right: params.right }),
+      m.meta_duel_pair_description({ left: params.left, right: params.right })
+    ),
     links: hreflangLinks(`/vs/${params.left}/${params.right}`)
   }),
   pendingComponent: Pending,
@@ -36,6 +41,7 @@ function DuelNotFound() {
       tabIndex={-1}
       className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center gap-4 px-6 py-24 text-center outline-none"
     >
+      <meta name="robots" content="noindex" />
       <h1 className="text-3xl font-bold">{m.duel_not_found_title()}</h1>
       <p className="text-muted-foreground">{m.duel_not_found_description()}</p>
       <Link to="/{-$lang}/vs" params={{ lang: getLangParam() }} className={buttonVariants()}>

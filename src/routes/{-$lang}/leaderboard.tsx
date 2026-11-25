@@ -1,5 +1,7 @@
 import { createFileRoute, stripSearchParams } from "@tanstack/react-router"
 
+import { pageMeta } from "@/config/seo.config"
+
 import { hreflangLinks } from "@/helpers/localized-url"
 
 import { Pending } from "@/components/shared/Pending"
@@ -15,7 +17,10 @@ export const Route = createFileRoute("/{-$lang}/leaderboard")({
   validateSearch: leaderboardSearchSchema,
   search: { middlewares: [stripSearchParams(leaderboardSearchDefaults)] },
   loader: ({ context }) => context.queryClient.ensureQueryData(leaderboardQueryOptions()),
-  head: () => ({ meta: [{ title: m.meta_leaderboard() }], links: hreflangLinks("/leaderboard") }),
+  head: () => ({
+    meta: pageMeta(m.meta_leaderboard(), m.meta_leaderboard_description()),
+    links: hreflangLinks("/leaderboard")
+  }),
   pendingComponent: Pending,
   component: LeaderboardPage
 })
