@@ -27,15 +27,20 @@ function part(id: StatPartId, ratio: number, max: number): StatPart {
   return { id, points: Math.round(clamp01(ratio) * max * 10) / 10, max }
 }
 
-/** Ham puanı FIFA ölçeğine taşır; `DISPLAY_CURVE` noktaları arasında doğrusal. */
-export function toDisplayScore(raw: number): number {
+/** Ham puanı FIFA ölçeğine yuvarlamadan taşır; `DISPLAY_CURVE` noktaları arasında doğrusal. */
+export function toExactDisplayScore(raw: number): number {
   const value = Math.min(100, Math.max(0, raw))
   for (let index = 1; index < DISPLAY_CURVE.length; index += 1) {
     const [x0, y0] = DISPLAY_CURVE[index - 1] ?? [0, 0]
     const [x1, y1] = DISPLAY_CURVE[index] ?? [100, 100]
-    if (value <= x1) return Math.round(y0 + ((value - x0) / (x1 - x0)) * (y1 - y0))
+    if (value <= x1) return y0 + ((value - x0) / (x1 - x0)) * (y1 - y0)
   }
-  return Math.round(DISPLAY_CURVE[DISPLAY_CURVE.length - 1]?.[1] ?? value)
+  return DISPLAY_CURVE[DISPLAY_CURVE.length - 1]?.[1] ?? value
+}
+
+/** Kartta görünen tam sayı puan. */
+export function toDisplayScore(raw: number): number {
+  return Math.round(toExactDisplayScore(raw))
 }
 
 function makeStat(summary: StatSummary, parts: StatPart[]): Stat {

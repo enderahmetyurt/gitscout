@@ -12,7 +12,7 @@ import {
   computeStats,
   creditedStars,
   longestStreak,
-  toDisplayScore
+  toExactDisplayScore
 } from "@/features/scout/helpers/compute-stats"
 import type {
   PlayerFacts,
@@ -188,10 +188,18 @@ function computeClub(facts: PlayerFacts): string | null {
   return facts.topOrg
 }
 
-export function computeOvr(stats: Record<StatKey, Stat>): number {
+/**
+ * Genel puanın yuvarlanmamış hali (iki ondalık). Kartta görünmez; aynı tam sayıda
+ * buluşan oyuncuları sıralamak ve kimin gerçekten önde olduğunu görmek için saklanır.
+ */
+export function computeOvrExact(stats: Record<StatKey, Stat>): number {
   const keys = Object.keys(STAT_WEIGHTS).filter((key): key is StatKey => key in stats)
   const raw = keys.reduce((sum, key) => sum + stats[key].raw * STAT_WEIGHTS[key], 0)
-  return toDisplayScore(raw)
+  return Math.round(toExactDisplayScore(raw) * 100) / 100
+}
+
+export function computeOvr(stats: Record<StatKey, Stat>): number {
+  return Math.round(computeOvrExact(stats))
 }
 
 export function computeRarity(ovr: number): Rarity {
@@ -220,13 +228,17 @@ function computeTitle(login: string, stats: Record<StatKey, Stat>, rarity: Rarit
   }
 }
 
-/** Oyuncunun genel ve kendi mevkisindeki sırası; eşit puanlılar aynı sırayı paylaşır. */
+/**
+ * Oyuncunun genel ve kendi mevkisindeki sırası. Ondalıklı puana göre sayılır; aynı sırayı
+ * yalnızca ondalıklı puanı da eşit olanlar paylaşır.
+ */
 export function computeRanking(player: ScoredPlayer, all: ScoredPlayer[]): PlayerRanking {
   const samePosition = all.filter((other) => other.position === player.position)
+  const ahead = (other: ScoredPlayer) => other.ovrExact > player.ovrExact
   return {
-    overall: 1 + all.filter((other) => other.ovr > player.ovr).length,
+    overall: 1 + all.filter(ahead).length,
     total: all.length,
-    inPosition: 1 + samePosition.filter((other) => other.ovr > player.ovr).length,
+    inPosition: 1 + samePosition.filter(ahead).length,
     positionTotal: samePosition.length
   }
 }
@@ -235,7 +247,8 @@ export function computeRanking(player: ScoredPlayer, all: ScoredPlayer[]): Playe
 export function scorePlayer(player: StoredPlayer, now = new Date()): ScoredPlayer {
   const { facts } = player
   const stats = computeStats(facts, now)
-  const ovr = computeOvr(stats)
+  const ovrExact = computeOvrExact(stats)
+  const ovr = Math.round(ovrExact)
   const rarity = computeRarity(ovr)
   // Yerel saat bilinmiyorsa saat rozetleri hiç verilmez; varsayılan bir dilim yanlış rozet üretir.
   const clock: BadgeClock | null = player.timezone
@@ -255,6 +268,7 @@ export function scorePlayer(player: StoredPlayer, now = new Date()): ScoredPlaye
     positionBreakdown,
     topRepos: computeTopRepos(facts),
     ovr,
+    ovrExact,
     rarity,
     title: computeTitle(facts.login, stats, rarity),
     archetype: computeArchetype(stats, rarity),

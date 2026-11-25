@@ -72,6 +72,7 @@ describe("nadirlik ve genel puan", () => {
     expect(player.ovr).toBeLessThan(40)
     expect(player.rarity).toBe("bronze")
     expect(computeOvr(player.stats)).toBe(player.ovr)
+    expect(Math.round(player.ovrExact)).toBe(player.ovr)
   })
 
   it("kulübü company alanından @ olmadan alır", () => {
@@ -332,6 +333,7 @@ describe("sıralama", () => {
     const player = (login: string, ovr: number, position: "Frontend" | "Data") => ({
       ...scorePlayer(stored(makeFacts({ login })), NOW),
       ovr,
+      ovrExact: ovr,
       position
     })
     const all = [
@@ -348,5 +350,21 @@ describe("sıralama", () => {
       inPosition: 2,
       positionTotal: 3
     })
+  })
+
+  it("kartta aynı puanı gösterenleri ondalıklı puana göre ayırır", () => {
+    const player = (login: string, ovrExact: number) => ({
+      ...scorePlayer(stored(makeFacts({ login })), NOW),
+      ovr: Math.round(ovrExact),
+      ovrExact,
+      position: "Frontend" as const
+    })
+    const leader = player("zeynep", 90.4)
+    const runnerUp = player("ada", 89.6)
+    const all = [runnerUp, leader]
+
+    expect(leader.ovr).toBe(runnerUp.ovr)
+    expect(computeRanking(leader, all).overall).toBe(1)
+    expect(computeRanking(runnerUp, all).overall).toBe(2)
   })
 })

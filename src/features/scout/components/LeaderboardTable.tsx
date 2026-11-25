@@ -84,7 +84,8 @@ const columns = helper.columns([
       </span>
     )
   }),
-  helper.accessor("ovr", {
+  // Tam sayı puan gösterilir ama ondalıklı puana göre sıralanır; eşitlikte alfabe değil puan karar verir.
+  helper.accessor((player) => player.ovrExact, {
     id: "ovr",
     header: () => m.col_ovr(),
     sortDescFirst: true,

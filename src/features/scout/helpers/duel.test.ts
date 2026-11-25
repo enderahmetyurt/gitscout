@@ -20,6 +20,7 @@ const player = (ovr: number, values: Record<StatKey, number>): ScoredPlayer => {
     positionBreakdown: { repoCount: 0, pythonAsData: false, roles: [], languages: [] },
     topRepos: [],
     ovr,
+    ovrExact: ovr,
     rarity: "gold",
     title: { stat: "act", rarity: "gold", variant: 0 },
     archetype: { rarity: "gold", strengths: [], weakness: null },

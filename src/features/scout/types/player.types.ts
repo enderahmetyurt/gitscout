@@ -276,6 +276,8 @@ export type ScoredPlayer = {
   positionBreakdown: PositionBreakdown
   topRepos: TopRepo[]
   ovr: number
+  /** Yuvarlanmamış genel puan (iki ondalık); arayüzde gösterilmez, sıralamada eşitliği bozar. */
+  ovrExact: number
   rarity: Rarity
   title: TitleRef
   archetype: Archetype

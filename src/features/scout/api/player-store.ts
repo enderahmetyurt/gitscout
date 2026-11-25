@@ -73,7 +73,7 @@ export async function getScoredPlayers(): Promise<ScoredPlayer[]> {
   const current = rows.filter((row) => row.score_version === SCORE_VERSION).map((row) => row.scored)
   const outdated = rows.filter((row) => row.score_version !== SCORE_VERSION).map((row) => row.login)
   const players = [...current, ...(await rescore(outdated))]
-  return players.sort((a, b) => b.ovr - a.ovr || a.login.localeCompare(b.login))
+  return players.sort((a, b) => b.ovrExact - a.ovrExact || a.login.localeCompare(b.login))
 }
 
 export async function getScoredPlayer(login: string): Promise<ScoredPlayer | null> {
