@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="docs/card.webp" alt="Gitscout card of Ömer Gülçiçek: 78 overall, Gold, Frontend" width="300" />
-</p>
+<video src="https://github.com/omergulcicek/gitscout/raw/master/docs/gitscout-promo.mp4" controls muted width="100%"></video>
 
 # Gitscout
 
