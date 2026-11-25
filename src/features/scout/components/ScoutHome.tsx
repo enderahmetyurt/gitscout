@@ -86,7 +86,7 @@ export function ScoutHome() {
           <EmptyLeaderboard />
         ) : (
           <>
-            <LeaderboardTable players={players} allPlayers={allPlayers} />
+            <LeaderboardTable players={players} rankPool={allPlayers} />
             <RarityLegend className="justify-center" />
           </>
         )}

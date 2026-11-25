@@ -15,12 +15,14 @@ export function LeaderboardPage() {
   const { players: allPlayers } = data
   const { search, filters, update } = useLeaderboardSearch()
   const query = search.q ?? ""
-  const players = allPlayers.filter(
+  // Sıra numarası seçili mevki ve kart türü içinde sayılır; isim araması sırayı değiştirmez,
+  // yoksa aranan herkes 1. görünür.
+  const rankPool = allPlayers.filter(
     (player) =>
-      matchesPlayer(player, query) &&
       (filters.positions.length === 0 || filters.positions.includes(player.position)) &&
       (filters.rarities.length === 0 || filters.rarities.includes(player.rarity))
   )
+  const players = rankPool.filter((player) => matchesPlayer(player, query))
 
   return (
     <main
@@ -65,7 +67,7 @@ export function LeaderboardPage() {
           {m.filter_empty()}
         </p>
       ) : (
-        <LeaderboardTable players={players} allPlayers={allPlayers} />
+        <LeaderboardTable players={players} rankPool={rankPool} />
       )}
       {allPlayers.length > 0 ? <RarityLegend className="justify-center" /> : null}
     </main>

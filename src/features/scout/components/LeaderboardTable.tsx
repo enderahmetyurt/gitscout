@@ -33,7 +33,7 @@ const features = tableFeatures({
   sortFns: { text: sortFn_text }
 })
 
-/** Sıra, filtre ve aramadan bağımsız olarak tüm tablodaki genel puan sırasıdır. */
+/** Sıra, seçili filtrelerin içindeki genel puan sırasıdır; isim aramasından ve sütun sıralamasından etkilenmez. */
 type RankedPlayer = ScoredPlayer & { rank: number }
 
 const helper = createColumnHelper<typeof features, RankedPlayer>()
@@ -138,12 +138,15 @@ function PlayerCell({ player }: { player: ScoredPlayer }) {
 
 type LeaderboardTableProps = {
   players: ScoredPlayer[]
-  /** Genel sırası hesaplanacak tam liste (sunucudan genel puana göre sıralı gelir). */
-  allPlayers: ScoredPlayer[]
+  /**
+   * Sıra numarasının sayıldığı liste: seçili filtrelerden geçen herkes, isim aramasından önce.
+   * Sunucudan genel puana göre sıralı gelir.
+   */
+  rankPool: ScoredPlayer[]
 }
 
-export function LeaderboardTable({ players, allPlayers }: LeaderboardTableProps) {
-  const rankOf = new Map(allPlayers.map((player, index) => [player.login, index + 1]))
+export function LeaderboardTable({ players, rankPool }: LeaderboardTableProps) {
+  const rankOf = new Map(rankPool.map((player, index) => [player.login, index + 1]))
   const data = players.map((player) => ({ ...player, rank: rankOf.get(player.login) ?? 0 }))
   const { search, update } = useLeaderboardSearch()
   const sorting: SortingState = [{ id: search.sort, desc: search.dir === "desc" }]
