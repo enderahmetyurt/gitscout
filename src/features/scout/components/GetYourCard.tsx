@@ -28,7 +28,7 @@ export function GetYourCard() {
         to="/{-$lang}/about"
         params={{ lang: getLangParam() }}
         hash="remove-card"
-        className="rounded-sm text-sm text-destructive underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        className="inline-flex min-h-6 items-center rounded-sm text-xs text-muted-foreground underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50"
       >
         {m.remove_card_link()}
       </Link>

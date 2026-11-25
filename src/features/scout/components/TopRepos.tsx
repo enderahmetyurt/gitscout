@@ -24,18 +24,18 @@ export function TopRepos({ repos }: TopReposProps) {
       {repos.length === 0 ? (
         <p className="px-4 pb-4 text-sm text-muted-foreground">{m.top_repos_empty()}</p>
       ) : (
-        <ul className="divide-y border-t">
+        <ul className="flex flex-1 flex-col divide-y border-t">
           {repos.map((repo) => {
             // Kendi reposunda sahip zaten bu oyuncu; katkı verdiği repoda ürünün sahibi de yazılır.
             const [owner = "", name = repo.fullName] = repo.fullName.split("/")
             return (
-              <li key={repo.fullName}>
+              <li key={repo.fullName} className="flex flex-1">
                 <a
                   href={`https://github.com/${repo.fullName}`}
                   target="_blank"
                   rel="noreferrer"
                   title={repo.fullName}
-                  className="flex flex-col gap-1.5 px-4 py-3 text-sm outline-none hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:ring-inset"
+                  className="flex w-full flex-col justify-center gap-1.5 px-4 py-3 text-sm outline-none hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:ring-inset"
                 >
                   <span className="flex min-w-0 items-center gap-2">
                     <LanguageIcon name={repo.language} />

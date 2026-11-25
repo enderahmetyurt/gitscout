@@ -9,14 +9,13 @@ import * as m from "@/paraglide/messages.js"
 
 type GithubStarLinkProps = {
   /** Metni ve analitikte tıklanan yerleşimi seçer. */
-  placement: "hero" | "card"
+  placement: "hero"
   className?: string
 }
 
 /** Dillerde sözcük sırası farklı; yıldız ikonu cümlenin içinde, iki parçanın arasında durur. */
 const TEXT = {
-  hero: { before: m.github_star_hero_before, after: m.github_star_hero_after },
-  card: { before: m.github_star_card_before, after: m.github_star_card_after }
+  hero: { before: m.github_star_hero_before, after: m.github_star_hero_after }
 } as const
 
 /** Sayfa içindeki sakin "GitHub'da ⭐ ver" çağrısı; asıl eylemle yarışmasın diye soluk renkte. */

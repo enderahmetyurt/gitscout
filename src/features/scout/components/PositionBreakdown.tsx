@@ -9,10 +9,10 @@ type PositionBreakdownProps = {
 }
 
 const MAX_ROLES = 3
-const MAX_LANGUAGES = 4
+const MAX_LANGUAGES = 8
 const share = (value: number) => percent(value * 100)
 
-/** Mevkinin hangi alan ve dillerden çıktığını kısaca gösterir. */
+/** Mevkinin hangi alan ve dillerden çıktığını gösterir; tam genişlikte, diller sığdığı kadar etiket olarak dizilir. */
 export function PositionBreakdown({ position, breakdown }: PositionBreakdownProps) {
   const roles = breakdown.roles.filter((role) => role.share >= 0.01).slice(0, MAX_ROLES)
   const languages = breakdown.languages
@@ -38,9 +38,13 @@ export function PositionBreakdown({ position, breakdown }: PositionBreakdownProp
       </div>
 
       {roles.length > 0 ? (
-        <ul className="flex flex-col gap-2" aria-label={m.position_roles()}>
+        <ul className="flex flex-wrap gap-x-8 gap-y-3" aria-label={m.position_roles()}>
           {roles.map((role) => (
-            <li key={role.group} data-role={role.group} className="flex flex-col gap-1 text-xs">
+            <li
+              key={role.group}
+              data-role={role.group}
+              className="flex flex-1 basis-40 flex-col gap-1.5 text-sm"
+            >
               <div className="flex justify-between">
                 <span lang="en">{role.group}</span>
                 <span className="text-muted-foreground tabular-nums">{share(role.share)}</span>
@@ -57,20 +61,26 @@ export function PositionBreakdown({ position, breakdown }: PositionBreakdownProp
       ) : null}
 
       {languages.length > 0 ? (
-        <ul className="flex flex-col gap-1.5 border-t pt-3" aria-label={m.position_languages()}>
-          {languages.map((language) => {
-            return (
-              <li key={language.name} className="flex items-center gap-2 text-xs">
-                <LanguageIcon name={language.name} />
-                <span lang="en" className="min-w-0 flex-1 truncate font-medium">
-                  {language.name}
+        <ul className="flex flex-wrap gap-2 border-t pt-4" aria-label={m.position_languages()}>
+          {languages.map((language) => (
+            <li
+              key={language.name}
+              className="flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-xs"
+            >
+              <LanguageIcon name={language.name} />
+              <span lang="en" className="font-medium">
+                {language.name}
+              </span>
+              <span className="text-muted-foreground tabular-nums">
+                {share(language.share)}
+                {/* Dar ekranda yalnızca yüzde görünür; repo sayısı ekran okuyucuda kalır. */}
+                <span className="max-sm:sr-only">
+                  {" · "}
+                  {m.repo_count({ count: language.repos })}
                 </span>
-                <span className="text-muted-foreground tabular-nums">
-                  {m.language_share({ share: share(language.share), count: language.repos })}
-                </span>
-              </li>
-            )
-          })}
+              </span>
+            </li>
+          ))}
         </ul>
       ) : null}
     </section>
