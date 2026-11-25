@@ -14,6 +14,7 @@ import { Route as SiteDotwebmanifestRouteImport } from './routes/site[.]webmanif
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as Char123LangChar125RouteImport } from './routes/{-$lang}'
 import { Route as ApiTopDotjsonRouteImport } from './routes/api/top[.]json'
+import { Route as BadgeChar123usernameChar125DotsvgRouteImport } from './routes/badge/{$username}[.]svg'
 import { Route as Char123LangChar125IndexRouteImport } from './routes/{-$lang}/index'
 import { Route as Char123LangChar125AboutRouteImport } from './routes/{-$lang}/about'
 import { Route as Char123LangChar125LeaderboardRouteImport } from './routes/{-$lang}/leaderboard'
@@ -48,6 +49,12 @@ const ApiTopDotjsonRoute = ApiTopDotjsonRouteImport.update({
   path: '/api/top.json',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BadgeChar123usernameChar125DotsvgRoute =
+  BadgeChar123usernameChar125DotsvgRouteImport.update({
+    id: '/badge/{$username}.svg',
+    path: '/badge/{$username}.svg',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const Char123LangChar125IndexRoute = Char123LangChar125IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -100,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/{-$lang}': typeof Char123LangChar125RouteWithChildren
   '/api/top.json': typeof ApiTopDotjsonRoute
+  '/badge/{$username}.svg': typeof BadgeChar123usernameChar125DotsvgRoute
   '/{-$lang}/about': typeof Char123LangChar125AboutRoute
   '/{-$lang}/leaderboard': typeof Char123LangChar125LeaderboardRoute
   '/{-$lang}/': typeof Char123LangChar125IndexRoute
@@ -114,6 +122,7 @@ export interface FileRoutesByTo {
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/top.json': typeof ApiTopDotjsonRoute
+  '/badge/{$username}.svg': typeof BadgeChar123usernameChar125DotsvgRoute
   '/{-$lang}/about': typeof Char123LangChar125AboutRoute
   '/{-$lang}/leaderboard': typeof Char123LangChar125LeaderboardRoute
   '/{-$lang}': typeof Char123LangChar125IndexRoute
@@ -130,6 +139,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/{-$lang}': typeof Char123LangChar125RouteWithChildren
   '/api/top.json': typeof ApiTopDotjsonRoute
+  '/badge/{$username}.svg': typeof BadgeChar123usernameChar125DotsvgRoute
   '/{-$lang}/about': typeof Char123LangChar125AboutRoute
   '/{-$lang}/leaderboard': typeof Char123LangChar125LeaderboardRoute
   '/{-$lang}/': typeof Char123LangChar125IndexRoute
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/{-$lang}'
     | '/api/top.json'
+    | '/badge/{$username}.svg'
     | '/{-$lang}/about'
     | '/{-$lang}/leaderboard'
     | '/{-$lang}/'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/site.webmanifest'
     | '/sitemap.xml'
     | '/api/top.json'
+    | '/badge/{$username}.svg'
     | '/{-$lang}/about'
     | '/{-$lang}/leaderboard'
     | '/{-$lang}'
@@ -176,6 +188,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/{-$lang}'
     | '/api/top.json'
+    | '/badge/{$username}.svg'
     | '/{-$lang}/about'
     | '/{-$lang}/leaderboard'
     | '/{-$lang}/'
@@ -192,6 +205,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   Char123LangChar125Route: typeof Char123LangChar125RouteWithChildren
   ApiTopDotjsonRoute: typeof ApiTopDotjsonRoute
+  BadgeChar123usernameChar125DotsvgRoute: typeof BadgeChar123usernameChar125DotsvgRoute
   ApiCronRefreshRoute: typeof ApiCronRefreshRoute
 }
 
@@ -230,6 +244,13 @@ declare module '@tanstack/react-router' {
       path: '/api/top.json'
       fullPath: '/api/top.json'
       preLoaderRoute: typeof ApiTopDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/badge/{$username}.svg': {
+      id: '/badge/{$username}.svg'
+      path: '/badge/{$username}.svg'
+      fullPath: '/badge/{$username}.svg'
+      preLoaderRoute: typeof BadgeChar123usernameChar125DotsvgRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/{-$lang}/': {
@@ -320,6 +341,8 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   Char123LangChar125Route: Char123LangChar125RouteWithChildren,
   ApiTopDotjsonRoute: ApiTopDotjsonRoute,
+  BadgeChar123usernameChar125DotsvgRoute:
+    BadgeChar123usernameChar125DotsvgRoute,
   ApiCronRefreshRoute: ApiCronRefreshRoute,
 }
 export const routeTree = rootRouteImport

@@ -366,5 +366,8 @@
   "meta_duel_pair": "{left} - {right} kapışması · Gitscout",
   "meta_duel_pair_description": "{left} ve {right} Gitscout'ta stat stat karşılaştırıldı.",
   "meta_about_description": "Gitscout'un herkese açık GitHub verisini altı stata ve genel puana nasıl çevirdiği, verilerinin nasıl kullanıldığı.",
+  "badge_label": "Gitscout",
+  "badge_value": "#{rank} · OVR {ovr}",
+  "badge_not_ranked": "sırada değil",
   "avatar_alt": "Gitscout - {name}"
 }

@@ -366,5 +366,8 @@
   "meta_duel_pair": "{left} vs {right} · Gitscout",
   "meta_duel_pair_description": "{left} and {right} compared stat by stat on Gitscout.",
   "meta_about_description": "How Gitscout turns public GitHub activity into six stats and an overall rating, and how your data is handled.",
+  "badge_label": "Gitscout",
+  "badge_value": "#{rank} · OVR {ovr}",
+  "badge_not_ranked": "not ranked",
   "avatar_alt": "Gitscout - {name}"
 }

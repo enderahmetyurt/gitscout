@@ -1,5 +1,5 @@
 import { notFound } from "@tanstack/react-router"
-import { createServerFn } from "@tanstack/react-start"
+import { createServerFn, createServerOnlyFn } from "@tanstack/react-start"
 import { z } from "zod"
 
 import { fetchPlayerFacts } from "@/features/scout/api/fetch-player-facts.api"
@@ -91,6 +91,20 @@ export async function getTopPlayers(
   const { at, players } = await cachedList()
   return { generatedAt: new Date(at).toISOString(), players: players.slice(0, limit) }
 }
+
+/**
+ * README rozeti için oyuncunun genel sıradaki yeri; kayıtlı değilse `null`. Önbellekteki listeden
+ * okunur, böylece GitHub'ın görsel proxy'sinden gelen istekler veritabanına yük bindirmez.
+ */
+export const getBadgePlayer = createServerOnlyFn(
+  async (login: string): Promise<{ rank: number; player: ListPlayer } | null> => {
+    const key = login.toLowerCase()
+    const players = await cachedPlayers()
+    const index = players.findIndex((player) => player.login.toLowerCase() === key)
+    const player = players[index]
+    return player ? { rank: index + 1, player } : null
+  }
+)
 
 /** Kayıtlı bütün oyuncular, genel puana göre sıralı. GitHub'a istek atmaz. */
 export const getLeaderboard = createServerFn({ method: "GET" }).handler(
