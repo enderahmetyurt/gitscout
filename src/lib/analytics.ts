@@ -11,6 +11,7 @@ type AnalyticsEvent =
   | { name: "card_shared"; login: string; target: string }
   | { name: "duel_shared"; left: string; right: string; via: "image" | "link" | "x" }
   | { name: "github_star_clicked"; placement: "header" | "hero" | "card" }
+  | { name: "readme_badge_copied"; login: string; via: "prompt" | "markdown" }
 
 export function trackEvent({ name, ...properties }: AnalyticsEvent) {
   track(name, properties)
