@@ -1,9 +1,11 @@
 import { Link } from "@tanstack/react-router"
+import { Star } from "lucide-react"
 import { cn } from "cn"
 
 import { getLangParam } from "@/helpers/localized-url"
 
 import { COUNTRY_FLAGS, FLAG_CLASS } from "@/features/scout/constants/country-flag.constants"
+import { isGithubStar } from "@/features/scout/helpers/github-star"
 import { countryName, playerCountry } from "@/features/scout/helpers/player-country"
 import { formatRelative } from "@/features/scout/helpers/relative-time"
 import type { ListPlayer } from "@/features/scout/types/player.types"
@@ -58,7 +60,7 @@ export function RecentlyAdded({ players, latest, lastHourCount, generatedAt }: R
                 className="scout-card card-lift flex rounded-xl p-1 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
               >
                 <span className="scout-card-inner relative flex w-full flex-col items-center gap-1.5 rounded-lg px-2 py-3">
-                  {/* Avatar ortada durur; bayrak sol üst köşedeki boşluğa yerleşir, akışı itmez. */}
+                  {/* Avatar ortada durur; bayrak sol üst, GitHub Star yıldızı sağ üst köşedeki boşluğa yerleşir, akışı itmez. */}
                   {country && Flag ? (
                     <Flag
                       role="img"
@@ -66,6 +68,16 @@ export function RecentlyAdded({ players, latest, lastHourCount, generatedAt }: R
                       title={countryName(country)}
                       className={cn(FLAG_CLASS, "absolute top-2 left-2 h-3")}
                     />
+                  ) : null}
+                  {isGithubStar(player.login) ? (
+                    <span
+                      role="img"
+                      aria-label={m.github_star()}
+                      title={m.github_star()}
+                      className="absolute top-1.5 right-1.5 flex size-4 items-center justify-center rounded-full bg-black/75 ring-1 ring-white/30"
+                    >
+                      <Star aria-hidden className="size-2.5 fill-github-star text-github-star" />
+                    </span>
                   ) : null}
                   <img
                     src={player.avatarUrl}

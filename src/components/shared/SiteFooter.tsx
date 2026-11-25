@@ -4,6 +4,7 @@ import { siteConfig } from "@/config/site.config"
 
 import { getLangParam } from "@/helpers/localized-url"
 
+import { BuyMeACoffeeButton } from "@/components/shared/BuyMeACoffeeButton"
 import * as m from "@/paraglide/messages.js"
 
 const linkClass =
@@ -33,6 +34,7 @@ export function SiteFooter() {
           <Link to="/{-$lang}/about" params={{ lang: getLangParam() }} className={linkClass}>
             {m.nav_about()}
           </Link>
+          <BuyMeACoffeeButton size="sm" />
           <a href={siteConfig.links.github} target="_blank" rel="noreferrer" className={linkClass}>
             GitHub
             <span className="sr-only"> {m.new_tab()}</span>

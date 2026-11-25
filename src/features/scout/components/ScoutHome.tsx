@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router"
+import { getRouteApi, Link } from "@tanstack/react-router"
 import { ArrowRight } from "lucide-react"
 
 import { getLangParam } from "@/helpers/localized-url"
@@ -11,19 +11,32 @@ import { FeaturedCard } from "@/features/scout/components/FeaturedCard"
 import { LeaderboardTable } from "@/features/scout/components/LeaderboardTable"
 import { RarityLegend } from "@/features/scout/components/RarityLegend"
 import { RecentlyAdded } from "@/features/scout/components/RecentlyAdded"
+import { TopViewSwitch } from "@/features/scout/components/TopViewSwitch"
+import type { TopView } from "@/features/scout/components/TopViewSwitch"
 import { STAT_ORDER } from "@/features/scout/constants/scoring.constants"
+import { playerCountry } from "@/features/scout/helpers/player-country"
 import { statLabel, statShort } from "@/features/scout/helpers/player-text"
 import { useLeaderboard } from "@/features/scout/hooks/use-leaderboard"
 import * as m from "@/paraglide/messages.js"
+import { getLocale } from "@/paraglide/runtime.js"
 
 /** Ana sayfada yalnızca ilk oyuncular; tamamı liderlik sayfasında. */
 const HOME_LIMIT = 10
 
+const routeApi = getRouteApi("/{-$lang}/")
+
 export function ScoutHome() {
   const { data } = useLeaderboard()
+  const { top } = routeApi.useSearch()
   const { players: allPlayers } = data
-  // Sunucu listeyi genel puana göre sıralı döner.
-  const players = allPlayers.slice(0, HOME_LIMIT)
+
+  // Yalnızca Türkçe sayfada Türkiye listesi var ve varsayılan odur; İngilizcede hep genel sıralama.
+  const turkishPlayers = allPlayers.filter((player) => playerCountry(player) === "TR")
+  const canSwitch = getLocale() === "tr" && turkishPlayers.length > 0
+  const view: TopView = canSwitch && top !== "world" ? "tr" : "world"
+  // Sunucu listeyi genel puana göre sıralı döner; sıra numaraları seçili listenin içinde sayılır.
+  const pool = view === "tr" ? turkishPlayers : allPlayers
+  const players = pool.slice(0, HOME_LIMIT)
 
   return (
     <main
@@ -71,16 +84,22 @@ export function ScoutHome() {
 
       <section className="flex flex-col gap-4" aria-labelledby="leaderboard-heading">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 id="leaderboard-heading" className="text-xl font-semibold">
-            {m.home_top({ count: HOME_LIMIT })}
-          </h2>
-          {allPlayers.length > HOME_LIMIT ? (
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <h2 id="leaderboard-heading" className="text-xl font-semibold">
+              {m.home_top({ count: HOME_LIMIT })}
+            </h2>
+            {canSwitch ? <TopViewSwitch view={view} /> : null}
+          </div>
+          {pool.length > HOME_LIMIT ? (
             <Link
               to="/{-$lang}/leaderboard"
               params={{ lang: getLangParam() }}
+              search={view === "tr" ? { country: "tr" } : {}}
               className={buttonVariants({ variant: "outline", size: "sm" })}
             >
-              {m.home_full_table({ count: allPlayers.length })}
+              {view === "tr"
+                ? m.home_full_table_tr({ count: pool.length })
+                : m.home_full_table({ count: pool.length })}
               <ArrowRight aria-hidden />
             </Link>
           ) : null}
@@ -90,7 +109,7 @@ export function ScoutHome() {
           <EmptyLeaderboard />
         ) : (
           <>
-            <LeaderboardTable players={players} rankPool={allPlayers} />
+            <LeaderboardTable players={players} rankPool={pool} />
             <RarityLegend className="justify-center" />
           </>
         )}

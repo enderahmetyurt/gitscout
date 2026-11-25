@@ -70,6 +70,7 @@ export const LOCATION_ALIASES: Record<CountryCode, readonly string[]> = {
   BR: ["brazil", "brasil", "sao paulo", "rio de janeiro", "brasilia", "curitiba"],
   CA: ["canada", "toronto", "vancouver", "montreal", "ottawa", "calgary", "waterloo ontario"],
   CN: ["china", "beijing", "shanghai", "shenzhen", "hangzhou", "guangzhou", "chengdu", "wuhan"],
+  CO: ["colombia", "bogota", "medellin", "cali"],
   DE: [
     "germany",
     "deutschland",
@@ -112,6 +113,7 @@ export const LOCATION_ALIASES: Record<CountryCode, readonly string[]> = {
   HR: ["croatia", "hrvatska", "zagreb", "split croatia"],
   ID: ["indonesia", "jakarta", "bandung", "surabaya", "bali", "yogyakarta"],
   IE: ["ireland", "dublin", "cork"],
+  IL: ["israel", "tel aviv", "jerusalem", "haifa"],
   IN: [
     "india",
     "bangalore",
@@ -130,6 +132,7 @@ export const LOCATION_ALIASES: Record<CountryCode, readonly string[]> = {
   ],
   IT: ["italy", "italia", "rome", "roma", "milan", "milano", "turin", "torino", "naples", "napoli"],
   JP: ["japan", "tokyo", "osaka", "kyoto", "yokohama", "fukuoka"],
+  KR: ["south korea", "korea", "seoul", "busan"],
   MY: ["malaysia", "kuala lumpur", "penang", "johor bahru"],
   NG: ["nigeria", "lagos", "abuja"],
   NL: [
@@ -152,6 +155,7 @@ export const LOCATION_ALIASES: Record<CountryCode, readonly string[]> = {
   SG: ["singapore"],
   SI: ["slovenia", "slovenija", "ljubljana"],
   SK: ["slovakia", "slovensko", "bratislava", "kosice"],
+  TW: ["taiwan", "taipei", "kaohsiung", "taichung"],
   UA: ["ukraine", "kyiv", "kiev", "kharkiv", "lviv", "odesa", "odessa", "dnipro"],
   US: [
     "united states",
@@ -185,11 +189,20 @@ export const LOCATION_ALIASES: Record<CountryCode, readonly string[]> = {
     "new jersey",
     "north carolina"
   ],
-  VE: ["venezuela", "caracas"]
+  VE: ["venezuela", "caracas"],
+  VN: ["vietnam", "viet nam", "hanoi", "ho chi minh", "saigon", "da nang"]
 }
 
 /**
  * İki harfli ISO kodu yalnızca konumun son parçası büyük harfle yazılmışsa ("Istanbul, TR") kabul edilir.
  * ABD eyalet kısaltmalarıyla çakışanlar ("San Francisco, CA") ülke saymaz.
  */
-export const AMBIGUOUS_ISO_CODES: ReadonlySet<string> = new Set(["AR", "CA", "DE", "ID", "IN"])
+export const AMBIGUOUS_ISO_CODES: ReadonlySet<string> = new Set([
+  "AR",
+  "CA",
+  "CO",
+  "DE",
+  "ID",
+  "IL",
+  "IN"
+])

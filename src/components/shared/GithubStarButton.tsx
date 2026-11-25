@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { Star } from "lucide-react"
+import { cn } from "cn"
 
 import { siteConfig } from "@/config/site.config"
 
@@ -26,14 +27,14 @@ export function GithubStarButton() {
       <GithubMark />
       <span className="sr-only">{m.github_star_button()}</span>
       <Star aria-hidden className="size-3.5 fill-github-star text-github-star max-sm:hidden" />
-      {hasStars ? (
-        <>
-          <span aria-hidden className="max-sm:hidden">
-            {stars.toLocaleString(getLocale())}
-          </span>
-          <span className="sr-only">, {m.github_star_count({ count: stars })}</span>
-        </>
-      ) : null}
+      {/* Sayı gelmeden de yer ayrılır ("00" görünmez yer tutucu); gelince başlık kaymaz. */}
+      <span
+        aria-hidden
+        className={cn("min-w-[2ch] tabular-nums max-sm:hidden", !hasStars && "invisible")}
+      >
+        {hasStars ? stars.toLocaleString(getLocale()) : "00"}
+      </span>
+      {hasStars ? <span className="sr-only">, {m.github_star_count({ count: stars })}</span> : null}
       <span className="sr-only"> {m.new_tab()}</span>
     </a>
   )

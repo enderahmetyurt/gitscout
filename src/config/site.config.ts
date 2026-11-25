@@ -8,6 +8,7 @@ export const siteConfig: SiteConfig = {
   url: env.VITE_APP_URL,
   ogImage: `${env.VITE_APP_URL}/og.png`,
   links: {
-    github: "https://github.com/omergulcicek/gitscout"
+    github: "https://github.com/omergulcicek/gitscout",
+    buyMeACoffee: "https://buymeacoffee.com/omergulcicek"
   }
 }

@@ -4,9 +4,11 @@ import {
   parseCountry,
   parsePositions,
   parseRarities,
+  parseStar,
   serializeCountry,
   serializePositions,
-  serializeRarities
+  serializeRarities,
+  serializeStar
 } from "@/features/scout/helpers/filter-params"
 
 describe("filtre parametreleri", () => {
@@ -28,5 +30,14 @@ describe("filtre parametreleri", () => {
     expect(parseCountry("xx")).toBeUndefined()
     expect(serializeCountry("TR")).toBe("tr")
     expect(serializeCountry(undefined)).toBeUndefined()
+  })
+
+  it("GitHub Star filtresini yalnızca star değeriyle açar", () => {
+    expect(parseStar("star")).toBe(true)
+    expect(parseStar("STAR")).toBe(true)
+    expect(parseStar("1")).toBe(false)
+    expect(parseStar(undefined)).toBe(false)
+    expect(serializeStar(true)).toBe("star")
+    expect(serializeStar(false)).toBeUndefined()
   })
 })

@@ -6,6 +6,7 @@ import { ExternalLink } from "lucide-react"
 
 import { siteConfig } from "@/config/site.config"
 
+import { BuyMeACoffeeButton } from "@/components/shared/BuyMeACoffeeButton"
 import {
   Accordion,
   AccordionContent,
@@ -145,6 +146,11 @@ export function AboutPage() {
             </AccordionItem>
           ))}
         </Accordion>
+      </Section>
+
+      <Section id="about-support" title={m.about_support_title()}>
+        <p className={bodyClass}>{m.about_support_body()}</p>
+        <BuyMeACoffeeButton className="self-start" />
       </Section>
 
       <Section id="about-privacy" title={m.about_privacy_title()}>

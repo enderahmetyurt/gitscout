@@ -6,6 +6,7 @@ import { EmptyLeaderboard } from "@/features/scout/components/EmptyLeaderboard"
 import { LeaderboardFilters } from "@/features/scout/components/LeaderboardFilters"
 import { LeaderboardTable } from "@/features/scout/components/LeaderboardTable"
 import { RarityLegend } from "@/features/scout/components/RarityLegend"
+import { isGithubStar } from "@/features/scout/helpers/github-star"
 import { playerCountryFilter } from "@/features/scout/helpers/player-country"
 import { matchesPlayer } from "@/features/scout/helpers/search-text"
 import { useLeaderboard } from "@/features/scout/hooks/use-leaderboard"
@@ -23,7 +24,8 @@ export function LeaderboardPage() {
     (player) =>
       (filters.positions.length === 0 || filters.positions.includes(player.position)) &&
       (filters.rarities.length === 0 || filters.rarities.includes(player.rarity)) &&
-      (filters.country === undefined || playerCountryFilter(player) === filters.country)
+      (filters.country === undefined || playerCountryFilter(player) === filters.country) &&
+      (!filters.star || isGithubStar(player.login))
   )
   const players = rankPool.filter((player) => matchesPlayer(player, query))
 

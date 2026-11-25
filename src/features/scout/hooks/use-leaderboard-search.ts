@@ -5,15 +5,22 @@ import {
   parseCountry,
   parsePositions,
   parseRarities,
+  parseStar,
   serializeCountry,
   serializePositions,
-  serializeRarities
+  serializeRarities,
+  serializeStar
 } from "@/features/scout/helpers/filter-params"
 import { leaderboardSearchSchema } from "@/features/scout/schemas/leaderboard-search.schema"
 import type { LeaderboardSearch } from "@/features/scout/schemas/leaderboard-search.schema"
 import type { Position, Rarity } from "@/features/scout/types/player.types"
 
-type Filters = { positions: Position[]; rarities: Rarity[]; country: CountryFilter | undefined }
+type Filters = {
+  positions: Position[]
+  rarities: Rarity[]
+  country: CountryFilter | undefined
+  star: boolean
+}
 
 /**
  * Tablonun sıralama ve filtre durumu; hangi sayfada olduğunu bilmeden URL'den okur ve yazar.
@@ -25,7 +32,8 @@ export function useLeaderboardSearch() {
   const filters: Filters = {
     positions: parsePositions(search.pos),
     rarities: parseRarities(search.rarity),
-    country: parseCountry(search.country)
+    country: parseCountry(search.country),
+    star: parseStar(search.program)
   }
 
   const update = (patch: Partial<LeaderboardSearch>) => {
@@ -41,7 +49,8 @@ export function useLeaderboardSearch() {
     update({
       pos: serializePositions(next.positions ?? filters.positions),
       rarity: serializeRarities(next.rarities ?? filters.rarities),
-      country: serializeCountry("country" in next ? next.country : filters.country)
+      country: serializeCountry("country" in next ? next.country : filters.country),
+      program: serializeStar(next.star ?? filters.star)
     })
   }
 

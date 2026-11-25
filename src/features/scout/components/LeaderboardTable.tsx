@@ -207,7 +207,10 @@ export function LeaderboardTable({ players, rankPool }: LeaderboardTableProps) {
                       align === "center"
                         ? "px-1 py-2 text-center font-medium"
                         : "px-3 py-2 text-left font-medium",
-                      wide && "max-sm:hidden"
+                      wide && "max-sm:hidden",
+                      // Dar ekranda sıra sütunu daralır, avatar sola yaklaşır.
+                      header.column.id === "rank" && "max-sm:pr-0 max-sm:pl-3",
+                      header.column.id === "name" && "max-sm:pl-2"
                     )}
                   >
                     {canSort ? (
@@ -250,13 +253,13 @@ export function LeaderboardTable({ players, rankPool }: LeaderboardTableProps) {
                     key={cell.id}
                     className={cn(
                       isRank
-                        ? "w-12 px-3 py-3 text-muted-foreground tabular-nums"
+                        ? "w-12 px-3 py-3 text-muted-foreground tabular-nums max-sm:w-6 max-sm:pr-0"
                         : align === "center"
                           ? "px-1 py-3 text-center tabular-nums"
                           : "px-3 py-3",
                       wide && "max-sm:hidden",
                       // Dar ekranda isim sütunu kalan alanı alır ve uzun adlar kesilir; tablo yana taşmaz.
-                      cell.column.id === "name" && "max-sm:w-full max-sm:max-w-0"
+                      cell.column.id === "name" && "max-sm:w-full max-sm:max-w-0 max-sm:pl-2"
                     )}
                   >
                     <table.FlexRender cell={cell} />

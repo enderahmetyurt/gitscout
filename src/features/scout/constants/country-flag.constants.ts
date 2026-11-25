@@ -6,6 +6,7 @@ import {
   BR,
   CA,
   CN,
+  CO,
   DE,
   DK,
   EE,
@@ -17,9 +18,11 @@ import {
   HR,
   ID,
   IE,
+  IL,
   IN,
   IT,
   JP,
+  KR,
   MY,
   NG,
   NL,
@@ -34,9 +37,11 @@ import {
   SI,
   SK,
   TR,
+  TW,
   UA,
   US,
-  VE
+  VE,
+  VN
 } from "country-flag-icons/react/3x2"
 
 import type { CountryCode } from "@/features/scout/constants/player-country.constants"
@@ -53,6 +58,7 @@ export const COUNTRY_FLAGS: Record<CountryCode, typeof TR> = {
   BR,
   CA,
   CN,
+  CO,
   DE,
   DK,
   EE,
@@ -64,9 +70,11 @@ export const COUNTRY_FLAGS: Record<CountryCode, typeof TR> = {
   HR,
   ID,
   IE,
+  IL,
   IN,
   IT,
   JP,
+  KR,
   MY,
   NG,
   NL,
@@ -81,9 +89,11 @@ export const COUNTRY_FLAGS: Record<CountryCode, typeof TR> = {
   SI,
   SK,
   TR,
+  TW,
   UA,
   US,
-  VE
+  VE,
+  VN
 }
 
 /**

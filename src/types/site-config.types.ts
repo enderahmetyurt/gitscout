@@ -6,5 +6,6 @@ export type SiteConfig = {
   ogImage: string
   links: {
     github: string
+    buyMeACoffee: string
   }
 }

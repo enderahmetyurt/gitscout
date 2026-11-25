@@ -8,6 +8,7 @@ import {
 import type { Position, Rarity } from "@/features/scout/types/player.types"
 
 const SEPARATOR = ","
+const STAR_PROGRAM = "star"
 
 const split = (value: string | undefined) =>
   (value ?? "")
@@ -46,4 +47,14 @@ export function parseCountry(value: string | undefined): CountryFilter | undefin
 
 export function serializeCountry(country: CountryFilter | undefined): string | undefined {
   return country?.toLowerCase()
+}
+
+/** `?program=star` filtreyi açar; başka her değer kapalı sayılır. */
+export function parseStar(value: string | undefined): boolean {
+  return value?.trim().toLowerCase() === STAR_PROGRAM
+}
+
+/** Kapalı filtre URL'den kalksın diye undefined döner. */
+export function serializeStar(star: boolean): string | undefined {
+  return star ? STAR_PROGRAM : undefined
 }
