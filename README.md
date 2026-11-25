@@ -130,4 +130,4 @@ Everything comes from GitHub's public API. Private repos are never read and no c
 
 ---
 
-Made by [Ömer Gülçiçek](https://github.com/omergulcicek). Built with [ViraStack Start](https://virastack.com/start), a TanStack Start starter with AI coding rules.
+Made by [Ömer Gülçiçek](https://github.com/omergulcicek). Built with [ViraStack](https://virastack.com/start).
