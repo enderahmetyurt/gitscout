@@ -16,10 +16,14 @@ export const SCORE_VERSION = 4
 export const NEW_PLAYERS_PER_HOUR = 300
 
 /**
- * Otomatik yenileme: verisi `maxAgeDays` günden eski kartlar, en eskiden başlayarak her çalışmada
- * `perRun` tane yenilenir. Saatlik çalışmada haftada ~500 kart; kota gün içine yayılır.
+ * Otomatik yenileme: verisi `maxAgeDays` günden eski kartlar en eskiden başlayarak yenilenir. Her çalışma
+ * `timeBudgetMs` dolana ya da `maxPerRun` karta ulaşana kadar sürer; böylece kart sayısı arttıkça çalışma
+ * başına yenilenen kart da artar, eskimiş kart yoksa hiç iş yapılmaz. Sabit 3 kartla saatlik çalışma haftada
+ * en fazla ~500 kart yenileyebiliyordu; fazlası sessizce haftalarca eski kalıyordu.
+ * Kota: 30 kart × ~9 puan ≈ 270 puan/saat, yeni kart payının (~2700) yanında rahat sığar.
+ * Süre sınırı yeni bir karta başlamadan önce kontrol edilir; son kart bu sürenin biraz üstüne taşabilir.
  */
-export const REFRESH = { maxAgeDays: 7, perRun: 3 }
+export const REFRESH = { maxAgeDays: 7, maxPerRun: 30, timeBudgetMs: 50_000 }
 
 export const STAT_WEIGHTS: Record<StatKey, number> = {
   act: 0.2,
