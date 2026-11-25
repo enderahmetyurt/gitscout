@@ -48,6 +48,8 @@ export const leaderboardSearchSchema = z.object({
   q: z.coerce.string().optional().catch(undefined),
   pos: z.string().optional().catch(undefined),
   rarity: z.string().optional().catch(undefined),
+  /** Tek ülke: `?country=tr`; ülkesi bilinmeyenler `?country=unknown`. */
+  country: z.string().optional().catch(undefined),
   sort: z
     .enum(LEADERBOARD_SORT_KEYS)
     .default(leaderboardSearchDefaults.sort)

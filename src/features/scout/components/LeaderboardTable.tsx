@@ -13,9 +13,11 @@ import { cn } from "cn"
 
 import { getLangParam } from "@/helpers/localized-url"
 
+import { CountryFlag } from "@/features/scout/components/CountryFlag"
 import { RarityChip } from "@/features/scout/components/RarityChip"
 import { STAT_ORDER } from "@/features/scout/constants/scoring.constants"
 import { STAT_TIER_TEXT } from "@/features/scout/constants/stat-tier.constants"
+import { playerCountry } from "@/features/scout/helpers/player-country"
 import { statLabel, statShort, titleText } from "@/features/scout/helpers/player-text"
 import { statTier } from "@/features/scout/helpers/stat-tier"
 import { useLeaderboardSearch } from "@/features/scout/hooks/use-leaderboard-search"
@@ -113,6 +115,7 @@ function isSortKey(id: string): id is LeaderboardSearch["sort"] {
 }
 
 function PlayerCell({ player }: { player: ListPlayer }) {
+  const country = playerCountry(player.login)
   return (
     <Link
       to="/{-$lang}/u/$username"
@@ -127,7 +130,10 @@ function PlayerCell({ player }: { player: ListPlayer }) {
         className="size-9 rounded-full bg-muted outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
       />
       <span className="min-w-0">
-        <span className="block truncate font-medium text-foreground">{player.name}</span>
+        <span className="flex items-center gap-1.5">
+          <span className="min-w-0 truncate font-medium text-foreground">{player.name}</span>
+          {country && <CountryFlag country={country} />}
+        </span>
         <span className="block truncate text-xs text-muted-foreground">
           @{player.login} · {titleText(player.title)}
         </span>

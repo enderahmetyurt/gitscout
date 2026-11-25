@@ -1,3 +1,5 @@
+import { COUNTRIES, UNKNOWN_COUNTRY } from "@/features/scout/constants/player-country.constants"
+import type { CountryFilter } from "@/features/scout/constants/player-country.constants"
 import {
   POSITION_SLUGS,
   POSITIONS,
@@ -33,4 +35,15 @@ export function serializePositions(positions: readonly Position[]): string | und
 
 export function serializeRarities(rarities: readonly Rarity[]): string | undefined {
   return rarities.length > 0 ? rarities.join(SEPARATOR) : undefined
+}
+
+/** `tr` → "TR", `unknown` → belirsizler; tanınmayan değer filtreyi kaldırır. */
+export function parseCountry(value: string | undefined): CountryFilter | undefined {
+  const slug = value?.trim().toLowerCase()
+  if (slug === UNKNOWN_COUNTRY) return UNKNOWN_COUNTRY
+  return COUNTRIES.find((country) => country.toLowerCase() === slug)
+}
+
+export function serializeCountry(country: CountryFilter | undefined): string | undefined {
+  return country?.toLowerCase()
 }

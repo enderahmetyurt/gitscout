@@ -1,10 +1,12 @@
 import { Search } from "lucide-react"
 
 import { Input } from "@/components/ui/input"
+import { CountryFilterMenu } from "@/features/scout/components/CountryFilterMenu"
 import { EmptyLeaderboard } from "@/features/scout/components/EmptyLeaderboard"
 import { LeaderboardFilters } from "@/features/scout/components/LeaderboardFilters"
 import { LeaderboardTable } from "@/features/scout/components/LeaderboardTable"
 import { RarityLegend } from "@/features/scout/components/RarityLegend"
+import { playerCountryFilter } from "@/features/scout/helpers/player-country"
 import { matchesPlayer } from "@/features/scout/helpers/search-text"
 import { useLeaderboard } from "@/features/scout/hooks/use-leaderboard"
 import { useLeaderboardSearch } from "@/features/scout/hooks/use-leaderboard-search"
@@ -15,12 +17,13 @@ export function LeaderboardPage() {
   const { players: allPlayers } = data
   const { search, filters, update } = useLeaderboardSearch()
   const query = search.q ?? ""
-  // Sıra numarası seçili mevki ve kart türü içinde sayılır; isim araması sırayı değiştirmez,
+  // Sıra numarası seçili mevki, kart türü ve ülke içinde sayılır; isim araması sırayı değiştirmez,
   // yoksa aranan herkes 1. görünür.
   const rankPool = allPlayers.filter(
     (player) =>
       (filters.positions.length === 0 || filters.positions.includes(player.position)) &&
-      (filters.rarities.length === 0 || filters.rarities.includes(player.rarity))
+      (filters.rarities.length === 0 || filters.rarities.includes(player.rarity)) &&
+      (filters.country === undefined || playerCountryFilter(player.login) === filters.country)
   )
   const players = rankPool.filter((player) => matchesPlayer(player, query))
 
@@ -54,6 +57,7 @@ export function LeaderboardPage() {
                   className="h-8 w-48 ps-8 sm:w-56"
                 />
               </div>
+              <CountryFilterMenu players={allPlayers} />
               <LeaderboardFilters players={allPlayers} />
             </>
           ) : null}
