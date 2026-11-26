@@ -211,6 +211,24 @@ describe("organizasyon yıldızları", () => {
   it("geçmişi olmayan eski kayıtta yıllık pay kullanılır", () => {
     expect(creditedStars(makeFacts({ activeRepos: [orgRepo(40)] }))).toBe(400)
   })
+
+  it("yapay zekâ ajanı commit'leri paydadan düşülür", () => {
+    const repo = {
+      ...orgRepo(57, { all: 197, mine: 112 }),
+      agentYearCommits: 43,
+      agentAllCommits: 85
+    }
+    expect(creditedStars(makeFacts({ activeRepos: [repo] }))).toBe(1000)
+  })
+
+  it("ajan ağırlıklı repoda birkaç commit'lik katkıcı payda tabanını aşamaz", () => {
+    const repo = {
+      ...orgRepo(2, { all: 202, mine: 2 }),
+      agentYearCommits: 98,
+      agentAllCommits: 200
+    }
+    expect(creditedStars(makeFacts({ activeRepos: [repo] }))).toBe(100)
+  })
 })
 
 describe("öne çıkan repolar", () => {

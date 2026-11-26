@@ -3,6 +3,7 @@ import type { z } from "zod"
 import { ApiError } from "@/lib/api"
 import { githubApi, hasGithubToken } from "@/lib/github"
 
+import { AGENT_COMMIT_EMAILS } from "@/features/scout/constants/agent-commits.constants"
 import {
   activeResponseSchema,
   graphqlEnvelopeSchema,
@@ -333,6 +334,12 @@ const ACTIVE_REPO_FIELDS = /* GraphQL */ `
           mineAll: history(author: { id: $userId }) {
             totalCount
           }
+          agentsYear: history(since: $since, author: { emails: $agentEmails }) {
+            totalCount
+          }
+          agentsAll: history(author: { emails: $agentEmails }) {
+            totalCount
+          }
           checks: history(first: 10) {
             nodes {
               statusCheckRollup {
@@ -385,8 +392,8 @@ export async function fetchActiveRepos(
           `r${repo.index}: repository(owner: ${JSON.stringify(repo.owner)}, name: ${JSON.stringify(repo.name)}) { ...ActiveRepo }`
       )
       .join("\n")
-    const query = `query Active($userId: ID!, $since: GitTimestamp!) {\n${fields}\n}\n${ACTIVE_REPO_FIELDS}`
-    return graphql(query, { userId, since }, activeResponseSchema)
+    const query = `query Active($userId: ID!, $since: GitTimestamp!, $agentEmails: [String!]) {\n${fields}\n}\n${ACTIVE_REPO_FIELDS}`
+    return graphql(query, { userId, since, agentEmails: AGENT_COMMIT_EMAILS }, activeResponseSchema)
   }
 
   // Çok büyük bir repo parçayı zaman aşımına düşürürse repolar tek tek denenir;

@@ -67,11 +67,14 @@ export const ACT = {
 
 /**
  * Kendi repoları tam, organizasyon repoları commit payı kadar. Pay, son bir yılın ve bütün geçmişin
- * payından büyüğüdür: projeyi kuran da bugün yürüten de payını alır.
+ * payından büyüğüdür: projeyi kuran da bugün yürüten de payını alır. Yapay zekâ ajanı ve bot
+ * commit'leri paydadan düşülür.
  */
 export const IMP = {
   stars: { max: 75, fullAt: 500_000 },
   forks: { max: 25, fullAt: 100_000 },
+  /** Commit payının paydası en az bu kadar sayılır. */
+  minShareBase: 20,
   /** Bu commit payına ulaşılan organizasyon, Saygınlık'ta maintainer olunan organizasyon sayılır. */
   maintainerShare: 0.25
 }

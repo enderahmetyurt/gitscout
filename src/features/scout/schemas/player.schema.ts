@@ -66,6 +66,8 @@ const playerFactsSchema = z.object({
       userYearCommits: z.number(),
       allCommits: z.number().optional(),
       userAllCommits: z.number().optional(),
+      agentYearCommits: z.number().optional(),
+      agentAllCommits: z.number().optional(),
       hasTests: z.boolean(),
       hasCi: z.boolean(),
       checkStates: z.array(checkState),

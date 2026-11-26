@@ -331,7 +331,7 @@
   "about_faq_bots_q": "Otomatik commit puanı şişirir mi?",
   "about_faq_bots_a": "Hayır. Bir günün katkısı en fazla {daily} sayılır. Tek bir repoda yılda {repo} commit'ten fazlası otomasyon sayılır ve düşülür.",
   "about_faq_org_q": "Organizasyon repoları nasıl sayılır?",
-  "about_faq_org_a": "Kendi repolarının yıldız ve fork'ları tamamen sayılır. Organizasyon repolarında commit payın kadarı Etki'ye yazılır; pay, son bir yılın ve reponun bütün geçmişinin payından büyüğüdür. Böylece projeyi kuran da bugün yürüten de hakkını alır. Commit'lerin hesabına bağlı olmayan bir e-postayla atıldıysa GitHub onları sana yazmaz. Commit payın {share} ve üstü olan organizasyonlara açtığın PR'lar Saygınlık'ta {weight} ağırlıkla sayılır.",
+  "about_faq_org_a": "Kendi repolarının yıldız ve fork'ları tamamen sayılır. Organizasyon repolarında commit payın kadarı Etki'ye yazılır; pay, son bir yılın ve reponun bütün geçmişinin payından büyüğüdür. Böylece projeyi kuran da bugün yürüten de hakkını alır. Claude, Copilot ve Codex gibi yapay zekâ ajanlarının ve botların commit'leri hesaptan düşülür; ajanla yaptığın iş sana sayılır. Commit'lerin hesabına bağlı olmayan bir e-postayla atıldıysa GitHub onları sana yazmaz. Commit payın {share} ve üstü olan organizasyonlara açtığın PR'lar Saygınlık'ta {weight} ağırlıkla sayılır.",
   "about_faq_role_q": "Rolüm ve rozetlerim nasıl belirlenir?",
   "about_faq_role_a": "Rolün, repolarındaki dillerden gelir: en büyük pay rolün olur, Frontend ve Backend payı ikisi de {share} ve üstündeyse Full Stack. Rozetler uzun seri ya da çok review gibi başarıları gösterir, puanı değiştirmez.",
   "about_privacy_title": "Veri ve gizlilik",

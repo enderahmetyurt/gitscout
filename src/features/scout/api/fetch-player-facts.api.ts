@@ -81,7 +81,9 @@ function maintainedOrgs(nodes: Record<string, ActiveRepoNode>): string[] {
       yearCommits: target?.yearTotal.totalCount ?? 0,
       userYearCommits: target?.mineYear.totalCount ?? 0,
       allCommits: target?.allTotal.totalCount ?? 0,
-      userAllCommits: target?.mineAll.totalCount ?? 0
+      userAllCommits: target?.mineAll.totalCount ?? 0,
+      agentYearCommits: target?.agentsYear.totalCount ?? 0,
+      agentAllCommits: target?.agentsAll.totalCount ?? 0
     })
     if (share >= IMP.maintainerShare) {
       const [owner] = node.nameWithOwner.split("/")

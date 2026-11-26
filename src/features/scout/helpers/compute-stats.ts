@@ -101,17 +101,26 @@ export function checkSuccessRate(facts: PlayerFacts): { rate: number; total: num
   return { rate: total === 0 ? 0 : success / total, total }
 }
 
-/** Son bir yılın ve bütün geçmişin commit payından büyüğü; geçmişi olmayan eski kayıtlarda yıllık pay. */
+/**
+ * Son bir yılın ve bütün geçmişin commit payından büyüğü; geçmişi olmayan eski kayıtlarda yıllık pay.
+ * Yapay zekâ ajanı ve bot commit'leri paydadan düşülür: o işi yöneten insanlar arasında, payları
+ * oranında paylaşılmış olur. Tek insan katkıcı kurucuysa ajan işinin tamamı ona yazılır. Payda en az
+ * `IMP.minShareBase` commit sayılır: ajan ağırlıklı bir repoda birkaç commit'lik bir katkıcı yıldızların
+ * çoğunu almasın.
+ */
 export function orgCommitShare(repo: {
   yearCommits: number
   userYearCommits: number
   allCommits?: number
   userAllCommits?: number
+  agentYearCommits?: number
+  agentAllCommits?: number
 }): number {
-  const ratio = (mine: number, total: number) => (total > 0 ? clamp01(mine / total) : 0)
+  const ratio = (mine: number, total: number, agents = 0) =>
+    mine > 0 ? clamp01(mine / Math.max(total - agents, IMP.minShareBase)) : 0
   return Math.max(
-    ratio(repo.userYearCommits, repo.yearCommits),
-    ratio(repo.userAllCommits ?? 0, repo.allCommits ?? 0)
+    ratio(repo.userYearCommits, repo.yearCommits, repo.agentYearCommits),
+    ratio(repo.userAllCommits ?? 0, repo.allCommits ?? 0, repo.agentAllCommits)
   )
 }
 

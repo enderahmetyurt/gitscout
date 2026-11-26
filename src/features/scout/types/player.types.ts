@@ -37,6 +37,9 @@ export type ActiveRepo = {
   /** Varsayılan dalın bütün geçmişindeki toplam commit ve kullanıcınınkiler. Eski kayıtlarda yok. */
   allCommits?: number
   userAllCommits?: number
+  /** Yapay zekâ ajanı ve bot hesaplarının commit'leri; paydan düşülür. Eski kayıtlarda yok. */
+  agentYearCommits?: number
+  agentAllCommits?: number
   hasTests: boolean
   hasCi: boolean
   checkStates: CheckState[]
