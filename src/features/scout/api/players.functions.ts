@@ -26,6 +26,7 @@ import { isGithubStar } from "@/features/scout/helpers/github-star"
 import { computeRanking } from "@/features/scout/helpers/score-player"
 import { addPlayerSchema, usernameSchema } from "@/features/scout/schemas/player.schema"
 import { profileDetailsSchema } from "@/features/scout/schemas/profile.schema"
+import type { AddPlayerEvent, ScoutingStage } from "@/features/scout/types/add-player.types"
 import type { ListPlayer, PlayerDetail, ScoredPlayer } from "@/features/scout/types/player.types"
 
 type Leaderboard = {
@@ -170,9 +171,9 @@ export const getPlayer = createServerFn({ method: "GET" })
  * GitHub hataları istemciye sabit bir kodla gider (`github:not-found`); mesaj arayüzde dile göre yazılır.
  * Sunucu tarafındaki ayrıntı `cause` içinde ve logda kalır.
  */
-async function fetchFacts(login: string) {
+async function fetchFacts(login: string, onStage?: (stage: ScoutingStage) => void) {
   try {
-    return await fetchPlayerFacts(login)
+    return await fetchPlayerFacts(login, new Date(), onStage)
   } catch (error) {
     if (error instanceof GithubError) throw new Error(`github:${error.kind}`, { cause: error })
     throw error
@@ -183,24 +184,68 @@ async function fetchFacts(login: string) {
  * Oyuncu kayıtlıysa GitHub'a gitmeden döner. Değilse bir kez çekilip kaydedilir;
  * kayıtlı veri sonradan değiştirilemez.
  */
+async function createPlayer(
+  username: string,
+  onStage?: (stage: ScoutingStage) => void
+): Promise<ScoredPlayer> {
+  const existing = await getScoredPlayer(username)
+  if (existing) return existing
+
+  if ((await countRecentPlayers()) >= NEW_PLAYERS_PER_HOUR) {
+    throw new Error("github:rate-limit")
+  }
+
+  const facts = await fetchFacts(username, onStage)
+  const player = await insertPlayer({
+    login: facts.login,
+    fetchedAt: new Date().toISOString(),
+    facts
+  })
+  listCache = null
+  return player
+}
+
 export const addPlayer = createServerFn({ method: "POST" })
   .validator(addPlayerSchema)
-  .handler(async ({ data }): Promise<ScoredPlayer> => {
-    const existing = await getScoredPlayer(data.username)
-    if (existing) return existing
+  .handler(async ({ data }): Promise<ScoredPlayer> => await createPlayer(data.username))
 
-    if ((await countRecentPlayers()) >= NEW_PLAYERS_PER_HOUR) {
-      throw new Error("github:rate-limit")
+/**
+ * `addPlayer` ile aynı işi yapar; GitHub'dan veri toplanırken biten her aşamayı akışla bildirir.
+ * Kayıtlı oyuncuda aşama gelmez, doğrudan `done` döner. Hata, akış okunurken fırlatılır.
+ */
+export const addPlayerStream = createServerFn({ method: "POST" })
+  .validator(addPlayerSchema)
+  .handler(async function* ({ data }): AsyncGenerator<AddPlayerEvent> {
+    // Aşamalar geri çağrıyla gelir; kuyruk onları sırayla akışa aktarır.
+    const queue: AddPlayerEvent[] = []
+    // Geri çağrılar bu nesneyi değiştirir; ayrı değişkenler döngüde hep ilk değeriyle görünürdü.
+    const signal: { finished: boolean; wake?: () => void } = { finished: false }
+    const push = (event: AddPlayerEvent) => {
+      queue.push(event)
+      signal.wake?.()
     }
 
-    const facts = await fetchFacts(data.username)
-    const player = await insertPlayer({
-      login: facts.login,
-      fetchedAt: new Date().toISOString(),
-      facts
-    })
-    listCache = null
-    return player
+    const task = createPlayer(data.username, (stage) => push({ type: "stage", ...stage }))
+      .then((player) => push({ type: "done", player }))
+      .finally(() => {
+        signal.finished = true
+        signal.wake?.()
+      })
+
+    for (;;) {
+      const next = queue.shift()
+      if (next) {
+        yield next
+        continue
+      }
+      if (signal.finished) break
+      await new Promise<void>((resolve) => {
+        signal.wake = resolve
+      })
+      signal.wake = undefined
+    }
+    // Hata varsa burada yeniden fırlar ve istemcide akışı okuyan döngüye ulaşır.
+    await task
   })
 
 /** Aynı kişinin ülke değişiklikleri arasında en az bu kadar saniye geçer. */

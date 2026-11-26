@@ -247,7 +247,9 @@ export function LeaderboardTable({ players, rankPool, limit }: LeaderboardTableP
   return (
     // Dar ekranda tablo kendi kutusunda yana kayar. Geniş ekranda sığdığı için taşma kapatılır;
     // `overflow` açıkken başlık sayfaya değil kutuya yapışır ve kaydırınca kaybolur.
-    <div className="surface overflow-x-auto lg:overflow-visible">
+    // `relative`: içerideki `sr-only` metinler mutlak konumlu; kapsayıcı olmazsa kaydırma kutusundan
+    // taşıp mobilde sayfayı yana genişletir.
+    <div className="surface relative overflow-x-auto lg:overflow-visible">
       <table className="w-full min-w-180 text-sm">
         <caption className="sr-only">{m.table_caption()}</caption>
         <thead className="text-xs text-muted-foreground uppercase lg:sticky lg:top-0 lg:z-10">

@@ -1,7 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
-import { addPlayer } from "@/features/scout/api/players.functions"
+import { addPlayerStream } from "@/features/scout/api/players.functions"
 import { playerKeys } from "@/features/scout/api/query-keys"
+import type { ScoutingStage } from "@/features/scout/types/add-player.types"
+import type { ScoredPlayer } from "@/features/scout/types/player.types"
 
 /**
  * Vercel Firewall'daki IP sınırı aşılınca istek sunucu fonksiyonuna hiç ulaşmaz ve 429 döner.
@@ -14,10 +16,23 @@ async function fetchWithRateLimit(input: RequestInfo | URL, init?: RequestInit):
   return response
 }
 
-export function useAddPlayer() {
+type UseAddPlayerOptions = {
+  /** GitHub'dan veri toplanırken biten her aşamada çağrılır; kayıtlı oyuncuda hiç çağrılmaz. */
+  onStage?: (stage: ScoutingStage) => void
+}
+
+/** Kartı ekler; aşamaları akışla okuyup `onStage`'e iletir, sonunda kaydedilen kartı döner. */
+export function useAddPlayer({ onStage }: UseAddPlayerOptions = {}) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (username: string) => addPlayer({ data: { username }, fetch: fetchWithRateLimit }),
+    mutationFn: async (username: string): Promise<ScoredPlayer> => {
+      const events = await addPlayerStream({ data: { username }, fetch: fetchWithRateLimit })
+      for await (const event of events) {
+        if (event.type === "done") return event.player
+        onStage?.(event)
+      }
+      throw new Error("stream:incomplete")
+    },
     onSettled: () => queryClient.invalidateQueries({ queryKey: playerKeys.all })
   })
 }

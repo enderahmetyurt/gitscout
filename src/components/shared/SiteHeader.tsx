@@ -6,6 +6,7 @@ import { getLangParam } from "@/helpers/localized-url"
 import { AccountButton } from "@/components/shared/AccountButton"
 import { GithubStarButton } from "@/components/shared/GithubStarButton"
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher"
+import { MobileMenu } from "@/components/shared/MobileMenu"
 import * as m from "@/paraglide/messages.js"
 
 const navLinkClass =
@@ -21,7 +22,7 @@ export function SiteHeader() {
           to="/{-$lang}"
           params={{ lang }}
           lang="en"
-          className="rounded-sm font-mono text-xl font-bold tracking-wide uppercase outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          className="rounded-sm font-mono text-lg font-bold tracking-wide uppercase outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 min-[360px]:text-xl"
         >
           Gitscout
         </Link>
@@ -35,7 +36,7 @@ export function SiteHeader() {
           <Link to="/{-$lang}/vs" params={{ lang }} className={navLinkClass}>
             {m.nav_duel()}
           </Link>
-          {/* Dar ekranda menü sığsın diye Hakkında yalnızca alt bilgide. */}
+          {/* Dar ekranda ana linkler görünür kalır; ikincil öğeler tek menüde toplanır. */}
           <Link
             to="/{-$lang}/about"
             params={{ lang }}
@@ -43,9 +44,14 @@ export function SiteHeader() {
           >
             {m.nav_about()}
           </Link>
-          <LanguageSwitcher />
-          <GithubStarButton />
-          <AccountButton />
+          <div className="flex items-center gap-5 max-sm:hidden">
+            <LanguageSwitcher />
+            <GithubStarButton />
+            <AccountButton />
+          </div>
+          <div className="sm:hidden">
+            <MobileMenu />
+          </div>
         </nav>
       </div>
     </header>

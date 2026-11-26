@@ -11,15 +11,27 @@ import { COMMIT_SAMPLE_SIZE, CON, IMP } from "@/features/scout/constants/scoring
 import { buildFacts, pickActiveRepos } from "@/features/scout/helpers/build-facts"
 import { orgCommitShare } from "@/features/scout/helpers/compute-stats"
 import type { ActiveRepoNode } from "@/features/scout/schemas/github.schema"
+import type { ScoutingStage } from "@/features/scout/types/add-player.types"
 import type { PlayerFacts } from "@/features/scout/types/player.types"
 
-/** Bir oyuncunun bütün verisini toplar: profil, sayfalı repolar, aktif repolar ve hesabın açıldığı yıldan bu yana yıllık katkılar. */
-export async function fetchPlayerFacts(login: string, now = new Date()): Promise<PlayerFacts> {
+/**
+ * Bir oyuncunun bütün verisini toplar: profil, sayfalı repolar, aktif repolar ve hesabın açıldığı yıldan bu yana yıllık katkılar.
+ * `onStage`, her aşama bittiğinde çağrılır; arayüz beklemeyi gerçek ilerlemeyle gösterir.
+ */
+export async function fetchPlayerFacts(
+  login: string,
+  now = new Date(),
+  onStage?: (stage: ScoutingStage) => void
+): Promise<PlayerFacts> {
   const profile = await fetchProfile(login)
   const user = profile.user
   if (!user) {
     throw new GithubError("Bu kullanıcı adıyla bir GitHub hesabı bulunamadı", "not-found")
   }
+  onStage?.({
+    stage: "profile",
+    profile: { login: user.login, name: user.name, avatarUrl: user.avatarUrl }
+  })
 
   const activeRefs = pickActiveRepos(user, now)
   const currentYear = now.getUTCFullYear()
@@ -38,6 +50,7 @@ export async function fetchPlayerFacts(login: string, now = new Date()): Promise
     fetchYearlyContributions(user.login, years),
     fetchStarredRepos(user.login)
   ])
+  onStage?.({ stage: "repos" })
   const ownOrgPrs = await fetchOrgPrCounts(user.login, maintainedOrgs(activeNodes))
 
   const yearly = years.map((year) => {
@@ -65,7 +78,9 @@ export async function fetchPlayerFacts(login: string, now = new Date()): Promise
     commitSampleSize: COMMIT_SAMPLE_SIZE
   })
 
-  return { ...facts, utcOffsetMinutes: await detectUtcOffset(facts.commits) }
+  const utcOffsetMinutes = await detectUtcOffset(facts.commits)
+  onStage?.({ stage: "activity" })
+  return { ...facts, utcOffsetMinutes }
 }
 
 /**
