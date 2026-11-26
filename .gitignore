@@ -54,3 +54,6 @@ yarn-error.log*
 
 # paraglide (generated on install)
 /src/paraglide
+
+# tanıtım taslakları (yerelde kalır)
+/promo
