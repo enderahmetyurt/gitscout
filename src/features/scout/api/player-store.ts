@@ -132,7 +132,7 @@ export async function getListPlayers(): Promise<{ players: ListPlayer[]; pending
   const rows = z.array(listRowSchema).parse(
     await sql`
       select p.login, p.score_version,
-        (p.scored - 'positionBreakdown' - 'topRepos' - 'archetype' - 'stats')
+        (p.scored - 'positionBreakdown' - 'topRepos' - 'archetype' - 'stats' #- '{year,weeklyTotals}')
           || jsonb_build_object('stats', (
             select jsonb_object_agg(k, jsonb_build_object('key', k, 'value', v -> 'value'))
             from jsonb_each(p.scored -> 'stats') as s(k, v)

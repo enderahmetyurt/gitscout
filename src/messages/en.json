@@ -278,6 +278,7 @@
   "stars_label": "Stars:",
   "forks_label": "Forks:",
   "year_title": "Last 12 months",
+  "year_weekly_label": "Weekly contributions over the last {weeks} weeks; busiest week had {max}",
   "year_prs": "PRs",
   "year_reviews": "Reviews",
   "year_issues": "Issues",

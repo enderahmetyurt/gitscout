@@ -15,6 +15,7 @@ import {
   toExactDisplayScore
 } from "@/features/scout/helpers/compute-stats"
 import { countryFromLocation } from "@/features/scout/helpers/location-country"
+import { weeklyTotals } from "@/features/scout/helpers/weekly-totals"
 import type {
   ListPlayer,
   PlayerFacts,
@@ -282,7 +283,8 @@ export function scorePlayer(player: StoredPlayer, now = new Date()): ScoredPlaye
       reviews: facts.lastYear.reviews,
       issues: facts.lastYear.issues,
       activeDays: facts.calendar.filter((day) => day.count > 0).length,
-      longestStreak: longestStreak(facts.calendar)
+      longestStreak: longestStreak(facts.calendar),
+      weeklyTotals: weeklyTotals(facts.calendar)
     },
     career: {
       followers: facts.followers,

@@ -268,6 +268,8 @@ type YearSummary = {
   issues: number
   activeDays: number
   longestStreak: number
+  /** Son 52 haftanın haftalık katkı toplamları, eskiden yeniye. Eski özetlerde yoktur. */
+  weeklyTotals?: number[]
 }
 
 /** Oyuncunun kayıtlı oyuncular arasındaki yeri; yalnızca detay sayfası için hesaplanır. */

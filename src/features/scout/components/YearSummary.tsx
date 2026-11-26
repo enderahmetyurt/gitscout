@@ -1,3 +1,5 @@
+import { cn } from "cn"
+
 import { number } from "@/features/scout/helpers/player-text"
 import type { ScoredPlayer } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
@@ -38,6 +40,29 @@ export function YearSummary({ year }: YearSummaryProps) {
           </div>
         ))}
       </dl>
+      {year.weeklyTotals ? <WeeklyBars totals={year.weeklyTotals} /> : null}
     </section>
+  )
+}
+
+function WeeklyBars({ totals }: { totals: number[] }) {
+  const max = Math.max(0, ...totals)
+  if (max === 0) return null
+
+  return (
+    <div
+      role="img"
+      aria-label={m.year_weekly_label({ weeks: totals.length, max })}
+      className="flex h-10 items-end gap-px"
+    >
+      {totals.map((total, week) => (
+        // Çubuklar takvimdeki sabit haftalardır; sıra hiç değişmez.
+        <span
+          key={week}
+          className={cn("w-1 rounded-t-[1px]", total > 0 ? "bg-chart-home" : "bg-muted")}
+          style={{ height: total > 0 ? `${Math.max(8, (total / max) * 100)}%` : "2px" }}
+        />
+      ))}
+    </div>
   )
 }

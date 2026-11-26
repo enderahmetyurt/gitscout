@@ -264,6 +264,7 @@
   "stars_label": "Yıldız:",
   "forks_label": "Fork:",
   "year_title": "Son 1 yıl",
+  "year_weekly_label": "Son {weeks} haftanın haftalık katkıları; en yoğun hafta {max} katkı",
   "year_prs": "PR",
   "year_reviews": "Review",
   "year_issues": "Issue",
