@@ -1,11 +1,7 @@
-import { useState } from "react"
-
 import { Link } from "@tanstack/react-router"
 import { ArrowLeft, ArrowUpRight } from "lucide-react"
 
 import { getLangParam } from "@/helpers/localized-url"
-
-import { useViewer } from "@/hooks/use-viewer"
 
 import { GithubStarCta } from "@/components/shared/GithubStarCta"
 import { buttonVariants } from "@/components/ui/button"
@@ -15,7 +11,6 @@ import { BirthdayConfetti } from "@/features/scout/components/BirthdayConfetti"
 import { CardActions } from "@/features/scout/components/CardActions"
 import { GetYourCard } from "@/features/scout/components/GetYourCard"
 import { GithubStarBadge } from "@/features/scout/components/GithubStarBadge"
-import { OccasionCardSwitch } from "@/features/scout/components/OccasionCardSwitch"
 import { PlayerCard } from "@/features/scout/components/PlayerCard"
 import { PlayerRank } from "@/features/scout/components/PlayerRank"
 import { PositionBreakdown } from "@/features/scout/components/PositionBreakdown"
@@ -41,24 +36,25 @@ type PlayerDetailProps = {
 
 export function PlayerDetail({ username }: PlayerDetailProps) {
   const { data: player } = usePlayer(username)
-  const { data: viewer } = useViewer()
-  // Özel günde varsayılan kutlama kartı; gerçek kart da görülüp indirilebilir.
-  // Aynı güne birden çok özel gün denk gelirse kişiye özel olan önce gelir: doğum günü, sonra ülkeye özel gün.
-  // Özel gün yoksa onaylı sahibin seçtiği kalıcı kart (takım ya da GitHub Star) varsayılan olur.
-  const [preferReal, setPreferReal] = useState(false)
+  // Özel gün kartları kendiliğinden gelir, ayarlardan seçilmez; o gün kalıcı kartın (takım ya da GitHub Star)
+  // ve nadirliğin önüne geçer. Birden çok gün denk gelirse kişiye özel olan önce gelir: doğum günü, Kadınlar
+  // Günü, sonra ülkeye özel gün. Geçiş sunulmaz: o gün yalnızca özel kart görünür.
   const now = new Date()
-  const occasion = player.birthdayToday
+  const cardFace = player.cardFace ?? null
+  const specialDay = player.birthdayToday
     ? "birthday"
-    : isRepublicDay(now) && playerCountry(player) === "TR"
-      ? "republic-day"
-      : isHalloween(now)
-        ? "halloween"
-        : isNewYear(now)
-          ? "new-year"
-          : isProgrammersDay(now)
-            ? "programmers-day"
-            : (player.cardFace ?? null)
-  const shownOccasion = occasion && !preferReal ? occasion : undefined
+    : player.womensDayToday
+      ? "womens-day"
+      : isRepublicDay(now) && playerCountry(player) === "TR"
+        ? "republic-day"
+        : isHalloween(now)
+          ? "halloween"
+          : isNewYear(now)
+            ? "new-year"
+            : isProgrammersDay(now)
+              ? "programmers-day"
+              : null
+  const shownOccasion = specialDay ?? cardFace ?? undefined
   const birthday = shownOccasion === "birthday"
   const cardPlayer = birthday
     ? { ...player, ovr: BIRTHDAY_OVR, ovrExact: BIRTHDAY_OVR, rarity: "icon" as const }
@@ -88,21 +84,6 @@ export function PlayerDetail({ username }: PlayerDetailProps) {
 
       <div className="grid gap-6 md:grid-cols-[20rem_1fr] md:items-start">
         <aside className="flex flex-col items-center gap-4 md:sticky md:top-6">
-          {occasion ? (
-            <OccasionCardSwitch
-              occasion={occasion}
-              name={player.name}
-              isOwner={viewer?.login.toLowerCase() === player.login.toLowerCase()}
-              active={!preferReal}
-              onChange={(next) => setPreferReal(!next)}
-            />
-          ) : null}
-          {/* Kalıcı kart gösterilirken gerçek kartın nadirliği görünür kalır: dört seviyeli sistem gizlenmez. */}
-          {shownOccasion && shownOccasion === player.cardFace ? (
-            <p className="-mt-2 text-xs text-muted-foreground">
-              {m.card_face_rarity({ rarity: rarityLabel(player.rarity) })}
-            </p>
-          ) : null}
           {birthday ? <BirthdayConfetti /> : null}
           <div
             data-rarity={cardPlayer.rarity}

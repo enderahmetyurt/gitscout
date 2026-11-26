@@ -13,6 +13,7 @@ import { isBirthdayToday } from "@/features/scout/helpers/birthday"
 import { isGithubStar } from "@/features/scout/helpers/github-star"
 import { toListPlayer } from "@/features/scout/helpers/list-player"
 import { scorePlayer } from "@/features/scout/helpers/score-player"
+import { isWomensDay } from "@/features/scout/helpers/special-days"
 import {
   listPlayerSchema,
   scoredPlayerSchema,
@@ -180,6 +181,7 @@ export async function getScoredPlayer(login: string): Promise<ScoredPlayer | nul
       summaryRowSchema.extend(accountColumnsSchema.shape).extend({
         birth_month_day: z.string().nullable(),
         utc_offset_minutes: z.number().nullable(),
+        female: z.boolean(),
         card_face: z.enum(CARD_FACES).nullable().catch(null),
         favorite_team: z.enum(TEAMS).nullable().catch(null)
       })
@@ -190,6 +192,7 @@ export async function getScoredPlayer(login: string): Promise<ScoredPlayer | nul
         coalesce(a.eligible, false) as verified,
         case when a.eligible then a.country end as claimed_country,
         case when a.eligible then to_char(a.birth_date, 'MM-DD') end as birth_month_day,
+        coalesce(a.eligible and a.gender = 'female', false) as female,
         case when a.eligible then a.card_face end as card_face,
         case when a.eligible then a.favorite_team end as favorite_team,
         -- Ham veri yalnızca doğum tarihi girilmişse ve yalnızca bu alan için okunur.
@@ -208,10 +211,13 @@ export async function getScoredPlayer(login: string): Promise<ScoredPlayer | nul
   const birthday =
     row.birth_month_day !== null &&
     isBirthdayToday(row.birth_month_day, new Date(), row.utc_offset_minutes)
+  // Cinsiyetin kendisi de gitmez; yalnızca bugün Kadınlar Günü kartının çıkıp çıkmayacağı.
+  const womensDay = row.female && isWomensDay(new Date())
   const cardFace = resolveCardFace(row.login, row.card_face, row.favorite_team)
   return {
     ...withAccount(player, row),
     ...(birthday ? { birthdayToday: true } : {}),
+    ...(womensDay ? { womensDayToday: true } : {}),
     ...(cardFace ? { cardFace } : {})
   }
 }

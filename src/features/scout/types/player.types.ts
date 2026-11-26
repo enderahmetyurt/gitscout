@@ -306,6 +306,8 @@ export type ScoredPlayer = {
   claimedCountry?: CountryCode
   /** Onaylı sahibinin yerel saatine göre bugün doğum günü; yalnızca profil okumasında eklenir. */
   birthdayToday?: true
+  /** Onaylı sahibi cinsiyetini kadın seçmiş ve bugün 8 Mart; yalnızca profil okumasında eklenir. */
+  womensDayToday?: true
   /**
    * Onaylı sahibinin profilde varsayılan seçtiği kalıcı kart yüzü: takım kartı (takımın kimliğiyle) ya da
    * GitHub Star kartı. Yalnızca profil okumasında ve koşullar hâlâ geçerliyse eklenir.

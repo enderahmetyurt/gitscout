@@ -24,6 +24,7 @@ import { VerifiedIcon } from "@/features/scout/components/VerifiedIcon"
 import { COUNTRIES } from "@/features/scout/constants/player-country.constants"
 import type { CountryCode } from "@/features/scout/constants/player-country.constants"
 import { BIRTHDAY_OVR } from "@/features/scout/helpers/birthday"
+import { isGithubStar } from "@/features/scout/helpers/github-star"
 import { playerCountry } from "@/features/scout/helpers/player-country"
 import { useProfileForm } from "@/features/scout/hooks/use-profile-form"
 import type { CardOccasion } from "@/features/scout/types/card-preview.types"
@@ -133,9 +134,16 @@ function SettingsContent({
     player && eligible ? { ...player, claimedCountry: draft ?? undefined } : player
   // Kart her değişimde yarım tur daha döner; görünür olmayan yüz bir önceki kartı tutar, böylece
   // gerçek → doğum günü → Kadınlar Günü gibi her geçişte dönüş baştan sona oynar.
+  // İlk açılışta kayıtlı kalıcı kart görünür; koşulu artık geçerli değilse gerçek kart.
+  const savedFace: CardFace =
+    eligible && cardFace === "team" && favoriteTeam
+      ? favoriteTeam
+      : eligible && cardFace === "github-star" && isGithubStar(login)
+        ? "github-star"
+        : "real"
   const [flip, setFlip] = useState<{ turns: number; faces: [CardFace, CardFace] }>({
     turns: 0,
-    faces: ["real", "real"]
+    faces: [savedFace, savedFace]
   })
   const visibleIndex = flip.turns % 2
   const shown = flip.faces[visibleIndex] ?? "real"

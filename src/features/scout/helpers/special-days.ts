@@ -18,3 +18,8 @@ export function isHalloween(now: Date): boolean {
 export function isNewYear(now: Date): boolean {
   return isMonthDay(now, 12, 31) || isMonthDay(now, 1, 1)
 }
+
+/** `now` anı (UTC) 8 Mart mı? Kadınlar Günü kartı yalnızca cinsiyetini kadın seçenlerde çıkar. */
+export function isWomensDay(now: Date): boolean {
+  return isMonthDay(now, 3, 8)
+}
