@@ -107,14 +107,33 @@ function renderRow(row: Row): string {
   return `| ${cells.join(" | ")} |`
 }
 
+/** README'de açık duran satır sayısı; kalanı katlanır ki sayfa kısa kalsın ama kimse listeden düşmesin. */
+const VISIBLE_ROWS = 25
+
+const TABLE_HEAD = [
+  "| # | Developer | | OVR | Tier | Role | ACT | IMP | COM | REP | CON | EXP |",
+  "|--:|:--|:-:|--:|:--|:--|--:|--:|--:|--:|--:|--:|"
+]
+
 function renderTable(rows: Row[]): string {
-  return [
-    "<!-- prettier-ignore-start -->",
-    "| # | Developer | | OVR | Tier | Role | ACT | IMP | COM | REP | CON | EXP |",
-    "|--:|:--|:-:|--:|:--|:--|--:|--:|--:|--:|--:|--:|",
-    ...rows.map(renderRow),
-    "<!-- prettier-ignore-end -->"
-  ].join("\n")
+  const visible = rows.slice(0, VISIBLE_ROWS)
+  const folded = rows.slice(VISIBLE_ROWS)
+  const lines = ["<!-- prettier-ignore-start -->", ...TABLE_HEAD, ...visible.map(renderRow)]
+  const last = folded.at(-1)
+  if (folded[0] && last) {
+    // GitHub, <details> içindeki tabloyu ancak etrafında boş satır varsa Markdown olarak çizer.
+    lines.push(
+      "",
+      `<details><summary>Show #${folded[0].rank}–${last.rank}</summary>`,
+      "",
+      ...TABLE_HEAD,
+      ...folded.map(renderRow),
+      "",
+      "</details>"
+    )
+  }
+  lines.push("<!-- prettier-ignore-end -->")
+  return lines.join("\n")
 }
 
 async function fetchTop(): Promise<Row[]> {
