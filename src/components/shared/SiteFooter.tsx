@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router"
+import { cn } from "cn"
 
 import { siteConfig } from "@/config/site.config"
 
@@ -10,6 +11,8 @@ import * as m from "@/paraglide/messages.js"
 
 const linkClass =
   "inline-flex min-h-6 items-center gap-1.5 rounded-sm align-middle underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50"
+
+const navLinkClass = cn(linkClass, "site-nav-link gap-0 data-[status=active]:text-foreground")
 
 export function SiteFooter() {
   const lang = getLangParam()
@@ -31,7 +34,10 @@ export function SiteFooter() {
             <p className="max-w-xs text-pretty">{m.footer_tagline()}</p>
           </div>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-            <Link to="/{-$lang}/about" params={{ lang }} className={linkClass}>
+            <Link to="/{-$lang}/special-cards" params={{ lang }} className={navLinkClass}>
+              {m.nav_special_cards()}
+            </Link>
+            <Link to="/{-$lang}/about" params={{ lang }} className={navLinkClass}>
               {m.nav_about()}
             </Link>
             <a

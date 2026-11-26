@@ -106,7 +106,7 @@ export function AddPlayerForm({
                 {/* Dar ekranda yer açmak için önek gizlenir; placeholder ne yazılacağını söyler. */}
                 <span
                   aria-hidden
-                  className="hidden font-mono text-[15px] text-muted-foreground sm:inline"
+                  className="hidden font-mono text-base text-muted-foreground sm:inline md:text-[15px]"
                 >
                   github.com/
                 </span>
@@ -117,7 +117,7 @@ export function AddPlayerForm({
                   autoComplete="off"
                   autoCapitalize="none"
                   spellCheck={false}
-                  className="h-full rounded-none border-0 bg-transparent px-0 font-mono text-[15px] shadow-none focus-visible:ring-0 dark:bg-transparent"
+                  className="h-full rounded-none border-0 bg-transparent px-0 font-mono text-base shadow-none focus-visible:ring-0 md:text-[15px] dark:bg-transparent"
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.invalid ? `${field.name}-error` : undefined}
                 />

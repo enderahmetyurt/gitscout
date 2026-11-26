@@ -1,3 +1,5 @@
+import type { Team } from "@/constants/team.constants"
+
 import type { CountryCode } from "@/features/scout/constants/player-country.constants"
 
 /** Ham GitHub verisinden çıkarılmış, skorlamaya giren gerçekler. Formüller değişince bunlardan yeniden hesaplanır. */
@@ -298,6 +300,17 @@ export type ScoredPlayer = {
   career: CareerTotals
   badges: Badge[]
   fetchedAt: string
+  /** Hesabını GitHub ile sahiplenmiş ve onay koşullarını geçmiş. Okuma anında hesap tablosundan eklenir. */
+  verified?: boolean
+  /** Onaylı sahibinin kendi seçtiği ülke; her kaynağın önüne geçer. Okuma anında hesap tablosundan eklenir. */
+  claimedCountry?: CountryCode
+  /** Onaylı sahibinin yerel saatine göre bugün doğum günü; yalnızca profil okumasında eklenir. */
+  birthdayToday?: true
+  /**
+   * Onaylı sahibinin profilde varsayılan seçtiği kalıcı kart yüzü: takım kartı (takımın kimliğiyle) ya da
+   * GitHub Star kartı. Yalnızca profil okumasında ve koşullar hâlâ geçerliyse eklenir.
+   */
+  cardFace?: Team | "github-star"
 }
 
 /** Listelerde bir statın yalnızca kartta görünen puanı; ham puan ve parçalar detay sayfasında. */

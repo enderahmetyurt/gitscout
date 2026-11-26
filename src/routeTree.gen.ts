@@ -14,10 +14,14 @@ import { Route as SiteDotwebmanifestRouteImport } from './routes/site[.]webmanif
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as Char123LangChar125RouteImport } from './routes/{-$lang}'
 import { Route as ApiTopDotjsonRouteImport } from './routes/api/top[.]json'
+import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as BadgeChar123usernameChar125DotsvgRouteImport } from './routes/badge/{$username}[.]svg'
 import { Route as Char123LangChar125IndexRouteImport } from './routes/{-$lang}/index'
 import { Route as Char123LangChar125AboutRouteImport } from './routes/{-$lang}/about'
 import { Route as Char123LangChar125LeaderboardRouteImport } from './routes/{-$lang}/leaderboard'
+import { Route as Char123LangChar125LoginRouteImport } from './routes/{-$lang}/login'
+import { Route as Char123LangChar125SettingsRouteImport } from './routes/{-$lang}/settings'
+import { Route as Char123LangChar125SpecialCardsRouteImport } from './routes/{-$lang}/special-cards'
 import { Route as ApiCronRefreshRouteImport } from './routes/api/cron/refresh'
 import { Route as Char123LangChar125OgUsernameRouteImport } from './routes/{-$lang}/og/$username'
 import { Route as Char123LangChar125UUsernameRouteImport } from './routes/{-$lang}/u/$username'
@@ -50,6 +54,11 @@ const ApiTopDotjsonRoute = ApiTopDotjsonRouteImport.update({
   path: '/api/top.json',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BadgeChar123usernameChar125DotsvgRoute =
   BadgeChar123usernameChar125DotsvgRouteImport.update({
     id: '/badge/{$username}.svg',
@@ -70,6 +79,23 @@ const Char123LangChar125LeaderboardRoute =
   Char123LangChar125LeaderboardRouteImport.update({
     id: '/leaderboard',
     path: '/leaderboard',
+    getParentRoute: () => Char123LangChar125Route,
+  } as any)
+const Char123LangChar125LoginRoute = Char123LangChar125LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => Char123LangChar125Route,
+} as any)
+const Char123LangChar125SettingsRoute =
+  Char123LangChar125SettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => Char123LangChar125Route,
+  } as any)
+const Char123LangChar125SpecialCardsRoute =
+  Char123LangChar125SpecialCardsRouteImport.update({
+    id: '/special-cards',
+    path: '/special-cards',
     getParentRoute: () => Char123LangChar125Route,
   } as any)
 const ApiCronRefreshRoute = ApiCronRefreshRouteImport.update({
@@ -114,9 +140,13 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/{-$lang}': typeof Char123LangChar125RouteWithChildren
   '/api/top.json': typeof ApiTopDotjsonRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/badge/{$username}.svg': typeof BadgeChar123usernameChar125DotsvgRoute
   '/{-$lang}/about': typeof Char123LangChar125AboutRoute
   '/{-$lang}/leaderboard': typeof Char123LangChar125LeaderboardRoute
+  '/{-$lang}/login': typeof Char123LangChar125LoginRoute
+  '/{-$lang}/settings': typeof Char123LangChar125SettingsRoute
+  '/{-$lang}/special-cards': typeof Char123LangChar125SpecialCardsRoute
   '/{-$lang}/': typeof Char123LangChar125IndexRoute
   '/api/cron/refresh': typeof ApiCronRefreshRoute
   '/{-$lang}/og/$username': typeof Char123LangChar125OgUsernameRoute
@@ -130,9 +160,13 @@ export interface FileRoutesByTo {
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/top.json': typeof ApiTopDotjsonRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/badge/{$username}.svg': typeof BadgeChar123usernameChar125DotsvgRoute
   '/{-$lang}/about': typeof Char123LangChar125AboutRoute
   '/{-$lang}/leaderboard': typeof Char123LangChar125LeaderboardRoute
+  '/{-$lang}/login': typeof Char123LangChar125LoginRoute
+  '/{-$lang}/settings': typeof Char123LangChar125SettingsRoute
+  '/{-$lang}/special-cards': typeof Char123LangChar125SpecialCardsRoute
   '/{-$lang}': typeof Char123LangChar125IndexRoute
   '/api/cron/refresh': typeof ApiCronRefreshRoute
   '/{-$lang}/og/$username': typeof Char123LangChar125OgUsernameRoute
@@ -148,9 +182,13 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/{-$lang}': typeof Char123LangChar125RouteWithChildren
   '/api/top.json': typeof ApiTopDotjsonRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/badge/{$username}.svg': typeof BadgeChar123usernameChar125DotsvgRoute
   '/{-$lang}/about': typeof Char123LangChar125AboutRoute
   '/{-$lang}/leaderboard': typeof Char123LangChar125LeaderboardRoute
+  '/{-$lang}/login': typeof Char123LangChar125LoginRoute
+  '/{-$lang}/settings': typeof Char123LangChar125SettingsRoute
+  '/{-$lang}/special-cards': typeof Char123LangChar125SpecialCardsRoute
   '/{-$lang}/': typeof Char123LangChar125IndexRoute
   '/api/cron/refresh': typeof ApiCronRefreshRoute
   '/{-$lang}/og/$username': typeof Char123LangChar125OgUsernameRoute
@@ -167,9 +205,13 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/{-$lang}'
     | '/api/top.json'
+    | '/auth/callback'
     | '/badge/{$username}.svg'
     | '/{-$lang}/about'
     | '/{-$lang}/leaderboard'
+    | '/{-$lang}/login'
+    | '/{-$lang}/settings'
+    | '/{-$lang}/special-cards'
     | '/{-$lang}/'
     | '/api/cron/refresh'
     | '/{-$lang}/og/$username'
@@ -183,9 +225,13 @@ export interface FileRouteTypes {
     | '/site.webmanifest'
     | '/sitemap.xml'
     | '/api/top.json'
+    | '/auth/callback'
     | '/badge/{$username}.svg'
     | '/{-$lang}/about'
     | '/{-$lang}/leaderboard'
+    | '/{-$lang}/login'
+    | '/{-$lang}/settings'
+    | '/{-$lang}/special-cards'
     | '/{-$lang}'
     | '/api/cron/refresh'
     | '/{-$lang}/og/$username'
@@ -200,9 +246,13 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/{-$lang}'
     | '/api/top.json'
+    | '/auth/callback'
     | '/badge/{$username}.svg'
     | '/{-$lang}/about'
     | '/{-$lang}/leaderboard'
+    | '/{-$lang}/login'
+    | '/{-$lang}/settings'
+    | '/{-$lang}/special-cards'
     | '/{-$lang}/'
     | '/api/cron/refresh'
     | '/{-$lang}/og/$username'
@@ -218,6 +268,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   Char123LangChar125Route: typeof Char123LangChar125RouteWithChildren
   ApiTopDotjsonRoute: typeof ApiTopDotjsonRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   BadgeChar123usernameChar125DotsvgRoute: typeof BadgeChar123usernameChar125DotsvgRoute
   ApiCronRefreshRoute: typeof ApiCronRefreshRoute
 }
@@ -259,6 +310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTopDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/badge/{$username}.svg': {
       id: '/badge/{$username}.svg'
       path: '/badge/{$username}.svg'
@@ -285,6 +343,27 @@ declare module '@tanstack/react-router' {
       path: '/leaderboard'
       fullPath: '/{-$lang}/leaderboard'
       preLoaderRoute: typeof Char123LangChar125LeaderboardRouteImport
+      parentRoute: typeof Char123LangChar125Route
+    }
+    '/{-$lang}/login': {
+      id: '/{-$lang}/login'
+      path: '/login'
+      fullPath: '/{-$lang}/login'
+      preLoaderRoute: typeof Char123LangChar125LoginRouteImport
+      parentRoute: typeof Char123LangChar125Route
+    }
+    '/{-$lang}/settings': {
+      id: '/{-$lang}/settings'
+      path: '/settings'
+      fullPath: '/{-$lang}/settings'
+      preLoaderRoute: typeof Char123LangChar125SettingsRouteImport
+      parentRoute: typeof Char123LangChar125Route
+    }
+    '/{-$lang}/special-cards': {
+      id: '/{-$lang}/special-cards'
+      path: '/special-cards'
+      fullPath: '/{-$lang}/special-cards'
+      preLoaderRoute: typeof Char123LangChar125SpecialCardsRouteImport
       parentRoute: typeof Char123LangChar125Route
     }
     '/api/cron/refresh': {
@@ -335,6 +414,9 @@ declare module '@tanstack/react-router' {
 interface Char123LangChar125RouteChildren {
   Char123LangChar125AboutRoute: typeof Char123LangChar125AboutRoute
   Char123LangChar125LeaderboardRoute: typeof Char123LangChar125LeaderboardRoute
+  Char123LangChar125LoginRoute: typeof Char123LangChar125LoginRoute
+  Char123LangChar125SettingsRoute: typeof Char123LangChar125SettingsRoute
+  Char123LangChar125SpecialCardsRoute: typeof Char123LangChar125SpecialCardsRoute
   Char123LangChar125IndexRoute: typeof Char123LangChar125IndexRoute
   Char123LangChar125OgUsernameRoute: typeof Char123LangChar125OgUsernameRoute
   Char123LangChar125UUsernameRoute: typeof Char123LangChar125UUsernameRoute
@@ -346,6 +428,9 @@ interface Char123LangChar125RouteChildren {
 const Char123LangChar125RouteChildren: Char123LangChar125RouteChildren = {
   Char123LangChar125AboutRoute: Char123LangChar125AboutRoute,
   Char123LangChar125LeaderboardRoute: Char123LangChar125LeaderboardRoute,
+  Char123LangChar125LoginRoute: Char123LangChar125LoginRoute,
+  Char123LangChar125SettingsRoute: Char123LangChar125SettingsRoute,
+  Char123LangChar125SpecialCardsRoute: Char123LangChar125SpecialCardsRoute,
   Char123LangChar125IndexRoute: Char123LangChar125IndexRoute,
   Char123LangChar125OgUsernameRoute: Char123LangChar125OgUsernameRoute,
   Char123LangChar125UUsernameRoute: Char123LangChar125UUsernameRoute,
@@ -363,6 +448,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   Char123LangChar125Route: Char123LangChar125RouteWithChildren,
   ApiTopDotjsonRoute: ApiTopDotjsonRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   BadgeChar123usernameChar125DotsvgRoute:
     BadgeChar123usernameChar125DotsvgRoute,
   ApiCronRefreshRoute: ApiCronRefreshRoute,

@@ -19,6 +19,13 @@ describe("oyuncu ülkesi", () => {
     expect(playerCountry({ login: "octocat", country: "XX" })).toBeUndefined()
   })
 
+  it("onaylı sahibin seçtiği ülke elle atanan listenin ve konumun önüne geçer", () => {
+    expect(playerCountry({ login: "fatih", country: "DE", claimedCountry: "NL" })).toBe("NL")
+    expect(playerCountry({ login: "octocat", country: "DE", claimedCountry: "JP" })).toBe("JP")
+    expect(playerCountry({ login: "fatih", claimedCountry: "XX" })).toBe("TR")
+    expect(playerCountry({ login: "octocat", country: "DE", claimedCountry: null })).toBe("DE")
+  })
+
   it("ülkesi bilinmeyeni belirsiz sayar", () => {
     expect(playerCountryFilter({ login: "octocat" })).toBe("unknown")
     expect(playerCountryFilter({ login: "fatih" })).toBe("TR")

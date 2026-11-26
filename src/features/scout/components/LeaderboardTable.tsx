@@ -1,3 +1,5 @@
+import { useId } from "react"
+
 import { Link } from "@tanstack/react-router"
 import {
   createColumnHelper,
@@ -15,6 +17,7 @@ import { getLangParam } from "@/helpers/localized-url"
 
 import { GithubStarIcon } from "@/features/scout/components/GithubStarIcon"
 import { RarityChip } from "@/features/scout/components/RarityChip"
+import { VerifiedIcon } from "@/features/scout/components/VerifiedIcon"
 import { COUNTRY_FLAGS, FLAG_CLASS } from "@/features/scout/constants/country-flag.constants"
 import { STAT_ORDER } from "@/features/scout/constants/scoring.constants"
 import { STAT_TIER_TEXT } from "@/features/scout/constants/stat-tier.constants"
@@ -117,13 +120,56 @@ const MEDALS = { 1: "gold", 2: "silver", 3: "bronze" } as const
 
 function RankCell({ rank }: { rank: number }) {
   const medal = rank === 1 || rank === 2 || rank === 3 ? MEDALS[rank] : undefined
-  if (!medal) return <span>{rank}</span>
+  // Madalyasız sıralar da madalya genişliğinde bir kutuda ortalanır; rakamlar tek bir dikey eksende hizalanır.
+  if (!medal) return <span className="inline-grid h-7 min-w-7 place-items-center">{rank}</span>
+  return <RankMedal rank={rank} medal={medal} />
+}
+
+/** Kurdeleli, üzerinde sıra yazan madalya; renkler kartlarla aynı nadirlik değişkenlerinden gelir. */
+function RankMedal({ rank, medal }: { rank: number; medal: (typeof MEDALS)[1 | 2 | 3] }) {
+  // Her madalyanın degradesi kendi kimliğiyle; aynı sayfadaki üç SVG birbirinin degradesini ezmez.
+  const gradientId = useId()
   return (
-    <span
-      data-rarity={medal}
-      className="rank-medal inline-grid size-7 place-items-center rounded-full text-xs font-bold"
-    >
-      {rank}
+    <span data-rarity={medal} className="inline-grid size-7 place-items-center">
+      <span className="sr-only">{rank}</span>
+      <svg aria-hidden viewBox="0 0 28 28" className="size-7 overflow-visible">
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" style={{ stopColor: "var(--frame-1)" }} />
+            <stop offset="55%" style={{ stopColor: "var(--bg-2)" }} />
+            <stop offset="100%" style={{ stopColor: "var(--frame-2)" }} />
+          </linearGradient>
+        </defs>
+        <path d="M6 0h5l4 10h-5z" style={{ fill: "var(--frame-2)" }} />
+        <path d="M22 0h-5l-4 10h5z" style={{ fill: "var(--frame-2)" }} opacity="0.7" />
+        <circle
+          cx="14"
+          cy="18"
+          r="9.5"
+          fill={`url(#${gradientId})`}
+          style={{ stroke: "var(--frame-2)" }}
+          strokeWidth="1"
+        />
+        <circle
+          cx="14"
+          cy="18"
+          r="7.25"
+          fill="none"
+          style={{ stroke: "var(--frame-1)" }}
+          strokeOpacity="0.7"
+          strokeWidth="0.75"
+        />
+        <text
+          x="14"
+          y="18.5"
+          textAnchor="middle"
+          dominantBaseline="central"
+          className="text-[10px] font-bold"
+          style={{ fill: "var(--card-ink)" }}
+        >
+          {rank}
+        </text>
+      </svg>
     </span>
   )
 }
@@ -147,6 +193,7 @@ function PlayerCell({ player }: { player: ListPlayer }) {
       <span className="min-w-0">
         <span className="flex items-center gap-1.5">
           <span className="min-w-0 truncate font-medium text-foreground">{player.name}</span>
+          {player.verified && <VerifiedIcon />}
           {isGithubStar(player.login) && <GithubStarIcon />}
           {country && Flag ? (
             <Flag

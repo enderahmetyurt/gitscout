@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { matchesPlayer } from "@/features/scout/helpers/search-text"
+import { matchesPlayer, matchesText } from "@/features/scout/helpers/search-text"
 
 describe("matchesPlayer", () => {
   const player = { name: "Yunus Emre GÜRLÜ", login: "yunusemrgrl" }
@@ -13,5 +13,13 @@ describe("matchesPlayer", () => {
 
   it("boş aramada herkesi gösterir", () => {
     expect(matchesPlayer(player, "  ")).toBe(true)
+  })
+})
+
+describe("matchesText", () => {
+  it("takım adında aksan ve noktasız ı fark etmeden arar", () => {
+    expect(matchesText("Beşiktaş", "besik")).toBe(true)
+    expect(matchesText("Fenerbahçe", "FENERBAHCE")).toBe(true)
+    expect(matchesText("Galatasaray", "trabzon")).toBe(false)
   })
 })

@@ -2,6 +2,8 @@ import { notFound } from "@tanstack/react-router"
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start"
 import { z } from "zod"
 
+import { getCurrentViewer } from "@/lib/auth.functions"
+
 import { fetchPlayerFacts } from "@/features/scout/api/fetch-player-facts.api"
 import { GithubError } from "@/features/scout/api/get-github-data.api"
 import {
@@ -9,13 +11,21 @@ import {
   getLatestAdditions,
   getListPlayers,
   getRecentLogins,
+  getRecentProfileViews,
   getScoredPlayer,
-  insertPlayer
+  insertPlayer,
+  updateAccountBirthDate,
+  updateAccountCountry,
+  updateAccountProfileDetails
 } from "@/features/scout/api/player-store"
+import { COUNTRIES } from "@/features/scout/constants/player-country.constants"
 import { NEW_PLAYERS_PER_HOUR } from "@/features/scout/constants/scoring.constants"
 import { computeBenchmarks } from "@/features/scout/helpers/benchmarks"
+import { ageOn } from "@/features/scout/helpers/birthday"
+import { isGithubStar } from "@/features/scout/helpers/github-star"
 import { computeRanking } from "@/features/scout/helpers/score-player"
 import { addPlayerSchema, usernameSchema } from "@/features/scout/schemas/player.schema"
+import { profileDetailsSchema } from "@/features/scout/schemas/profile.schema"
 import type { ListPlayer, PlayerDetail, ScoredPlayer } from "@/features/scout/types/player.types"
 
 type Leaderboard = {
@@ -31,6 +41,8 @@ type Leaderboard = {
   latest: LatestAddition[]
   /** Verinin üretildiği andan önceki 24 saatte eklenen oyuncu sayısı. */
   lastDayCount: number
+  /** Son 7 günde profil görüntülenmeleri (küçük harfli kullanıcı adı → tekil ziyaretçi); hazır kapışmaları ağırlıklandırır. */
+  profileViews: Record<string, number>
   /**
    * Verinin üretildiği an. "5 dk önce" gibi göreli zamanlar buna göre yazılır; sunucu ile
    * tarayıcı aynı metni üretir.
@@ -60,6 +72,7 @@ type ListSnapshot = {
   recentLogins: string[]
   latest: LatestAddition[]
   lastDayCount: number
+  profileViews: Record<string, number>
 }
 
 let listCache: ListSnapshot | null = null
@@ -76,8 +89,9 @@ function loadList(): Promise<ListSnapshot> {
     const recentLogins = await getRecentLogins()
     const latest = await getLatestAdditions(LATEST_LIMIT)
     const lastDayCount = await countRecentPlayers(24)
+    const profileViews = await getRecentProfileViews(7)
     const ttl = pending > 0 ? PENDING_LIST_CACHE_MS : LIST_CACHE_MS
-    listCache = { at: Date.now(), ttl, players, recentLogins, latest, lastDayCount }
+    listCache = { at: Date.now(), ttl, players, recentLogins, latest, lastDayCount, profileViews }
     return listCache
   })().finally(() => {
     listLoading = null
@@ -123,12 +137,13 @@ export const getBadgePlayer = createServerOnlyFn(
 /** Kayıtlı bütün oyuncular, genel puana göre sıralı. GitHub'a istek atmaz. */
 export const getLeaderboard = createServerFn({ method: "GET" }).handler(
   async (): Promise<Leaderboard> => {
-    const { at, players, recentLogins, latest, lastDayCount } = await cachedList()
+    const { at, players, recentLogins, latest, lastDayCount, profileViews } = await cachedList()
     return {
       players,
       recentLogins,
       latest,
       lastDayCount,
+      profileViews,
       featuredSeed: Math.floor(Date.now() / HOUR_MS),
       generatedAt: new Date(at).toISOString()
     }
@@ -186,4 +201,75 @@ export const addPlayer = createServerFn({ method: "POST" })
     })
     listCache = null
     return player
+  })
+
+/** Aynı kişinin ülke değişiklikleri arasında en az bu kadar saniye geçer. */
+const COUNTRY_UPDATE_INTERVAL_SECONDS = 10
+
+const updateCountrySchema = z.object({ country: z.enum(COUNTRIES).nullable() })
+
+/**
+ * Giriş yapmış ve onaylı kişinin ülkesini değiştirir; `null` seçimi kaldırır. Kim olduğu yalnızca sunucudaki
+ * oturum çerezinden okunur: istekte kullanıcı adı ya da kimlik alınmaz, kişi yalnızca kendi kaydını değiştirebilir.
+ */
+export const updateProfileCountry = createServerFn({ method: "POST" })
+  .validator(updateCountrySchema)
+  .handler(async ({ data }): Promise<void> => {
+    const viewer = await getCurrentViewer()
+    if (!viewer) throw new Error("account:signed-out")
+    if (!viewer.eligible) throw new Error("account:not-eligible")
+    const updated = await updateAccountCountry(
+      viewer.githubId,
+      data.country,
+      COUNTRY_UPDATE_INTERVAL_SECONDS
+    )
+    if (!updated) throw new Error("account:rate-limit")
+    listCache = null
+  })
+
+/** GitHub 13 yaş altına hesap açtırmaz; üst sınır yazım hatalarını yakalar. */
+const BIRTH_AGE_RANGE = { min: 13, max: 100 } as const
+
+const updateBirthDateSchema = z.object({
+  birthDate: z.iso.date().refine((value) => {
+    const age = ageOn(value, new Date())
+    return age !== null && age >= BIRTH_AGE_RANGE.min && age <= BIRTH_AGE_RANGE.max
+  })
+})
+
+/**
+ * Giriş yapmış ve onaylı kişinin doğum tarihini kaydeder. İlk kayıt ve bir düzeltme hakkı vardır;
+ * sınır SQL'de uygulanır. Kişi yalnızca oturum çerezinden okunur, kendi kaydından başkasına yazamaz.
+ */
+export const updateBirthDate = createServerFn({ method: "POST" })
+  .validator(updateBirthDateSchema)
+  .handler(async ({ data }): Promise<void> => {
+    const viewer = await getCurrentViewer()
+    if (!viewer) throw new Error("account:signed-out")
+    if (!viewer.eligible) throw new Error("account:not-eligible")
+    const updated = await updateAccountBirthDate(viewer.githubId, data.birthDate)
+    if (!updated) throw new Error("account:birth-date-locked")
+  })
+
+/**
+ * Giriş yapmış ve onaylı kişinin şehir, cinsiyet, rüya takımı ve favori takımını kaydeder; yalnızca gönderilen alanlar değişir.
+ * Kişi oturum çerezinden okunur. Kendini kadrosuna ekleyemez; listede olmayan oyuncu seçilemez.
+ */
+export const updateProfileDetails = createServerFn({ method: "POST" })
+  .validator(profileDetailsSchema)
+  .handler(async ({ data }): Promise<void> => {
+    const viewer = await getCurrentViewer()
+    if (!viewer) throw new Error("account:signed-out")
+    if (!viewer.eligible) throw new Error("account:not-eligible")
+    if (data.dreamTeam?.includes(viewer.login.toLowerCase()))
+      throw new Error("account:dream-team-self")
+    // Kalıcı kart yüzü: GitHub Star kartı yalnızca programdakilere, takım kartı favori takım seçiliyken.
+    if (data.cardFace === "github-star" && !isGithubStar(viewer.login))
+      throw new Error("account:card-face-not-allowed")
+    const team = data.favoriteTeam !== undefined ? data.favoriteTeam : viewer.favoriteTeam
+    if (data.cardFace === "team" && !team) throw new Error("account:card-face-not-allowed")
+    const result = await updateAccountProfileDetails(viewer.githubId, data)
+    if (result === "not-eligible") throw new Error("account:not-eligible")
+    if (result === "unknown-player") throw new Error("account:dream-team-unknown-player")
+    if (result === "rate-limit") throw new Error("account:rate-limit")
   })

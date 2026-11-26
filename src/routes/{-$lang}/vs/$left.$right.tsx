@@ -5,9 +5,9 @@ import { siteConfig } from "@/config/site.config"
 
 import { getLangParam, hreflangLinks } from "@/helpers/localized-url"
 
-import { Pending } from "@/components/shared/Pending"
 import { buttonVariants } from "@/components/ui/button"
 import { leaderboardQueryOptions, playerQueryOptions } from "@/features/scout/api/players.queries"
+import { DuelSkeleton } from "@/features/scout/components/DuelSkeleton"
 import { DuelView } from "@/features/scout/components/DuelView"
 import * as m from "@/paraglide/messages.js"
 
@@ -46,7 +46,7 @@ export const Route = createFileRoute("/{-$lang}/vs/$left/$right")({
       links
     }
   },
-  pendingComponent: Pending,
+  pendingComponent: DuelSkeleton,
   notFoundComponent: DuelNotFound,
   component: DuelPage
 })

@@ -3,12 +3,13 @@ import { cn } from "cn"
 
 import { getLangParam } from "@/helpers/localized-url"
 
+import { AccountButton } from "@/components/shared/AccountButton"
 import { GithubStarButton } from "@/components/shared/GithubStarButton"
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher"
 import * as m from "@/paraglide/messages.js"
 
 const navLinkClass =
-  "inline-flex min-h-6 items-center rounded-sm font-mono text-sm text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 data-[status=active]:text-foreground"
+  "inline-flex min-h-6 items-center rounded-sm font-mono text-sm text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 data-[status=active]:text-foreground site-nav-link"
 
 export function SiteHeader() {
   const lang = getLangParam()
@@ -29,8 +30,7 @@ export function SiteHeader() {
           className="flex items-center gap-3 min-[360px]:gap-4 sm:gap-5"
         >
           <Link to="/{-$lang}/leaderboard" params={{ lang }} className={navLinkClass}>
-            <span className="sm:hidden">{m.nav_leaderboard_short()}</span>
-            <span className="hidden sm:inline">{m.nav_leaderboard()}</span>
+            {m.nav_leaderboard()}
           </Link>
           <Link to="/{-$lang}/vs" params={{ lang }} className={navLinkClass}>
             {m.nav_duel()}
@@ -45,6 +45,7 @@ export function SiteHeader() {
           </Link>
           <LanguageSwitcher />
           <GithubStarButton />
+          <AccountButton />
         </nav>
       </div>
     </header>

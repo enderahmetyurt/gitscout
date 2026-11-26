@@ -19,3 +19,9 @@ export function matchesPlayer(player: { name: string; login: string }, query: st
     normalizeSearch(player.login).includes(q)
   )
 }
+
+/** Metinde aranan ifade geçiyor mu; aksanlar ve büyük-küçük harf yok sayılır. */
+export function matchesText(text: string, query: string): boolean {
+  const q = normalizeSearch(query)
+  return q === "" || normalizeSearch(text).includes(q)
+}

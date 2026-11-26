@@ -5,7 +5,7 @@ import { localizedUrl } from "@/helpers/localized-url"
 import { getSitemapPlayers } from "@/features/scout/api/player-store"
 import { locales } from "@/paraglide/runtime.js"
 
-const PATHS = ["/", "/leaderboard", "/vs", "/about"]
+const PATHS = ["/", "/leaderboard", "/vs", "/special-cards", "/about"]
 
 type Entry = { path: string; lastmod: string; priority: string }
 

@@ -31,4 +31,9 @@ declare module "@tanstack/react-router" {
   interface Register {
     router: ReturnType<typeof getRouter>
   }
+
+  interface HistoryState {
+    /** Kapışma seçiminden geçişle gelindi: kartlar zaten yerine kayarak geldi, giriş animasyonu oynamaz. */
+    duelTransition?: boolean
+  }
 }

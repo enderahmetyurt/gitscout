@@ -12,7 +12,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { ReadmeBadgeMenu } from "@/features/scout/components/ReadmeBadgeMenu"
 import { SHARE_TARGETS } from "@/features/scout/constants/share.constants"
 import { titleText } from "@/features/scout/helpers/player-text"
 import type { ScoredPlayer } from "@/features/scout/types/player.types"
@@ -71,7 +70,6 @@ export function CardActions({ player, onDownload, isDownloading }: CardActionsPr
         <Swords aria-hidden />
         {m.duel_button()}
       </Link>
-      <ReadmeBadgeMenu login={player.login} ovr={player.ovr} rarity={player.rarity} />
     </div>
   )
 }

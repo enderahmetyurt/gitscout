@@ -4,8 +4,8 @@ import { pageMeta } from "@/config/seo.config"
 
 import { hreflangLinks } from "@/helpers/localized-url"
 
-import { Pending } from "@/components/shared/Pending"
 import { leaderboardQueryOptions } from "@/features/scout/api/players.queries"
+import { HomeSkeleton } from "@/features/scout/components/HomeSkeleton"
 import { ScoutHome } from "@/features/scout/components/ScoutHome"
 import {
   homeSearchSchema,
@@ -18,6 +18,6 @@ export const Route = createFileRoute("/{-$lang}/")({
   search: { middlewares: [stripSearchParams(leaderboardSearchDefaults)] },
   loader: ({ context }) => context.queryClient.ensureQueryData(leaderboardQueryOptions()),
   head: () => ({ meta: pageMeta(m.meta_home()), links: hreflangLinks("/") }),
-  pendingComponent: Pending,
+  pendingComponent: HomeSkeleton,
   component: ScoutHome
 })

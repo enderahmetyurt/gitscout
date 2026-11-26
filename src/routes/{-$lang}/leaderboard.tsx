@@ -4,9 +4,9 @@ import { pageMeta } from "@/config/seo.config"
 
 import { hreflangLinks } from "@/helpers/localized-url"
 
-import { Pending } from "@/components/shared/Pending"
 import { leaderboardQueryOptions } from "@/features/scout/api/players.queries"
 import { LeaderboardPage } from "@/features/scout/components/LeaderboardPage"
+import { LeaderboardSkeleton } from "@/features/scout/components/LeaderboardSkeleton"
 import {
   leaderboardSearchDefaults,
   leaderboardSearchSchema
@@ -21,6 +21,6 @@ export const Route = createFileRoute("/{-$lang}/leaderboard")({
     meta: pageMeta(m.meta_leaderboard(), m.meta_leaderboard_description()),
     links: hreflangLinks("/leaderboard")
   }),
-  pendingComponent: Pending,
+  pendingComponent: LeaderboardSkeleton,
   component: LeaderboardPage
 })

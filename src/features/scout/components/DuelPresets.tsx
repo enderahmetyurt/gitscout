@@ -1,21 +1,22 @@
 import { useState } from "react"
+import type { ReactNode } from "react"
 
 import { Link } from "@tanstack/react-router"
-import { Shuffle } from "lucide-react"
+import { ChevronRight, Shuffle } from "lucide-react"
 import { cn } from "cn"
 
 import { getLangParam } from "@/helpers/localized-url"
 
-import { Button } from "@/components/ui/button"
-import { duelPresets } from "@/features/scout/helpers/duel-presets"
+import { duelPresetGroups } from "@/features/scout/helpers/duel-presets"
+import type { DuelPreset } from "@/features/scout/helpers/duel-presets"
 import { playerCountry } from "@/features/scout/helpers/player-country"
 import { rarityLabel } from "@/features/scout/helpers/player-text"
 import type { ListPlayer } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
 import { getLocale } from "@/paraglide/runtime.js"
 
-// Puanlar gizli: kimin kazanacağı kapışma açılınca belli olsun.
-const PRESET_COUNT = 9
+/** Sayfanın asıl işi iki kişiyi seçmek; burası yalnızca "kimi seçsem" diyen için birkaç öneri. */
+const POPULAR_COUNT = 3
 
 type PresetView = "tr" | "world"
 
@@ -23,101 +24,77 @@ type DuelPresetsProps = {
   players: ListPlayer[]
   /** İlk liste bu tohumla kurulur; sunucu ve tarayıcı aynı eşleşmeleri çizsin diye veriyle gelir. */
   seed: number
+  /** Son 7 günün profil görüntülenmeleri; çok bakılanlar eşleşmelerde daha sık çıkar. */
+  profileViews: Readonly<Record<string, number>>
 }
 
-/** Kapışma sayfasının boş halinde tek tıkla açılan, aynı alan ve kart türünden eşleşmeler. */
-export function DuelPresets({ players, seed }: DuelPresetsProps) {
+/**
+ * Popüler kapışmalar: aynı alan ve kart türünden eşleşmeler arasından iki tarafının profiline en çok
+ * bakılan üçü. Tek tıkla kapışmayı açar.
+ */
+export function DuelPresets({ players, seed, profileViews }: DuelPresetsProps) {
   const [currentSeed, setCurrentSeed] = useState(seed)
   const [selectedView, setSelectedView] = useState<PresetView>("tr")
+
+  const popular = (pool: ListPlayer[]) => {
+    const interest = (preset: DuelPreset) =>
+      (profileViews[preset.left.login.toLowerCase()] ?? 0) +
+      (profileViews[preset.right.login.toLowerCase()] ?? 0)
+    return duelPresetGroups(pool, currentSeed, profileViews)
+      .flatMap((group) => group.presets)
+      .sort((a, b) => interest(b) - interest(a))
+      .slice(0, POPULAR_COUNT)
+  }
+
   // Ana sayfadaki ilk 10 gibi: Türkçede varsayılan Türkiye, İngilizcede karışık liste.
-  const turkishPresets = duelPresets(
-    players.filter((player) => playerCountry(player) === "TR"),
-    currentSeed,
-    PRESET_COUNT
-  )
-  const canSwitch = getLocale() === "tr" && turkishPresets.length > 0
+  const turkish = popular(players.filter((player) => playerCountry(player) === "TR"))
+  const canSwitch = getLocale() === "tr" && turkish.length > 0
   const view: PresetView = canSwitch ? selectedView : "world"
-  const presets = view === "tr" ? turkishPresets : duelPresets(players, currentSeed, PRESET_COUNT)
+  const presets = view === "tr" ? turkish : popular(players)
   if (presets.length === 0) return null
 
-  const viewButton = (target: PresetView, label: string) => (
-    <button
-      type="button"
-      aria-pressed={view === target}
-      onClick={() => setSelectedView(target)}
-      className={cn(
-        "inline-flex min-h-6 items-center rounded-sm px-1.5 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
-        view === target
-          ? "font-semibold text-foreground"
-          : "text-muted-foreground hover:text-foreground"
-      )}
-    >
-      {label}
-    </button>
-  )
+  const reshuffle = () => setCurrentSeed(Math.floor(Math.random() * 2 ** 32))
 
   return (
-    <section className="flex flex-col gap-4" aria-labelledby="duel-presets-heading">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          <h2 id="duel-presets-heading" className="text-xl font-semibold">
-            {m.duel_presets_title()}
-          </h2>
-          <p className="text-sm text-muted-foreground">{m.duel_presets_lead()}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
+    <section
+      className="mx-auto flex w-full max-w-[49rem] flex-col gap-3"
+      aria-labelledby="duel-presets-heading"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 id="duel-presets-heading" className="text-base font-semibold">
+          {m.duel_presets_title()}
+        </h2>
+        <div className="flex items-center gap-1">
           {canSwitch ? (
             <div
               role="group"
               aria-label={m.duel_presets_switch_label()}
               className="flex items-center"
             >
-              {viewButton("tr", m.home_top_tr())}
+              <TextButton pressed={view === "tr"} onClick={() => setSelectedView("tr")}>
+                {m.home_top_tr()}
+              </TextButton>
               <span aria-hidden className="text-muted-foreground">
                 ·
               </span>
-              {viewButton("world", m.home_top_world())}
+              <TextButton pressed={view === "world"} onClick={() => setSelectedView("world")}>
+                {m.home_top_world()}
+              </TextButton>
+              <span aria-hidden className="ps-1 text-muted-foreground">
+                ·
+              </span>
             </div>
           ) : null}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentSeed(Math.floor(Math.random() * 2 ** 32))}
-          >
-            <Shuffle aria-hidden />
+          <TextButton onClick={reshuffle}>
+            <Shuffle aria-hidden className="size-3.5" />
             {m.duel_presets_shuffle()}
-          </Button>
+          </TextButton>
         </div>
       </div>
       <ul className="grid gap-3 sm:grid-cols-3">
-        {presets.map(({ left, right, position, rarity }) => (
-          <li key={`${left.login}-${right.login}`}>
-            <Link
-              to="/{-$lang}/vs/$left/$right"
-              params={{ lang: getLangParam(), left: left.login, right: right.login }}
-              aria-label={m.duel_presets_open({ left: left.name, right: right.name })}
-              data-rarity={rarity}
-              className="scout-card flex rounded-xl p-1 transition-[filter] outline-none hover:brightness-110 focus-visible:ring-[3px] focus-visible:ring-ring/50"
-            >
-              {/* Kart türü çerçeve renginden okunur; ekran okuyucu için adı gizli metinde. */}
-              <span className="scout-card-inner flex w-full flex-col items-center gap-3 rounded-lg px-3 pt-3 pb-2">
-                <span
-                  lang="en"
-                  data-role={position}
-                  className="role-tint inline-flex h-5 items-center rounded-full px-2 font-sans text-xs font-medium whitespace-nowrap"
-                >
-                  {position}
-                </span>
-                <span className="sr-only">{rarityLabel(rarity)}</span>
-                <span className="grid w-full grid-cols-[1fr_auto_1fr] items-start gap-1">
-                  <PresetSide player={left} />
-                  <span aria-hidden className="scout-card-muted mt-4 text-xs font-semibold">
-                    VS
-                  </span>
-                  <PresetSide player={right} />
-                </span>
-              </span>
-            </Link>
+        {presets.map((preset) => (
+          <li key={`${preset.left.login}-${preset.right.login}`} className="flex">
+            <PresetRow preset={preset} />
           </li>
         ))}
       </ul>
@@ -125,20 +102,100 @@ export function DuelPresets({ players, seed }: DuelPresetsProps) {
   )
 }
 
-function PresetSide({ player }: { player: ListPlayer }) {
+type TextButtonProps = {
+  /** Verilirse açma/kapama düğmesidir (`aria-pressed`). */
+  pressed?: boolean
+  onClick: () => void
+  children: ReactNode
+}
+
+function TextButton({ pressed, onClick, children }: TextButtonProps) {
   return (
-    <span className="flex min-w-0 flex-col items-center gap-1.5">
-      <img
-        src={player.avatarUrl}
-        alt=""
-        width={48}
-        height={48}
-        loading="lazy"
-        className="scout-card-avatar size-12 shrink-0 rounded-full bg-muted"
-      />
-      <span className="line-clamp-2 min-h-10 w-full text-center font-sans text-sm/5 font-semibold break-words">
-        {player.name}
+    <button
+      type="button"
+      aria-pressed={pressed}
+      onClick={onClick}
+      className={cn(
+        "inline-flex min-h-6 items-center gap-1 rounded-sm px-1 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+        pressed ? "font-semibold text-foreground" : "text-muted-foreground hover:text-foreground"
+      )}
+    >
+      {children}
+    </button>
+  )
+}
+
+/**
+ * Maç kartı: iki taraf kendi renginde karşı karşıya, altında adlar ve genel puanlar. Üzerine gelince
+ * iki fotoğraf birbirine doğru bir adım atar.
+ */
+function PresetRow({ preset: { left, right, rarity } }: { preset: DuelPreset }) {
+  return (
+    <Link
+      to="/{-$lang}/vs/$left/$right"
+      params={{ lang: getLangParam(), left: left.login, right: right.login }}
+      // Seçim sayfasındaki gibi kartlar geçişle yerine kayar; veri, üzerine gelince yüklenir (defaultPreload).
+      viewTransition
+      state={(previous) => ({ ...previous, duelTransition: true })}
+      aria-label={m.duel_presets_open({ left: left.name, right: right.name })}
+      className="surface group flex w-full flex-col gap-3 p-4 transition-colors outline-none hover:bg-muted/40 focus-visible:ring-[3px] focus-visible:ring-ring/50"
+    >
+      <span aria-hidden className="flex items-center justify-between gap-2">
+        {/* Kart türü, kartlardaki renginde küçük bir kutu ve adı. */}
+        <span className="flex items-center gap-1.5 font-mono text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+          <span
+            data-rarity={rarity}
+            className="scout-card size-2.5 shrink-0 rounded-[3px] shadow-none"
+          />
+          {rarityLabel(rarity)}
+        </span>
+        <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+      </span>
+      <span aria-hidden className="flex items-center justify-center gap-3">
+        <Avatar player={left} side="left" />
+        <span className="font-mono text-xs font-bold text-muted-foreground">VS</span>
+        <Avatar player={right} side="right" />
+      </span>
+      <span aria-hidden className="grid grid-cols-2 gap-3 text-sm">
+        <PresetName player={left} side="left" />
+        <PresetName player={right} side="right" />
+      </span>
+    </Link>
+  )
+}
+
+function PresetName({ player, side }: { player: ListPlayer; side: "left" | "right" }) {
+  const isHome = side === "left"
+  return (
+    <span className={cn("flex min-w-0 flex-col", isHome ? "items-start" : "items-end text-end")}>
+      <span className="w-full truncate font-medium">{player.name}</span>
+      <span
+        className={cn(
+          "font-mono text-xs font-bold tabular-nums",
+          isHome ? "text-chart-home" : "text-chart-away"
+        )}
+      >
+        {player.ovr}
       </span>
     </span>
+  )
+}
+
+function Avatar({ player, side }: { player: ListPlayer; side: "left" | "right" }) {
+  const isHome = side === "left"
+  return (
+    <img
+      src={player.avatarUrl}
+      alt=""
+      width={48}
+      height={48}
+      loading="lazy"
+      className={cn(
+        "size-12 rounded-full bg-muted ring-2 ring-offset-2 ring-offset-card transition-transform duration-300 ease-(--ease-out)",
+        isHome
+          ? "ring-chart-home group-hover:translate-x-1"
+          : "ring-chart-away group-hover:-translate-x-1"
+      )}
+    />
   )
 }

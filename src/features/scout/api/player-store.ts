@@ -1,8 +1,16 @@
 import { z } from "zod"
 
+import { CARD_FACES } from "@/constants/account.constants"
+import type { CardFace, Gender } from "@/constants/account.constants"
+import { TEAMS } from "@/constants/team.constants"
+import type { Team } from "@/constants/team.constants"
+
 import { getDb, getRefreshDb } from "@/lib/db"
 
+import { COUNTRIES } from "@/features/scout/constants/player-country.constants"
 import { REFRESH, SCORE_VERSION } from "@/features/scout/constants/scoring.constants"
+import { isBirthdayToday } from "@/features/scout/helpers/birthday"
+import { isGithubStar } from "@/features/scout/helpers/github-star"
 import { toListPlayer } from "@/features/scout/helpers/list-player"
 import { scorePlayer } from "@/features/scout/helpers/score-player"
 import {
@@ -88,8 +96,26 @@ async function rescore(logins: string[]): Promise<ScoredPlayer[]> {
   return scored.map(({ player }) => player)
 }
 
+/** Hesap tablosundan gelen, kişinin kendi verdiği bilgiler. Puan özetine yazılmaz, her okumada eklenir. */
+const accountColumnsSchema = z.object({
+  verified: z.boolean(),
+  claimed_country: z.string().nullable()
+})
+
+type AccountColumns = z.infer<typeof accountColumnsSchema>
+
+/** Onay ve sahibin seçtiği ülke oyuncuya eklenir; yalnızca doluysa alan yazılır ki liste yükü büyümesin. */
+function withAccount<T extends ListPlayer | ScoredPlayer>(player: T, account: AccountColumns): T {
+  const claimedCountry = COUNTRIES.find((country) => country === account.claimed_country)
+  return {
+    ...player,
+    ...(account.verified ? { verified: true } : {}),
+    ...(claimedCountry ? { claimedCountry } : {})
+  }
+}
+
 /** Bütün oyuncular, genel puana göre sıralı. */
-const listRowSchema = z.object({
+const listRowSchema = accountColumnsSchema.extend({
   login: z.string(),
   summary: listPlayerSchema,
   score_version: z.number()
@@ -104,14 +130,17 @@ export async function getListPlayers(): Promise<{ players: ListPlayer[]; pending
   const sql = getDb()
   const rows = z.array(listRowSchema).parse(
     await sql`
-      select login, score_version,
-        (scored - 'positionBreakdown' - 'topRepos' - 'archetype' - 'stats')
+      select p.login, p.score_version,
+        (p.scored - 'positionBreakdown' - 'topRepos' - 'archetype' - 'stats')
           || jsonb_build_object('stats', (
             select jsonb_object_agg(k, jsonb_build_object('key', k, 'value', v -> 'value'))
-            from jsonb_each(scored -> 'stats') as s(k, v)
-          )) as summary
-      from players
-      order by ovr desc, login
+            from jsonb_each(p.scored -> 'stats') as s(k, v)
+          )) as summary,
+        coalesce(a.eligible, false) as verified,
+        case when a.eligible then a.country end as claimed_country
+      from players p
+      left join accounts a on a.login = p.login
+      order by p.ovr desc, p.login
     `
   )
 
@@ -122,7 +151,7 @@ export async function getListPlayers(): Promise<{ players: ListPlayer[]; pending
       toListPlayer(player)
     ])
   )
-  const players = rows.map((row) => rescored.get(keyOf(row.login)) ?? row.summary)
+  const players = rows.map((row) => withAccount(rescored.get(keyOf(row.login)) ?? row.summary, row))
   return {
     players: players.sort((a, b) => b.ovrExact - a.ovrExact || a.login.localeCompare(b.login)),
     // Yerelde yazılmadığı için hiç azalmaz; önbelleği kısaltmamak için sıfır sayılır.
@@ -130,17 +159,182 @@ export async function getListPlayers(): Promise<{ players: ListPlayer[]; pending
   }
 }
 
+/**
+ * Kayıtlı kart yüzünü profilde gösterilecek karta çevirir. Koşul artık geçerli değilse (takım kaldırıldı,
+ * kişi GitHub Stars listesinden çıktı) gerçek karta düşer.
+ */
+function resolveCardFace(
+  login: string,
+  face: CardFace | null,
+  team: Team | null
+): Team | "github-star" | undefined {
+  if (face === "team" && team) return team
+  if (face === "github-star" && isGithubStar(login)) return "github-star"
+  return undefined
+}
+
 export async function getScoredPlayer(login: string): Promise<ScoredPlayer | null> {
   const sql = getDb()
   const rows = z
-    .array(summaryRowSchema)
+    .array(
+      summaryRowSchema.extend(accountColumnsSchema.shape).extend({
+        birth_month_day: z.string().nullable(),
+        utc_offset_minutes: z.number().nullable(),
+        card_face: z.enum(CARD_FACES).nullable().catch(null),
+        favorite_team: z.enum(TEAMS).nullable().catch(null)
+      })
+    )
     .parse(
-      await sql`select login, scored, score_version from players where login = ${keyOf(login)}`
+      await sql`
+      select p.login, p.scored, p.score_version,
+        coalesce(a.eligible, false) as verified,
+        case when a.eligible then a.country end as claimed_country,
+        case when a.eligible then to_char(a.birth_date, 'MM-DD') end as birth_month_day,
+        case when a.eligible then a.card_face end as card_face,
+        case when a.eligible then a.favorite_team end as favorite_team,
+        -- Ham veri yalnızca doğum tarihi girilmişse ve yalnızca bu alan için okunur.
+        case when a.eligible and a.birth_date is not null
+          then (p.facts ->> 'utcOffsetMinutes')::int end as utc_offset_minutes
+      from players p
+      left join accounts a on a.login = p.login
+      where p.login = ${keyOf(login)}
+    `
     )
   const row = rows[0]
   if (!row) return null
-  if (!isOutdated(row.score_version)) return row.scored
-  return (await rescore([row.login]))[0] ?? null
+  const player = isOutdated(row.score_version) ? (await rescore([row.login]))[0] : row.scored
+  if (!player) return null
+  // Doğum tarihinin kendisi tarayıcıya gitmez; yalnızca bugün doğum günü olup olmadığı.
+  const birthday =
+    row.birth_month_day !== null &&
+    isBirthdayToday(row.birth_month_day, new Date(), row.utc_offset_minutes)
+  const cardFace = resolveCardFace(row.login, row.card_face, row.favorite_team)
+  return {
+    ...withAccount(player, row),
+    ...(birthday ? { birthdayToday: true } : {}),
+    ...(cardFace ? { cardFace } : {})
+  }
+}
+
+/**
+ * Onaylı hesabın doğum tarihini yazar. İlk kayıt ve bir düzeltme: en fazla iki kez yazılabilir.
+ * Aynı tarihi yeniden göndermek hak harcatmaz. Yazılamadıysa `false`.
+ */
+export async function updateAccountBirthDate(
+  githubId: number,
+  birthDate: string
+): Promise<boolean> {
+  const sql = getDb()
+  const rows = await sql`
+    update accounts
+    set birth_date = ${birthDate}::date, birth_date_changes = birth_date_changes + 1, updated_at = now()
+    where github_id = ${githubId}
+      and eligible
+      and birth_date_changes < 2
+      and birth_date is distinct from ${birthDate}::date
+    returning github_id
+  `
+  return rows.length > 0
+}
+
+/** Onaylı hesabın ülkesini yazar. Sıklık sınırı SQL'de: son değişiklikten bu kadar saniye geçmeden yazılmaz. */
+export async function updateAccountCountry(
+  githubId: number,
+  country: string | null,
+  minIntervalSeconds: number
+): Promise<boolean> {
+  const sql = getDb()
+  const rows = await sql`
+    update accounts
+    set country = ${country}, country_updated_at = now(), updated_at = now()
+    where github_id = ${githubId}
+      and eligible
+      and (country_updated_at is null
+        or country_updated_at < now() - make_interval(secs => ${minIntervalSeconds}))
+    returning github_id
+  `
+  return rows.length > 0
+}
+
+/** Profil bilgileri kayıtları arasında en az bu kadar saniye geçer; art arda yazmayı keser. */
+const PROFILE_UPDATE_INTERVAL_SECONDS = 3
+
+export type AccountProfileDetails = {
+  city?: string | null
+  gender?: Gender | null
+  /** Kullanıcı adları, seçilen sırayla; boş dizi kadroyu temizler. */
+  dreamTeam?: string[]
+  favoriteTeam?: Team | null
+  cardFace?: CardFace | null
+}
+
+/**
+ * Onaylı hesabın isteğe bağlı profil bilgilerini tek işlemde yazar; yalnızca gönderilen alanlar değişir.
+ * Kadro silinip yeniden yazılır. Hesap onaylı değilse ya da kadroda listede olmayan bir oyuncu varsa
+ * hiçbir şey yazılmaz: denetimler yazmadan önce yapılır.
+ */
+export async function updateAccountProfileDetails(
+  githubId: number,
+  details: AccountProfileDetails
+): Promise<"ok" | "not-eligible" | "unknown-player" | "rate-limit"> {
+  const sql = getDb()
+  return sql.begin(async (tx) => {
+    // Satır kilitlenir: aynı anda gelen iki kayıt sırayla işlenir, sıklık sınırı atlanamaz.
+    const [account] = z.array(z.object({ recent: z.boolean() })).parse(
+      await tx`
+          select coalesce(profile_updated_at > now() - make_interval(secs => ${PROFILE_UPDATE_INTERVAL_SECONDS}), false) as recent
+          from accounts where github_id = ${githubId} and eligible
+          for update
+        `
+    )
+    if (!account) return "not-eligible"
+    if (account.recent) return "rate-limit"
+
+    const logins = details.dreamTeam
+    if (logins && logins.length > 0) {
+      const [found] = z
+        .array(z.object({ count: z.coerce.number() }))
+        .parse(await tx`select count(*) from players where login = any(${sql.array(logins)})`)
+      if (found?.count !== logins.length) return "unknown-player"
+    }
+
+    if (details.city !== undefined) {
+      await tx`
+        update accounts set city = ${details.city}, city_updated_at = now(), updated_at = now()
+        where github_id = ${githubId} and city is distinct from ${details.city}
+      `
+    }
+    if (details.gender !== undefined) {
+      await tx`
+        update accounts set gender = ${details.gender}, gender_updated_at = now(), updated_at = now()
+        where github_id = ${githubId} and gender is distinct from ${details.gender}
+      `
+    }
+    if (details.favoriteTeam !== undefined) {
+      await tx`
+        update accounts
+        set favorite_team = ${details.favoriteTeam}, favorite_team_updated_at = now(), updated_at = now()
+        where github_id = ${githubId} and favorite_team is distinct from ${details.favoriteTeam}
+      `
+    }
+    if (details.cardFace !== undefined) {
+      await tx`
+        update accounts set card_face = ${details.cardFace}, updated_at = now()
+        where github_id = ${githubId} and card_face is distinct from ${details.cardFace}
+      `
+    }
+    if (logins !== undefined) {
+      await tx`delete from dream_team_picks where github_id = ${githubId}`
+      for (const [index, login] of logins.entries()) {
+        await tx`
+          insert into dream_team_picks (github_id, slot, player_login)
+          values (${githubId}, ${index + 1}, ${login})
+        `
+      }
+    }
+    await tx`update accounts set profile_updated_at = now(), updated_at = now() where github_id = ${githubId}`
+    return "ok"
+  })
 }
 
 /** Site haritası için bütün oyuncuların kullanıcı adı ve verinin tarihi; özet ya da ham veri okunmaz. */
@@ -181,6 +375,31 @@ export async function countRecentPlayers(hours = 1): Promise<number> {
       await sql`select count(*) as count from players where created_at > now() - make_interval(hours => ${hours})`
     )
   return row?.count ?? 0
+}
+
+/**
+ * Son `days` UTC gününde profil görüntülenmeleri (en çok bakılan 300 kişi), küçük harfli kullanıcı adına göre.
+ * Hazır kapışmalarda kimin daha sık çıkacağını belirler. Sayaç tabloları yardımcı veridir: okunamazsa
+ * hata raporlanır ve boş döner, liste ve kapışma sayfası ağırlıksız çalışmaya devam eder.
+ */
+export async function getRecentProfileViews(days = 7): Promise<Record<string, number>> {
+  try {
+    const sql = getDb()
+    const rows = z.array(z.object({ login: z.string(), views: z.coerce.number() })).parse(
+      await sql`
+        select login, sum(views) as views
+        from profile_views
+        where day > (now() at time zone 'utc')::date - ${days}::int
+        group by login
+        order by views desc
+        limit 300
+      `
+    )
+    return Object.fromEntries(rows.map((row) => [row.login, row.views]))
+  } catch (error) {
+    console.error("Could not read profile views", error)
+    return {}
+  }
 }
 
 /**

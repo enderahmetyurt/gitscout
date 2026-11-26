@@ -24,6 +24,10 @@ type PlayerComboboxProps = {
   /** Listede olmayan geçerli bir kullanıcı adı yazılınca kartını çıkarma seçeneği gösterilir. */
   onCreate?: (username: string) => void
   isCreating?: boolean
+  /** Açılan listenin ek sınıfları; dar alanlarda listeyi kutudan geniş tutmak için. */
+  contentClassName?: string
+  /** Arama kutusunun ek sınıfları (ör. daha yüksek bir kutu). */
+  inputClassName?: string
 }
 
 /** Kayıtlı oyuncular arasında ad ve kullanıcı adıyla arar. */
@@ -35,7 +39,9 @@ export function PlayerCombobox({
   placeholder,
   autoFocus = false,
   onCreate,
-  isCreating = false
+  isCreating = false,
+  contentClassName,
+  inputClassName
 }: PlayerComboboxProps) {
   const [query, setQuery] = useState("")
   const typed = usernameSchema.safeParse(query)
@@ -55,8 +61,14 @@ export function PlayerCombobox({
       filter={(player, text) => matchesPlayer(player, text)}
     >
       {/* Ev sahibi önceden seçiliyse kullanıcı doğrudan rakibi aramaya başlar. */}
-      <ComboboxInput id={id} placeholder={placeholder} showClear autoFocus={autoFocus} />
-      <ComboboxContent>
+      <ComboboxInput
+        id={id}
+        placeholder={placeholder}
+        showClear
+        autoFocus={autoFocus}
+        className={inputClassName}
+      />
+      <ComboboxContent className={contentClassName}>
         <ComboboxEmpty>
           {canCreate ? (
             <button

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 
-import { Link, useNavigate } from "@tanstack/react-router"
+import { Link, useLocation, useNavigate } from "@tanstack/react-router"
 import { ArrowLeftRight, ImageIcon, Link2, Share2 } from "lucide-react"
 import { cn } from "cn"
 import { toast } from "sonner"
@@ -53,6 +53,8 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
   const { data: board } = useLeaderboard()
   const navigate = useNavigate()
   const addPlayer = useAddPlayer()
+  // Seçim sayfasından geçişle gelindiyse kartlar zaten yerine kaydı; giriş animasyonu ikinci kez oynamaz.
+  const fromPicker = useLocation({ select: (location) => location.state.duelTransition === true })
 
   /** Bir tarafı değiştirir; diğer taraf yerinde kalır. */
   const replace = (side: DuelSide, login: string) => {
@@ -161,9 +163,13 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
           isWinner={duel.winner === "left"}
           side="left"
           picker={picker("left")}
+          animateIn={!fromPicker}
         />
 
-        <section aria-label={m.duel_summary()} className="flex flex-col gap-6 lg:order-none">
+        <section
+          aria-label={m.duel_summary()}
+          className="flex flex-col gap-6 lg:order-none lg:[view-transition-name:duel-middle]"
+        >
           <Scoreboard key={`${left.login}-${right.login}`} duel={duel} winner={winner} />
           <DuelRadar left={left} right={right} />
           <Rounds duel={duel} />
@@ -208,6 +214,7 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
           isWinner={duel.winner === "right"}
           side="right"
           picker={picker("right")}
+          animateIn={!fromPicker}
         />
       </div>
 
@@ -224,24 +231,38 @@ type DuelCornerProps = {
   side: DuelSide
   /** Kartın üstündeki arama: bu tarafı başka bir geliştiriciyle değiştirir. */
   picker: ReactNode
+  animateIn: boolean
 }
 
-function DuelCorner({ player, isWinner, side, picker }: DuelCornerProps) {
+function DuelCorner({ player, isWinner, side, picker, animateIn }: DuelCornerProps) {
   return (
     // Geniş ekranda kartlar yerinde kalır, ortadaki maç özeti kayar.
     <div
       className={cn(
         "flex-col items-center gap-3 max-lg:hidden lg:sticky lg:top-6 lg:flex",
-        side === "left" ? "duel-enter-left" : "duel-enter-right"
+        animateIn && (side === "left" ? "duel-enter-left" : "duel-enter-right")
       )}
     >
-      {picker}
+      {/* Geçiş adları seçim sayfasındaki köşelerle aynı: kartlar oradan buraya kayarak gelir. */}
+      <div
+        className={cn(
+          "flex w-full justify-center",
+          side === "left"
+            ? "[view-transition-name:duel-picker-left]"
+            : "[view-transition-name:duel-picker-right]"
+        )}
+      >
+        {picker}
+      </div>
       <Link
         to="/{-$lang}/u/$username"
         params={{ lang: getLangParam(), username: player.login }}
         aria-label={m.duel_open_card({ name: player.name })}
         className={cn(
           "card-lift flex w-full max-w-80 justify-center rounded-[28px] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+          side === "left"
+            ? "[view-transition-name:duel-card-left]"
+            : "[view-transition-name:duel-card-right]",
           !isWinner && "opacity-90"
         )}
       >
