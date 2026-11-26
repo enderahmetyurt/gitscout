@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { logout, startGithubLogin } from "@/lib/auth.functions"
 import { viewerKeys, viewerQueryOptions } from "@/lib/auth.queries"
 
+import { getLocale } from "@/paraglide/runtime.js"
+
 /** Giriş yapmış kişi; yalnızca arayüz içindir. Her yetki kontrolü sunucuda yeniden yapılır. */
 export function useViewer() {
   return useQuery(viewerQueryOptions())
@@ -11,7 +13,8 @@ export function useViewer() {
 /** GitHub girişini başlatır; sunucunun verdiği yetkilendirme adresine gider. */
 export function useStartGithubLogin() {
   return useMutation({
-    mutationFn: () => startGithubLogin(),
+    // Dönüşte aynı dilde açılsın diye sayfanın dili gönderilir.
+    mutationFn: () => startGithubLogin({ data: { locale: getLocale() } }),
     onSuccess: ({ url }) => {
       window.location.assign(url)
     }

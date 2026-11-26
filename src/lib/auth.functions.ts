@@ -6,12 +6,16 @@ import {
   setCookie,
   setResponseHeader
 } from "@tanstack/react-start/server"
+import { z } from "zod"
 
+import { LOGIN_LOCALE_COOKIE } from "@/constants/account.constants"
 import { siteConfig } from "@/config/site.config"
 
 import { deleteSession, findViewer, sessionCookie } from "@/lib/session"
 import type { Viewer } from "@/lib/session"
 import { createGithubAuthorizeUrl, isGithubLoginConfigured } from "@/lib/supabase-auth"
+
+import { locales } from "@/paraglide/runtime.js"
 
 /** Tarayıcıya giden tek bilgi: başlıkta ve profilde gösterilecek kadarı. Kimlik numarası ve anahtar gitmez. */
 export type PublicViewer = Omit<Viewer, "githubId">
@@ -40,9 +44,18 @@ export const getViewer = createServerFn({ method: "GET" }).handler(
  * GitHub girişini başlatır ve tarayıcının gideceği adresi döner. POST olduğu için CSRF ara katmanından geçer.
  * Geri dönüş adresi istekten değil sitenin kendi ayarından kurulur (Host başlığıyla yönlendirme yapılamasın).
  */
-export const startGithubLogin = createServerFn({ method: "POST" }).handler(
-  async (): Promise<{ url: string }> => {
+export const startGithubLogin = createServerFn({ method: "POST" })
+  .validator(z.object({ locale: z.enum(locales) }))
+  .handler(async ({ data }): Promise<{ url: string }> => {
     if (!isGithubLoginConfigured()) throw new Error("auth:not-configured")
+    // Sunucu fonksiyonunun adresi dilsizdir; dil, girişi başlatan sayfadan gelir.
+    setCookie(LOGIN_LOCALE_COOKIE.name, data.locale, {
+      path: "/",
+      httpOnly: true,
+      secure: !import.meta.env.DEV,
+      sameSite: "lax",
+      maxAge: LOGIN_LOCALE_COOKIE.maxAgeSeconds
+    })
     const redirectTo = new URL("/auth/callback", siteConfig.url).toString()
     try {
       const url = await createGithubAuthorizeUrl(
@@ -55,8 +68,7 @@ export const startGithubLogin = createServerFn({ method: "POST" }).handler(
       console.error("[auth] giriş başlatılamadı", error)
       throw new Error("auth:start-failed", { cause: error })
     }
-  }
-)
+  })
 
 /** Oturumu veritabanından ve tarayıcıdan siler. */
 export const logout = createServerFn({ method: "POST" }).handler(async (): Promise<void> => {

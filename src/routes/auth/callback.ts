@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router"
+import { parseCookieHeader } from "@supabase/ssr"
 
-import { siteConfig } from "@/config/site.config"
+import { LOGIN_LOCALE_COOKIE } from "@/constants/account.constants"
 
 import { createSession, sessionCookie } from "@/lib/session"
 import { exchangeGithubCode, supabaseCookieNames } from "@/lib/supabase-auth"
+import { localizedUrl } from "@/helpers/localized-url"
 
 import { syncGithubAccount } from "@/features/scout/api/sync-account.api"
+import { baseLocale, locales } from "@/paraglide/runtime.js"
 
 /** GitHub kodları bu uzunluğun altında; daha uzun girdi Supabase'e gönderilmeden reddedilir. */
 const MAX_CODE_LENGTH = 512
@@ -25,8 +28,15 @@ export const Route = createFileRoute("/auth/callback")({
           headers.append("Set-Cookie", sessionCookie.serializeRemoval(name))
         }
 
+        // Girişi başlatan sayfanın dili; çerez yoksa ya da geçersizse varsayılan dil.
+        const localeCookie = parseCookieHeader(cookieHeader).find(
+          (cookie) => cookie.name === LOGIN_LOCALE_COOKIE.name
+        )?.value
+        const locale = locales.find((item) => item === localeCookie) ?? baseLocale
+        headers.append("Set-Cookie", sessionCookie.serializeRemoval(LOGIN_LOCALE_COOKIE.name))
+
         const redirect = (path: string) => {
-          headers.set("Location", new URL(path, siteConfig.url).toString())
+          headers.set("Location", localizedUrl(path, locale))
           return new Response(null, { status: 303, headers })
         }
 

@@ -10,6 +10,15 @@ export const SESSION = {
   maxAgeDays: 30
 } as const
 
+/**
+ * Girişi başlatan sayfanın dili. GitHub dönüşü dilsiz `/auth/callback` adresine gelir; kişi aynı dilde
+ * kalsın diye dil, giriş akışı süresince kısa ömürlü bir çerezde taşınır.
+ */
+export const LOGIN_LOCALE_COOKIE = {
+  name: "gs_login_locale",
+  maxAgeSeconds: 10 * 60
+} as const
+
 /** Ayarlarda seçilebilen cinsiyetler; boş bırakmak da mümkün. Herkese açık oyuncu verisine eklenmez. */
 export const GENDERS = ["female", "male"] as const
 
