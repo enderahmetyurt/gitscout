@@ -11,6 +11,7 @@ import { seoHeadMeta } from "@/config/seo.config"
 import appCss from "@/styles/tailwind.css?url"
 
 import { Providers } from "@/providers/Providers"
+import { usePageViewLogging } from "@/hooks/use-page-view-logging"
 
 import { DefaultCatchBoundary } from "@/components/shared/DefaultCatchBoundary"
 import { NotFound } from "@/components/shared/NotFound"
@@ -58,6 +59,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 })
 
 function RootComponent() {
+  usePageViewLogging()
+
   return (
     <Providers>
       <SkipLink />

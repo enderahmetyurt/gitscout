@@ -1,18 +1,18 @@
 import { track } from "@vercel/analytics"
 
-/**
- * Vercel Web Analytics özel olayları. Çerez kullanılmaz ve kişisel veri gönderilmez;
- * yalnızca zaten herkese açık olan GitHub kullanıcı adları ve hata kodları gider.
- */
-type AnalyticsEvent =
-  | { name: "card_requested"; login: string }
-  | { name: "card_request_failed"; reason: string }
-  | { name: "card_downloaded"; login: string }
-  | { name: "card_shared"; login: string; target: string }
-  | { name: "duel_shared"; left: string; right: string; via: "image" | "link" | "x" }
-  | { name: "github_star_clicked"; placement: "header" | "hero" | "card" }
-  | { name: "readme_badge_copied"; login: string; via: "prompt" | "markdown" }
+import type { AnalyticsEvent } from "@/schemas/analytics.schema"
 
-export function trackEvent({ name, ...properties }: AnalyticsEvent) {
+import { recordEvent } from "@/lib/site-analytics.functions"
+
+/**
+ * Özel olayı hem Vercel Web Analytics'e hem Supabase'e gönderir. Çerez kullanılmaz ve kişisel veri
+ * gönderilmez; yalnızca zaten herkese açık olan GitHub kullanıcı adları ve hata kodları gider.
+ * Kayıt arka planda gider; başarısız olursa kullanıcının işi etkilenmez, hata konsola yazılır.
+ */
+export function trackEvent(event: AnalyticsEvent) {
+  const { name, ...properties } = event
   track(name, properties)
+  recordEvent({ data: event }).catch((error: unknown) => {
+    console.error("Could not record analytics event", error)
+  })
 }
