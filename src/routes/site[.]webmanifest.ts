@@ -17,7 +17,14 @@ export const Route = createFileRoute("/site.webmanifest")({
           theme_color: "#0a0a0a",
           icons: [
             { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
-            { src: "/icon-512.png", sizes: "512x512", type: "image/png" }
+            { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
+            // Android ikonu daire ya da yuvarlak kareye kırpar; kart bu dosyada güvenli alanın içinde.
+            {
+              src: "/icon-maskable-512.png",
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "maskable"
+            }
           ]
         }
 
