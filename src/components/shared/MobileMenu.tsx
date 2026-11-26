@@ -86,7 +86,11 @@ export function MobileMenu() {
               <Settings aria-hidden />
               {m.account_settings()}
             </DropdownMenuItem>
-            <DropdownMenuItem disabled={logout.isPending} onClick={() => logout.mutate()}>
+            <DropdownMenuItem
+              variant="destructive"
+              disabled={logout.isPending}
+              onClick={() => logout.mutate()}
+            >
               <LogOut aria-hidden />
               {m.account_logout()}
             </DropdownMenuItem>

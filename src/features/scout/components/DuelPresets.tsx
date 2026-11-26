@@ -151,31 +151,36 @@ function PresetRow({ preset: { left, right, rarity } }: { preset: DuelPreset }) 
         </span>
         <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
       </span>
-      <span aria-hidden className="flex items-center justify-center gap-3">
-        <Avatar player={left} side="left" />
-        <span className="font-mono text-xs font-bold text-muted-foreground">VS</span>
-        <Avatar player={right} side="right" />
-      </span>
-      <span aria-hidden className="grid grid-cols-2 gap-3 text-sm">
-        <PresetName player={left} side="left" />
-        <PresetName player={right} side="right" />
+      {/* İsim ve puan kendi avatarının altında ortalı; kenara yaslansa avatarla hizası kopar. */}
+      <span
+        aria-hidden
+        className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-3"
+      >
+        <PresetSide player={left} side="left" />
+        <span className="flex h-12 items-center font-mono text-xs font-bold text-muted-foreground">
+          VS
+        </span>
+        <PresetSide player={right} side="right" />
       </span>
     </Link>
   )
 }
 
-function PresetName({ player, side }: { player: ListPlayer; side: "left" | "right" }) {
+function PresetSide({ player, side }: { player: ListPlayer; side: "left" | "right" }) {
   const isHome = side === "left"
   return (
-    <span className={cn("flex min-w-0 flex-col", isHome ? "items-start" : "items-end text-end")}>
-      <span className="w-full truncate font-medium">{player.name}</span>
-      <span
-        className={cn(
-          "font-mono text-xs font-bold tabular-nums",
-          isHome ? "text-chart-home" : "text-chart-away"
-        )}
-      >
-        {player.ovr}
+    <span className="flex min-w-0 flex-col items-center gap-2.5 text-center text-sm">
+      <Avatar player={player} side={side} />
+      <span className="flex w-full flex-col items-center">
+        <span className="w-full truncate font-medium">{player.name}</span>
+        <span
+          className={cn(
+            "font-mono text-xs font-bold tabular-nums",
+            isHome ? "text-chart-home" : "text-chart-away"
+          )}
+        >
+          {player.ovr}
+        </span>
       </span>
     </span>
   )

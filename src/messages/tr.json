@@ -467,6 +467,8 @@
   "birth_date_save_failed": "Kaydedilemedi. Tarihi kontrol edip yeniden dene.",
   "settings_profile_title": "Profil",
   "settings_card_preview": "Önizleme: değişiklik kaydedince kartına yansır.",
+  "settings_show_card": "Kartımı gör",
+  "settings_card_dialog_title": "Kart önizlemesi",
   "readme_markdown_label": "Markdown",
   "city_label": "Şehir",
   "city_hint": "Profilinde gösterilmez; yalnızca toplu istatistiklerde kullanılır.",

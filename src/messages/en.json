@@ -481,6 +481,8 @@
   "birth_date_save_failed": "Couldn't save. Check the date and try again.",
   "settings_profile_title": "Profile",
   "settings_card_preview": "Preview: changes reach your card once saved.",
+  "settings_show_card": "View my card",
+  "settings_card_dialog_title": "Card preview",
   "readme_markdown_label": "Markdown",
   "city_label": "City",
   "city_hint": "Not shown on your profile; only used in aggregate stats.",

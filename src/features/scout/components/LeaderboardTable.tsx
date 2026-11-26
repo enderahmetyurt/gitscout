@@ -327,8 +327,7 @@ export function LeaderboardTable({ players, rankPool, limit }: LeaderboardTableP
                         // Uzun adlar kesilir; tablo yana kaydığında isim sütunu tüm alanı yutmaz. Linkin tıklama
                         // alanı hücreye bağlı: eski WebKit `tr` üzerindeki `relative`i yok sayar, satıra bağlı alan
                         // sayfaya taşıp ana sayfadaki input'u son satırın linkiyle kaplıyordu.
-                        // Dar ekranda isim sütunu daha dar: #, isim ve puan ilk bakışta birlikte sığar.
-                        cell.column.id === "name" && "relative max-w-44 sm:max-w-64"
+                        cell.column.id === "name" && "relative max-w-64"
                       )}
                     >
                       <table.FlexRender cell={cell} />

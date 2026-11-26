@@ -11,6 +11,8 @@ import type { Team } from "@/constants/team.constants"
 
 import { useViewer } from "@/hooks/use-viewer"
 
+import { buttonVariants } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import { playerQueryOptions } from "@/features/scout/api/players.queries"
 import { CardOccasionPicker } from "@/features/scout/components/CardOccasionPicker"
@@ -174,61 +176,71 @@ function SettingsContent({
     })
   }
 
+  // Kart, kart türü seçicisi ve önizleme notu: genişte solda durur, dar ekranda pencerede açılır.
+  const cardPreview = previewPlayer ? (
+    <>
+      <div
+        data-rarity={shown === "birthday" ? "icon" : previewPlayer.rarity}
+        className="relative flex w-full justify-center perspective-distant"
+      >
+        <div aria-hidden className="scout-card-glow pointer-events-none absolute -inset-8" />
+        {/* İki yüzlü kart, yalnızca önizleme: gerçek, doğum günü ya da Kadınlar Günü kartı. */}
+        <div
+          className="relative transition-transform duration-700 ease-out transform-3d motion-reduce:transition-none"
+          style={{ transform: `rotateY(${flip.turns * 180}deg)` }}
+        >
+          <div aria-hidden={visibleIndex !== 0} className="backface-hidden">
+            {/* Her dönüşte yeniden kurulur: süsler aşağıdan süzülüp gelir. */}
+            <div key={`${flip.faces[0]}-${flip.turns}`} className="card-lift">
+              <PreviewCard player={previewPlayer} face={flip.faces[0]} />
+            </div>
+          </div>
+          <div
+            aria-hidden={visibleIndex !== 1}
+            className="absolute inset-0 rotate-y-180 backface-hidden"
+          >
+            <div key={`${flip.faces[1]}-${flip.turns}`} className="card-lift">
+              <PreviewCard player={previewPlayer} face={flip.faces[1]} />
+            </div>
+          </div>
+        </div>
+      </div>
+      <CardOccasionPicker
+        value={shown === "real" ? null : shown}
+        options={occasionOptions}
+        onChange={changePreview}
+      />
+      <p
+        aria-live="polite"
+        className={cn(
+          "text-center text-xs text-muted-foreground transition-opacity",
+          changed ? "opacity-100" : "opacity-0"
+        )}
+      >
+        {changed ? m.settings_card_preview() : null}
+      </p>
+    </>
+  ) : null
+
   return (
     // Sol sütun her zaman yerinde: kart yüklenirken iskelet, kart yoksa yer tutucu durur; form sağda kalır.
     <div className="grid items-start gap-8 md:grid-cols-[20rem_1fr]">
-      <aside className="flex flex-col items-center gap-3 md:sticky md:top-6">
-        {previewPlayer ? (
-          <>
-            <div
-              data-rarity={shown === "birthday" ? "icon" : previewPlayer.rarity}
-              className="relative flex w-full justify-center perspective-distant"
-            >
-              <div aria-hidden className="scout-card-glow pointer-events-none absolute -inset-8" />
-              {/* İki yüzlü kart, yalnızca önizleme: gerçek, doğum günü ya da Kadınlar Günü kartı. */}
-              <div
-                className="relative transition-transform duration-700 ease-out transform-3d motion-reduce:transition-none"
-                style={{ transform: `rotateY(${flip.turns * 180}deg)` }}
-              >
-                <div aria-hidden={visibleIndex !== 0} className="backface-hidden">
-                  {/* Her dönüşte yeniden kurulur: süsler aşağıdan süzülüp gelir. */}
-                  <div key={`${flip.faces[0]}-${flip.turns}`} className="card-lift">
-                    <PreviewCard player={previewPlayer} face={flip.faces[0]} />
-                  </div>
-                </div>
-                <div
-                  aria-hidden={visibleIndex !== 1}
-                  className="absolute inset-0 rotate-y-180 backface-hidden"
-                >
-                  <div key={`${flip.faces[1]}-${flip.turns}`} className="card-lift">
-                    <PreviewCard player={previewPlayer} face={flip.faces[1]} />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <CardOccasionPicker
-              value={shown === "real" ? null : shown}
-              options={occasionOptions}
-              onChange={changePreview}
-            />
-            <p
-              aria-live="polite"
-              className={cn(
-                "text-center text-xs text-muted-foreground transition-opacity",
-                changed ? "opacity-100" : "opacity-0"
-              )}
-            >
-              {changed ? m.settings_card_preview() : null}
-            </p>
-          </>
-        ) : isPending ? (
-          <Skeleton className="h-120 w-80 rounded-[28px]" />
-        ) : (
-          <div className="flex h-120 w-80 max-w-full flex-col items-center justify-center gap-2 rounded-[28px] border border-dashed p-6 text-center">
-            <IdCard aria-hidden className="size-6 text-muted-foreground" />
-            <p className="text-sm text-pretty text-muted-foreground">{m.settings_no_card()}</p>
-          </div>
+      {/* Onaylı hesapta dar ekranda kart formun önüne geçmez; buton çubuğundaki "Kartımı gör" ile açılır. */}
+      <aside
+        className={cn(
+          "flex flex-col items-center gap-3 md:sticky md:top-6",
+          eligible && "max-md:hidden"
         )}
+      >
+        {cardPreview ??
+          (isPending ? (
+            <Skeleton className="h-120 w-80 rounded-[28px]" />
+          ) : (
+            <div className="flex h-120 w-80 max-w-full flex-col items-center justify-center gap-2 rounded-[28px] border border-dashed p-6 text-center">
+              <IdCard aria-hidden className="size-6 text-muted-foreground" />
+              <p className="text-sm text-pretty text-muted-foreground">{m.settings_no_card()}</p>
+            </div>
+          ))}
       </aside>
 
       <div className="flex min-w-0 flex-col gap-6">
@@ -240,6 +252,22 @@ function SettingsContent({
             birthDateChangesLeft={birthDateChangesLeft}
             cardPreview={shown === "real" ? null : shown}
             onCardPreviewChange={changePreview}
+            footerStart={
+              cardPreview ? (
+                <Dialog>
+                  <DialogTrigger
+                    className={cn(buttonVariants({ size: "sm", variant: "outline" }), "md:hidden")}
+                  >
+                    <IdCard aria-hidden />
+                    {m.settings_show_card()}
+                  </DialogTrigger>
+                  <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100%-1rem)] justify-items-center overflow-y-auto px-3 pt-10">
+                    <DialogTitle className="sr-only">{m.settings_card_dialog_title()}</DialogTitle>
+                    <div className="flex flex-col items-center gap-3">{cardPreview}</div>
+                  </DialogContent>
+                </Dialog>
+              ) : null
+            }
           />
         ) : (
           <p className="surface p-4 text-sm text-muted-foreground">

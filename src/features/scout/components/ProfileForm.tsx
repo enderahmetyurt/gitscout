@@ -1,4 +1,5 @@
 import { useState } from "react"
+import type { ReactNode } from "react"
 
 import { ChevronDown, Globe, Lock } from "lucide-react"
 import { useViraMask } from "@virastack/mask"
@@ -93,6 +94,8 @@ type ProfileFormProps = {
   cardPreview?: CardOccasion | null
   /** Kadın seçimi kalkınca Kadınlar Günü önizlemesinden gerçek karta dönmek için. */
   onCardPreviewChange?: (occasion: CardOccasion | null) => void
+  /** Buton çubuğunun soluna gelen içerik; dar ekranda kart önizlemesini açan buton. */
+  footerStart?: ReactNode
 }
 
 /**
@@ -106,7 +109,8 @@ export function ProfileForm({
   birthDate,
   birthDateChangesLeft,
   cardPreview = null,
-  onCardPreviewChange
+  onCardPreviewChange,
+  footerStart
 }: ProfileFormProps) {
   const updateCountry = useUpdateProfileCountry()
   const updateBirthDate = useUpdateBirthDate()
@@ -414,7 +418,9 @@ export function ProfileForm({
         </p>
       ) : null}
 
-      <div className="-mx-4 flex justify-end gap-2 border-t px-4 pt-4">
+      {/* Dar ekranda çubuk ekranın altına yapışır: form uzunken Kaydet ve kart önizlemesi hep elde. */}
+      <div className="-mx-4 flex items-center justify-end gap-2 border-t px-4 pt-4 max-md:sticky max-md:bottom-0 max-md:z-10 max-md:bg-card max-md:pb-[max(1rem,env(safe-area-inset-bottom))]">
+        {footerStart ? <div className="me-auto">{footerStart}</div> : null}
         {isDirty && !isSubmitting ? (
           <Button type="button" size="sm" variant="ghost" onClick={() => form.reset()}>
             {m.settings_cancel()}
