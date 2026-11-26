@@ -198,7 +198,8 @@ export function ProfileForm({
       noValidate
       onSubmit={onSubmit}
       aria-labelledby="profile-heading"
-      className="surface flex flex-col gap-6 p-4"
+      // Dar ekranda alt boşluğu yapışık çubuk verir; form da verirse butonların altı üstünden geniş kalır.
+      className="surface flex flex-col gap-6 p-4 max-md:pb-0"
     >
       <h2 id="profile-heading" className="text-sm font-semibold">
         {m.settings_profile_title()}
@@ -419,7 +420,7 @@ export function ProfileForm({
       ) : null}
 
       {/* Dar ekranda çubuk ekranın altına yapışır: form uzunken Kaydet ve kart önizlemesi hep elde. */}
-      <div className="-mx-4 flex items-center justify-end gap-2 border-t px-4 pt-4 max-md:sticky max-md:bottom-0 max-md:z-10 max-md:bg-card max-md:pb-[max(1rem,env(safe-area-inset-bottom))]">
+      <div className="-mx-4 flex items-center justify-end gap-2 border-t px-4 pt-4 max-md:sticky max-md:bottom-0 max-md:z-10 max-md:rounded-b-xl max-md:bg-card max-md:pb-[max(1rem,env(safe-area-inset-bottom))]">
         {footerStart ? <div className="me-auto">{footerStart}</div> : null}
         {isDirty && !isSubmitting ? (
           <Button type="button" size="sm" variant="ghost" onClick={() => form.reset()}>

@@ -28,7 +28,9 @@ export function TabsTrigger({ className, ...props }: ComponentProps<typeof BaseT
       data-slot="tabs-trigger"
       className={cn(
         "inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] outline-none",
-        "text-foreground data-[selected]:bg-background data-[selected]:shadow-sm",
+        // Base UI seçili sekmeyi `data-active` ile işaretler (`data-selected` değil).
+        "text-muted-foreground hover:text-foreground data-active:bg-background data-active:text-foreground data-active:shadow-sm",
+        "dark:data-active:border dark:data-active:border-input dark:data-active:bg-input/40",
         "focus-visible:ring-[3px] focus-visible:ring-ring/50",
         "disabled:pointer-events-none disabled:opacity-50",
         className

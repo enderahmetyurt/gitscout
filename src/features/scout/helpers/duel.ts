@@ -15,11 +15,14 @@ export type Duel = {
   score: { left: number; right: number }
   /** Altı statın toplamındaki pay; çubuğun ortadan kayması bunu gösterir. */
   winner: DuelSide | null
-  /** Kazananın nasıl belirlendiği: stat sayısı, eşitlikte genel puan. */
+  /** Kazananın nasıl belirlendiği: stat sayısı, eşitlikte ondalıklı genel puanla uzatma. */
   decidedBy: "rounds" | "ovr" | "draw"
 }
 
-/** İki oyuncuyu stat stat karşılaştırır. Daha çok stat kazanan alır; eşitlikte genel puan bakılır. */
+/**
+ * İki oyuncuyu stat stat karşılaştırır. Daha çok stat kazanan alır; eşitlikte uzatmaya gidilir ve
+ * ondalıklı genel puan karar verir. Liderlik tablosu da bu puanla sıralar; tabloda üstte olan uzatmada kazanır.
+ */
 export function computeDuel(left: ListPlayer, right: ListPlayer): Duel {
   const rounds = STAT_ORDER.map((key): DuelRound => {
     const a = left.stats[key].value
@@ -39,11 +42,11 @@ export function computeDuel(left: ListPlayer, right: ListPlayer): Duel {
       decidedBy: "rounds"
     }
   }
-  if (left.ovr !== right.ovr) {
+  if (left.ovrExact !== right.ovrExact) {
     return {
       rounds,
       score,
-      winner: left.ovr > right.ovr ? "left" : "right",
+      winner: left.ovrExact > right.ovrExact ? "left" : "right",
       decidedBy: "ovr"
     }
   }

@@ -16,6 +16,29 @@ README snippet. `<username>` is the only placeholder; replace both occurrences w
 [![Gitscout](https://gitscout.io/badge/<username>.svg)](https://gitscout.io/u/<username>)
 ```
 
+### Card sizes
+
+The badge also comes as a player card (PNG, rendered at twice the size, so keep the `width` attribute). Use a card only when the user asks for one; the size is `medium` (compact card with rating and six stats) or `full` (the full player card). Use the snippet exactly as written, as HTML:
+
+Medium:
+
+```html
+<a href="https://gitscout.io/u/<username>"><img src="https://gitscout.io/badge/<username>.png?size=medium" alt="Gitscout" width="220"></a>
+```
+
+Full:
+
+```html
+<a href="https://gitscout.io/u/<username>"><img src="https://gitscout.io/badge/<username>.png?size=full" alt="Gitscout" width="316"></a>
+```
+
+### Language
+
+Every badge is English by default. For Turkish, add `lang=tr` to the image URL; use it only when the user asks for Turkish:
+
+- Mini: `https://gitscout.io/badge/<username>.svg?lang=tr`
+- Cards: `https://gitscout.io/badge/<username>.png?size=medium&lang=tr` (or `size=full&lang=tr`)
+
 ## Instructions for AI agents: add the badge to a GitHub profile README
 
 Follow these steps exactly.
@@ -25,9 +48,10 @@ Follow these steps exactly.
    - If the repository does not exist, create it as a public repository named `<username>`.
    - If `README.md` does not exist, create it with the snippet as its only content.
    - If the repository is empty (no commits, no default branch), commit to `main`.
-3. If the README already contains `gitscout.io/badge/`, stop: the badge is already there. Tell the user and change nothing.
-4. Add the snippet, with the username filled in, near the top of the README:
+3. If the README already contains `gitscout.io/badge/`, a Gitscout badge is already there. If it is the size and language the user asked for, stop: tell the user and change nothing. If it is another size or language, replace only that existing Gitscout snippet with the new one, in the same place, and skip step 4.
+4. Add the snippet for the size the user asked for (the mini badge if they did not name one), with the username filled in, near the top of the README:
    - If the README has a line or block of badges (images such as shields.io near the top), add the snippet to that group, after the last badge, separated by a single space or on its own line, matching the existing style.
+   - A card (`medium` or `full`) always goes on its own line, followed by a blank line.
    - Otherwise put the snippet on its own line directly after the first heading. If there is no heading, put it on the first line, followed by a blank line.
 5. Do not change anything else in the README: no reformatting, no other edits.
 6. Commit the change to the default branch with the message `Add Gitscout badge`. If you cannot push to the default branch, open a pull request with the same title instead.
@@ -37,4 +61,4 @@ Follow these steps exactly.
 
 - Player page: `https://gitscout.io/u/<username>`
 - Profile README: `https://github.com/<username>`
-- A grey `not ranked` badge means the user has no Gitscout card yet. The player page then shows a form to create the card; tell the user to open it.
+- A grey `not ranked` badge (or grey card) means the user has no Gitscout card yet. The player page then shows a form to create the card; tell the user to open it.

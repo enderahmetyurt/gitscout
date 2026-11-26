@@ -37,7 +37,10 @@ export const analyticsEventSchema = z.discriminatedUnion("name", [
   z.object({
     name: z.literal("readme_badge_copied"),
     login,
-    via: z.enum(["prompt", "markdown"])
+    via: z.enum(["prompt", "markdown"]),
+    // Boy seçimi sonradan geldi; eski sekmelerden gelen olaylar boysuz kalabilir.
+    size: z.enum(["mini", "medium", "full"]).optional(),
+    locale: z.enum(["en", "tr"]).optional()
   })
 ])
 

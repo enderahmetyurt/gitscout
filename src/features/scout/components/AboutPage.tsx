@@ -41,12 +41,16 @@ const STAT_DESCRIPTIONS: Record<StatKey, () => string> = {
 
 /** Sayılar sabitlerden okunur; mesajlar render sırasında çağrıldığı için dil değişince güncellenir. */
 function faqItems() {
+  // Sıra: puanla ilgili sorular önce (neden düşük, nasıl sayılır, ne zaman değişir), sonra kartın görünümü.
   return [
     { id: "low", question: m.about_faq_low_q(), answer: m.about_faq_low_a() },
     {
-      id: "refresh",
-      question: m.about_faq_refresh_q(),
-      answer: m.about_faq_refresh_a({ days: REFRESH.maxAgeDays })
+      id: "org",
+      question: m.about_faq_org_q(),
+      answer: m.about_faq_org_a({
+        share: percent(IMP.maintainerShare * 100),
+        weight: percent(REP.ownOrgPrWeight * 100)
+      })
     },
     {
       id: "bots",
@@ -57,17 +61,19 @@ function faqItems() {
       })
     },
     {
-      id: "org",
-      question: m.about_faq_org_q(),
-      answer: m.about_faq_org_a({
-        share: percent(IMP.maintainerShare * 100),
-        weight: percent(REP.ownOrgPrWeight * 100)
-      })
+      id: "refresh",
+      question: m.about_faq_refresh_q(),
+      answer: m.about_faq_refresh_a({ days: REFRESH.maxAgeDays })
     },
     {
       id: "role",
       question: m.about_faq_role_q(),
       answer: m.about_faq_role_a({ share: percent(FULL_STACK_MIN_SHARE * 100) })
+    },
+    {
+      id: "flag",
+      question: m.about_faq_flag_q(),
+      answer: m.about_faq_flag_a()
     }
   ]
 }
@@ -143,7 +149,8 @@ export function AboutPage() {
           {faqItems().map((item) => (
             <AccordionItem key={item.id} value={item.id}>
               <AccordionTrigger>{item.question}</AccordionTrigger>
-              <AccordionContent className="text-base/7 text-pretty text-foreground/80">
+              {/* Cevap, soru başlığıyla aynı boyda: uzun düzyazı akordiyonun içinde başlığı ezmesin. */}
+              <AccordionContent className="text-sm/6 text-pretty text-foreground/80">
                 {item.answer}
               </AccordionContent>
             </AccordionItem>

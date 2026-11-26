@@ -32,14 +32,22 @@ const FONTS = [
 
 let fonts: { name: string; data: Buffer; weight: 400 | 700 | 800; style: "normal" }[] | null = null
 
-/** JSX'i önce SVG'ye, sonra PNG'ye çevirir. Yalnızca sunucuda çalışır. */
-export async function renderOgPng(node: ReactNode): Promise<Uint8Array> {
+type RenderOptions = { width: number; height: number; scale?: number }
+
+/**
+ * JSX'i önce SVG'ye, sonra PNG'ye çevirir. Yalnızca sunucuda çalışır. `scale` çıktıyı büyütür:
+ * README kartları retina ekranda keskin görünsün diye iki kat çizilip HTML `width` ile küçültülür.
+ */
+export async function renderOgPng(
+  node: ReactNode,
+  { width, height, scale = 1 }: RenderOptions = OG_SIZE
+): Promise<Uint8Array> {
   fonts ??= FONTS.map((font) => ({
     name: font.name,
     data: decode(font.data),
     weight: font.weight,
     style: "normal"
   }))
-  const svg = await satori(node, { ...OG_SIZE, fonts })
-  return new Resvg(svg, { fitTo: { mode: "width", value: OG_SIZE.width } }).render().asPng()
+  const svg = await satori(node, { width, height, fonts })
+  return new Resvg(svg, { fitTo: { mode: "width", value: width * scale } }).render().asPng()
 }

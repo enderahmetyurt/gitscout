@@ -15,6 +15,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as Char123LangChar125RouteImport } from './routes/{-$lang}'
 import { Route as ApiTopDotjsonRouteImport } from './routes/api/top[.]json'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
+import { Route as BadgeChar123usernameChar125DotpngRouteImport } from './routes/badge/{$username}[.]png'
 import { Route as BadgeChar123usernameChar125DotsvgRouteImport } from './routes/badge/{$username}[.]svg'
 import { Route as Char123LangChar125IndexRouteImport } from './routes/{-$lang}/index'
 import { Route as Char123LangChar125AboutRouteImport } from './routes/{-$lang}/about'
@@ -59,6 +60,12 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BadgeChar123usernameChar125DotpngRoute =
+  BadgeChar123usernameChar125DotpngRouteImport.update({
+    id: '/badge/{$username}.png',
+    path: '/badge/{$username}.png',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const BadgeChar123usernameChar125DotsvgRoute =
   BadgeChar123usernameChar125DotsvgRouteImport.update({
     id: '/badge/{$username}.svg',
@@ -141,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/{-$lang}': typeof Char123LangChar125RouteWithChildren
   '/api/top.json': typeof ApiTopDotjsonRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/badge/{$username}.png': typeof BadgeChar123usernameChar125DotpngRoute
   '/badge/{$username}.svg': typeof BadgeChar123usernameChar125DotsvgRoute
   '/{-$lang}/about': typeof Char123LangChar125AboutRoute
   '/{-$lang}/leaderboard': typeof Char123LangChar125LeaderboardRoute
@@ -161,6 +169,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/top.json': typeof ApiTopDotjsonRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/badge/{$username}.png': typeof BadgeChar123usernameChar125DotpngRoute
   '/badge/{$username}.svg': typeof BadgeChar123usernameChar125DotsvgRoute
   '/{-$lang}/about': typeof Char123LangChar125AboutRoute
   '/{-$lang}/leaderboard': typeof Char123LangChar125LeaderboardRoute
@@ -183,6 +192,7 @@ export interface FileRoutesById {
   '/{-$lang}': typeof Char123LangChar125RouteWithChildren
   '/api/top.json': typeof ApiTopDotjsonRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/badge/{$username}.png': typeof BadgeChar123usernameChar125DotpngRoute
   '/badge/{$username}.svg': typeof BadgeChar123usernameChar125DotsvgRoute
   '/{-$lang}/about': typeof Char123LangChar125AboutRoute
   '/{-$lang}/leaderboard': typeof Char123LangChar125LeaderboardRoute
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/{-$lang}'
     | '/api/top.json'
     | '/auth/callback'
+    | '/badge/{$username}.png'
     | '/badge/{$username}.svg'
     | '/{-$lang}/about'
     | '/{-$lang}/leaderboard'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/api/top.json'
     | '/auth/callback'
+    | '/badge/{$username}.png'
     | '/badge/{$username}.svg'
     | '/{-$lang}/about'
     | '/{-$lang}/leaderboard'
@@ -247,6 +259,7 @@ export interface FileRouteTypes {
     | '/{-$lang}'
     | '/api/top.json'
     | '/auth/callback'
+    | '/badge/{$username}.png'
     | '/badge/{$username}.svg'
     | '/{-$lang}/about'
     | '/{-$lang}/leaderboard'
@@ -269,6 +282,7 @@ export interface RootRouteChildren {
   Char123LangChar125Route: typeof Char123LangChar125RouteWithChildren
   ApiTopDotjsonRoute: typeof ApiTopDotjsonRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
+  BadgeChar123usernameChar125DotpngRoute: typeof BadgeChar123usernameChar125DotpngRoute
   BadgeChar123usernameChar125DotsvgRoute: typeof BadgeChar123usernameChar125DotsvgRoute
   ApiCronRefreshRoute: typeof ApiCronRefreshRoute
 }
@@ -315,6 +329,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/callback'
       fullPath: '/auth/callback'
       preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/badge/{$username}.png': {
+      id: '/badge/{$username}.png'
+      path: '/badge/{$username}.png'
+      fullPath: '/badge/{$username}.png'
+      preLoaderRoute: typeof BadgeChar123usernameChar125DotpngRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/badge/{$username}.svg': {
@@ -449,6 +470,8 @@ const rootRouteChildren: RootRouteChildren = {
   Char123LangChar125Route: Char123LangChar125RouteWithChildren,
   ApiTopDotjsonRoute: ApiTopDotjsonRoute,
   AuthCallbackRoute: AuthCallbackRoute,
+  BadgeChar123usernameChar125DotpngRoute:
+    BadgeChar123usernameChar125DotpngRoute,
   BadgeChar123usernameChar125DotsvgRoute:
     BadgeChar123usernameChar125DotsvgRoute,
   ApiCronRefreshRoute: ApiCronRefreshRoute,

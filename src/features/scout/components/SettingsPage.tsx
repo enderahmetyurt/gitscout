@@ -261,9 +261,10 @@ function SettingsContent({
                     <IdCard aria-hidden />
                     {m.settings_show_card()}
                   </DialogTrigger>
-                  <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100%-1rem)] justify-items-center overflow-y-auto px-3 pt-10">
+                  <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100%-1rem)] justify-items-center overflow-x-hidden overflow-y-auto px-3 pt-10">
                     <DialogTitle className="sr-only">{m.settings_card_dialog_title()}</DialogTitle>
-                    <div className="flex flex-col items-center gap-3">{cardPreview}</div>
+                    {/* Kart biraz küçük: dar telefonda kenarlara yapışmasın, seçiciyle birlikte ekrana sığsın. */}
+                    <div className="flex [zoom:0.9] flex-col items-center gap-3">{cardPreview}</div>
                   </DialogContent>
                 </Dialog>
               ) : null
@@ -277,9 +278,7 @@ function SettingsContent({
             })}
           </p>
         )}
-        {player ? (
-          <ReadmeBadgeSection login={player.login} ovr={player.ovr} rarity={player.rarity} />
-        ) : null}
+        {player ? <ReadmeBadgeSection player={player} /> : null}
       </div>
     </div>
   )

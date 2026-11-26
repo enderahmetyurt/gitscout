@@ -65,8 +65,10 @@ export function DuelSlot({ id, side, label, player, players, onChange, autoFocus
             onChange={onChange}
             autoFocus={autoFocus}
             placeholder={m.duel_placeholder()}
-            contentClassName="min-w-80"
+            // Liste kutuya bağlı (`anchor`); bileşenin `data-chips` kuralı genişliği kutuya eşitlemesin.
+            contentClassName="min-w-80 data-[chips=true]:min-w-80"
             inputClassName="w-full"
+            align={side === "right" ? "end" : "start"}
           />
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 
 import {
   Combobox,
@@ -28,6 +28,8 @@ type PlayerComboboxProps = {
   contentClassName?: string
   /** Arama kutusunun ek sınıfları (ör. daha yüksek bir kutu). */
   inputClassName?: string
+  /** Liste kutudan genişse hangi kenara hizalansın; sağdaki seçicide `end`, liste ekrandan taşmasın. */
+  align?: "start" | "end"
 }
 
 /** Kayıtlı oyuncular arasında ad ve kullanıcı adıyla arar. */
@@ -41,9 +43,13 @@ export function PlayerCombobox({
   onCreate,
   isCreating = false,
   contentClassName,
-  inputClassName
+  inputClassName,
+  align = "start"
 }: PlayerComboboxProps) {
   const [query, setQuery] = useState("")
+  // Liste yalnızca yazı alanına değil, ok ve temizle butonlarıyla bütün kutuya hizalanır;
+  // yoksa `end` hizasında kutunun sağ kenarından butonlar kadar içeride kalır.
+  const anchorRef = useRef<HTMLDivElement>(null)
   const typed = usernameSchema.safeParse(query)
   const canCreate = onCreate !== undefined && typed.success
 
@@ -61,14 +67,16 @@ export function PlayerCombobox({
       filter={(player, text) => matchesPlayer(player, text)}
     >
       {/* Ev sahibi önceden seçiliyse kullanıcı doğrudan rakibi aramaya başlar. */}
-      <ComboboxInput
-        id={id}
-        placeholder={placeholder}
-        showClear
-        autoFocus={autoFocus}
-        className={inputClassName}
-      />
-      <ComboboxContent className={contentClassName}>
+      <div ref={anchorRef}>
+        <ComboboxInput
+          id={id}
+          placeholder={placeholder}
+          showClear
+          autoFocus={autoFocus}
+          className={inputClassName}
+        />
+      </div>
+      <ComboboxContent anchor={anchorRef} align={align} className={contentClassName}>
         <ComboboxEmpty>
           {canCreate ? (
             <button

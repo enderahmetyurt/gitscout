@@ -5,7 +5,7 @@ import { OgDuelImage } from "@/features/scout/components/OgDuelImage"
 import { OgImage } from "@/features/scout/components/OgImage"
 
 /** Avatar küçük boyutta çekilip görsele gömülür; alınamazsa yer tutucu çizilir. */
-async function loadAvatar(avatarUrl: string): Promise<string | null> {
+export async function loadAvatar(avatarUrl: string): Promise<string | null> {
   try {
     const url = new URL(avatarUrl)
     url.searchParams.set("s", "280")

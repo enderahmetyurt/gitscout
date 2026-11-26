@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { computeDuel } from "@/features/scout/helpers/duel"
 import type { ScoredPlayer, StatKey } from "@/features/scout/types/player.types"
 
-const player = (ovr: number, values: Record<StatKey, number>): ScoredPlayer => {
+const player = (ovr: number, values: Record<StatKey, number>, ovrExact = ovr): ScoredPlayer => {
   const stat = (key: StatKey) => ({
     key,
     value: values[key],
@@ -20,7 +20,7 @@ const player = (ovr: number, values: Record<StatKey, number>): ScoredPlayer => {
     positionBreakdown: { repoCount: 0, pythonAsData: false, roles: [], languages: [] },
     topRepos: [],
     ovr,
-    ovrExact: ovr,
+    ovrExact,
     rarity: "gold",
     title: { stat: "act", rarity: "gold", variant: 0 },
     archetype: { rarity: "gold", strengths: [], weakness: null },
@@ -57,5 +57,14 @@ describe("computeDuel", () => {
     const draw = computeDuel(player(80, left), player(80, right))
     expect(draw.winner).toBeNull()
     expect(draw.decidedBy).toBe("draw")
+  })
+
+  it("tam sayı puan da eşitse uzatmada ondalıklı puan karar verir", () => {
+    const left = { act: 87, imp: 78, com: 70, rep: 59, con: 82, exp: 84 }
+    const right = { act: 86, imp: 76, com: 77, rep: 44, con: 90, exp: 85 }
+    const duel = computeDuel(player(78, left, 77.62), player(78, right, 77.9))
+    expect(duel.score).toEqual({ left: 3, right: 3 })
+    expect(duel.winner).toBe("right")
+    expect(duel.decidedBy).toBe("ovr")
   })
 })

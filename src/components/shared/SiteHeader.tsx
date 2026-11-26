@@ -22,7 +22,7 @@ export function SiteHeader() {
           to="/{-$lang}"
           params={{ lang }}
           lang="en"
-          className="rounded-sm font-mono text-lg font-bold tracking-wide uppercase outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 min-[360px]:text-xl"
+          className="rounded-sm font-mono text-sm font-bold tracking-wide uppercase outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 sm:text-xl"
         >
           Gitscout
         </Link>

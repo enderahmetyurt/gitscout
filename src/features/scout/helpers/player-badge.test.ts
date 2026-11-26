@@ -15,6 +15,11 @@ describe("oyuncu rozeti", () => {
     expect(svg).toContain('fill="#6e7681"')
   })
 
+  it("seçilen dilde yazar", () => {
+    expect(playerBadgeSvg({ ovr: 82, rarity: "gold", locale: "tr" })).toContain("82 puan · altın")
+    expect(unrankedBadgeSvg("tr")).toContain("puan yok")
+  })
+
   it("SVG'yi <img> için veri adresine çevirir", () => {
     const uri = svgDataUri(playerBadgeSvg({ ovr: 94, rarity: "icon" }))
     expect(uri.startsWith("data:image/svg+xml;charset=utf-8,")).toBe(true)

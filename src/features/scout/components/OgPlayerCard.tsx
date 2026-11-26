@@ -1,10 +1,12 @@
 import { STAT_ORDER } from "@/features/scout/constants/scoring.constants"
 import { rarityLabel, statShort, titleText } from "@/features/scout/helpers/player-text"
 import { statTier } from "@/features/scout/helpers/stat-tier"
-import type { Rarity, ScoredPlayer } from "@/features/scout/types/player.types"
+import type { ListPlayer, Rarity } from "@/features/scout/types/player.types"
 
 /**
- * Link önizlemelerindeki oyuncu kartı (300×450). Oyuncu ve düello görselleri ortak kullanır.
+ * Link önizlemelerindeki oyuncu kartı (300×450). Oyuncu ve düello görselleri ile README'nin tam kart
+ * rozeti ortak kullanır. Avatar ve aralıklar sitedeki kartla aynı orantıda: alt satır `marginTop: auto`
+ * ile dibe itildiği için içerik küçük kalırsa artan boşluk statların altında birikir.
  * Satori ile çizilir: yalnızca flex düzen ve satır içi stil desteklenir.
  */
 
@@ -54,11 +56,20 @@ const TIER_ON_METAL = {
   poor: "#7f1d1d"
 }
 
-type OgPlayerCardProps = { player: ScoredPlayer; avatar: string | null }
+/** Stat değerinin kart zeminine göre rengi; orta boy README kartı da aynı tonları kullanır. */
+export function ogStatColor(rarity: Rarity, value: number): string {
+  return (rarity === "icon" ? TIER_ON_DARK : TIER_ON_METAL)[statTier(value)]
+}
 
-export function OgPlayerCard({ player, avatar }: OgPlayerCardProps) {
+type OgPlayerCardProps = {
+  player: ListPlayer
+  avatar: string | null
+  /** Sağ alt köşede kullanıcı adı yerine yazılır; README kartı site adresini taşır. */
+  signature?: string
+}
+
+export function OgPlayerCard({ player, avatar, signature }: OgPlayerCardProps) {
   const colors = RARITY_COLORS[player.rarity]
-  const tierColors = player.rarity === "icon" ? TIER_ON_DARK : TIER_ON_METAL
 
   return (
     <div
@@ -113,15 +124,15 @@ export function OgPlayerCard({ player, avatar }: OgPlayerCardProps) {
           {avatar ? (
             <img
               src={avatar}
-              width={124}
-              height={124}
+              width={142}
+              height={142}
               style={{ borderRadius: 999, border: `5px solid ${colors.frame[1]}` }}
             />
           ) : (
             <div
               style={{
-                width: 140,
-                height: 140,
+                width: 152,
+                height: 152,
                 borderRadius: 999,
                 backgroundColor: colors.muted
               }}
@@ -133,7 +144,7 @@ export function OgPlayerCard({ player, avatar }: OgPlayerCardProps) {
           style={{
             display: "flex",
             justifyContent: "center",
-            marginTop: 14,
+            marginTop: 16,
             fontSize: 21,
             fontWeight: 700
           }}
@@ -151,7 +162,7 @@ export function OgPlayerCard({ player, avatar }: OgPlayerCardProps) {
             display: "flex",
             height: 1,
             backgroundColor: colors.muted,
-            margin: "10px 0 8px",
+            margin: "16px 0 12px",
             opacity: 0.4
           }}
         />
@@ -160,7 +171,12 @@ export function OgPlayerCard({ player, avatar }: OgPlayerCardProps) {
           {STAT_ORDER.map((key) => (
             <div
               key={key}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                padding: "4px 0"
+              }}
             >
               <div style={{ fontSize: 10, fontWeight: 700, color: colors.muted }}>
                 {statShort(key)}
@@ -169,7 +185,7 @@ export function OgPlayerCard({ player, avatar }: OgPlayerCardProps) {
                 style={{
                   fontSize: 19,
                   fontWeight: 700,
-                  color: tierColors[statTier(player.stats[key].value)]
+                  color: ogStatColor(player.rarity, player.stats[key].value)
                 }}
               >
                 {String(player.stats[key].value)}
@@ -189,7 +205,7 @@ export function OgPlayerCard({ player, avatar }: OgPlayerCardProps) {
           }}
         >
           <div style={{ display: "flex" }}>{(player.club ?? "").toUpperCase()}</div>
-          <div style={{ display: "flex" }}>@{player.login}</div>
+          <div style={{ display: "flex" }}>{signature ?? `@${player.login}`}</div>
         </div>
       </div>
     </div>

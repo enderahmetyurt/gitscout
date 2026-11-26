@@ -19,6 +19,7 @@ import { DuelRadar } from "@/features/scout/components/DuelRadar"
 import { GetYourCard } from "@/features/scout/components/GetYourCard"
 import { PageHeader } from "@/features/scout/components/PageHeader"
 import { PlayerCard } from "@/features/scout/components/PlayerCard"
+import { PlayerCardMedium } from "@/features/scout/components/PlayerCardMedium"
 import { PlayerCombobox } from "@/features/scout/components/PlayerCombobox"
 import { SHARE_TARGETS } from "@/features/scout/constants/share.constants"
 import { STAT_TIER_TEXT } from "@/features/scout/constants/stat-tier.constants"
@@ -34,6 +35,7 @@ import { useLeaderboard } from "@/features/scout/hooks/use-leaderboard"
 import { usePlayer } from "@/features/scout/hooks/use-player"
 import type { ListPlayer } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
+import { getLocale } from "@/paraglide/runtime.js"
 
 type DuelViewProps = {
   left: string
@@ -95,6 +97,7 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
           placeholder={m.duel_change_placeholder()}
           onCreate={(username) => createAndReplace(side, username)}
           isCreating={addPlayer.isPending}
+          align={side === "right" ? "end" : "start"}
         />
       </div>
     )
@@ -143,7 +146,10 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
       ref={contentRef}
       className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 overflow-x-clip px-4 pt-6 pb-20 outline-none sm:px-6"
     >
+      {/* Mobilde isimler hem aramada hem kartlarda görünüyor: başlık skoru aşağı itmesin diye gizli,
+          ama H1 olarak sayfada kalır (SEO ve ekran okuyucu). */}
       <PageHeader
+        className="max-lg:sr-only"
         eyebrow={m.duel_title()}
         title={
           <>
@@ -153,7 +159,7 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
         align="center"
       />
 
-      {/* Mobilde iki taraf sayfa başında yan yana: büyük kartlar yerine mini kartlar. */}
+      {/* Mobilde iki taraf sayfa başında yan yana: büyük kartlar yerine puan ve statları taşıyan orta kartlar. */}
       <div className="grid grid-cols-2 gap-3 lg:hidden">
         <MiniCorner player={left} picker={picker("left", "-mobile")} />
         <MiniCorner player={right} picker={picker("right", "-mobile")} />
@@ -172,7 +178,13 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
           aria-label={m.duel_summary()}
           className="flex flex-col gap-6 lg:order-none lg:[view-transition-name:duel-middle]"
         >
-          <Scoreboard key={`${left.login}-${right.login}`} duel={duel} winner={winner} />
+          <Scoreboard
+            key={`${left.login}-${right.login}`}
+            duel={duel}
+            winner={winner}
+            leftOvr={left.ovrExact}
+            rightOvr={right.ovrExact}
+          />
           <DuelRadar left={left} right={right} />
           <Rounds duel={duel} />
           <Receipts left={left} right={right} />
@@ -284,25 +296,22 @@ function MiniCorner({ player, picker }: { player: ListPlayer; picker: ReactNode 
         to="/{-$lang}/u/$username"
         params={{ lang: getLangParam(), username: player.login }}
         aria-label={m.duel_open_card({ name: player.name })}
-        data-rarity={player.rarity}
-        className="scout-card flex rounded-2xl p-1.5 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        className="rounded-2xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
       >
-        <span className="scout-card-inner flex w-full flex-col items-center gap-2 rounded-xl px-2 py-3">
-          <img
-            src={player.avatarUrl}
-            alt={m.avatar_alt({ name: player.name })}
-            width={64}
-            height={64}
-            className="size-16 rounded-full bg-muted"
-          />
-          <span className="w-full truncate text-center text-sm font-semibold">{player.name}</span>
-        </span>
+        <PlayerCardMedium player={player} />
       </Link>
     </div>
   )
 }
 
-function Scoreboard({ duel, winner }: { duel: Duel; winner: ListPlayer | null }) {
+type ScoreboardProps = {
+  duel: Duel
+  winner: ListPlayer | null
+  leftOvr: number
+  rightOvr: number
+}
+
+function Scoreboard({ duel, winner, leftOvr, rightOvr }: ScoreboardProps) {
   const left = useCountUp(duel.score.left)
   const right = useCountUp(duel.score.right)
   const done = left === duel.score.left && right === duel.score.right
@@ -323,11 +332,37 @@ function Scoreboard({ duel, winner }: { duel: Duel; winner: ListPlayer | null })
           {right}
         </span>
       </p>
-      <p className={cn("score-result text-lg font-semibold", done && "is-done")}>
+      {/* Uzatmada önce eşit skor okunsun; sonra kazanan, ardından uzatmayı neyin kazandırdığı gelir. */}
+      <p
+        className={cn(
+          "score-result max-w-full text-lg font-semibold text-balance break-words",
+          done && "is-done",
+          duel.decidedBy === "ovr" && "delay-700"
+        )}
+      >
         {winner ? m.duel_winner({ name: winner.name }) : m.duel_draw()}
       </p>
+      {/* Karar veren ondalıklı genel puan; tam sayıları eşit olduğu için kartlarda görünmez. */}
+      {duel.decidedBy === "ovr" ? (
+        <p
+          className={cn(
+            "score-result -mt-2 font-mono text-sm text-balance text-muted-foreground tabular-nums delay-1300",
+            done && "is-done"
+          )}
+        >
+          {m.duel_overtime_note({ left: decimal(leftOvr), right: decimal(rightOvr) })}
+        </p>
+      ) : null}
     </div>
   )
+}
+
+/** Uzatma notundaki puan: her zaman iki ondalık, dile göre ayraçla (77,90 / 77.90). */
+function decimal(value: number): string {
+  return new Intl.NumberFormat(getLocale(), {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value)
 }
 
 function Rounds({ duel }: { duel: Duel }) {

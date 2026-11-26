@@ -1,12 +1,12 @@
 import { renderBadgeSvg } from "@/features/scout/helpers/badge-svg"
+import type { BadgeLocale } from "@/features/scout/schemas/badge.schema"
 import type { Rarity } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
 
 /**
- * README rozeti adres dil öneki taşımadığından GitHub'a herkes için aynı İngilizce görsel gider;
- * sayfadaki önizleme de sayfa dili ne olursa olsun bununla birebir aynı kalsın diye dil sabittir.
+ * README rozeti adres dil öneki taşımaz; dil `?lang=` ile seçilir, verilmezse İngilizce. Sayfadaki
+ * önizleme de sayfa dili ne olursa olsun seçilen dille birebir aynı kalsın diye dil hep açıkça verilir.
  */
-const BADGE_LOCALE = { locale: "en" } as const
 
 /** Rozette nadirlik adı küçük harfle yazılır; sayfadaki başlıklardan ayrı mesajlardır. */
 const TIER_NAMES = {
@@ -17,19 +17,29 @@ const TIER_NAMES = {
 } as const
 
 /** Kartı olan oyuncunun rozeti; sunucu yanıtı ve profil sayfasındaki önizleme aynı çıktıyı kullanır. */
-export function playerBadgeSvg({ ovr, rarity }: { ovr: number; rarity: Rarity }): string {
+export function playerBadgeSvg({
+  ovr,
+  rarity,
+  locale = "en"
+}: {
+  ovr: number
+  rarity: Rarity
+  locale?: BadgeLocale
+}): string {
+  const options = { locale }
   return renderBadgeSvg({
-    label: m.badge_label({}, BADGE_LOCALE),
-    value: m.badge_value({ ovr, tier: TIER_NAMES[rarity]({}, BADGE_LOCALE) }, BADGE_LOCALE),
+    label: m.badge_label({}, options),
+    value: m.badge_value({ ovr, tier: TIER_NAMES[rarity]({}, options) }, options),
     tone: rarity
   })
 }
 
 /** Kartı olmayan ya da geçersiz kullanıcı adı için gri rozet. */
-export function unrankedBadgeSvg(): string {
+export function unrankedBadgeSvg(locale: BadgeLocale = "en"): string {
+  const options = { locale }
   return renderBadgeSvg({
-    label: m.badge_label({}, BADGE_LOCALE),
-    value: m.badge_not_ranked({}, BADGE_LOCALE),
+    label: m.badge_label({}, options),
+    value: m.badge_not_ranked({}, options),
     tone: "none"
   })
 }
