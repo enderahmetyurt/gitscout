@@ -260,7 +260,7 @@ export function LeaderboardTable({ players, rankPool, limit }: LeaderboardTableP
             .map((row) => (
               <tr
                 key={row.original.login}
-                className="relative border-b transition-colors last:border-0 hover:bg-muted/40"
+                className="border-b transition-colors last:border-0 hover:bg-muted/40"
               >
                 {row.getAllCells().map((cell) => {
                   const { align } = readMeta(cell.column.columnDef.meta)
@@ -274,8 +274,10 @@ export function LeaderboardTable({ players, rankPool, limit }: LeaderboardTableP
                           : align === "center"
                             ? "px-1 py-3 text-center font-mono tabular-nums"
                             : "px-3 py-3",
-                        // Uzun adlar kesilir; tablo yana kaydığında isim sütunu tüm alanı yutmaz.
-                        cell.column.id === "name" && "max-w-64"
+                        // Uzun adlar kesilir; tablo yana kaydığında isim sütunu tüm alanı yutmaz. Linkin tıklama
+                        // alanı hücreye bağlı: eski WebKit `tr` üzerindeki `relative`i yok sayar, satıra bağlı alan
+                        // sayfaya taşıp ana sayfadaki input'u son satırın linkiyle kaplıyordu.
+                        cell.column.id === "name" && "relative max-w-64"
                       )}
                     >
                       <table.FlexRender cell={cell} />
