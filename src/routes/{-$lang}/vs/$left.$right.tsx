@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 
 import { pageMeta } from "@/config/seo.config"
+import { siteConfig } from "@/config/site.config"
 
 import { getLangParam, hreflangLinks } from "@/helpers/localized-url"
 
@@ -17,13 +18,34 @@ export const Route = createFileRoute("/{-$lang}/vs/$left/$right")({
       context.queryClient.ensureQueryData(playerQueryOptions(params.right)),
       context.queryClient.ensureQueryData(leaderboardQueryOptions())
     ]),
-  head: ({ params }) => ({
-    meta: pageMeta(
+  head: ({ params, loaderData }) => {
+    const meta = pageMeta(
       m.meta_duel_pair({ left: params.left, right: params.right }),
       m.meta_duel_pair_description({ left: params.left, right: params.right })
-    ),
-    links: hreflangLinks(`/vs/${params.left}/${params.right}`)
-  }),
+    )
+    const links = hreflangLinks(`/vs/${params.left}/${params.right}`)
+    if (!loaderData) return { meta, links }
+
+    // Görsel adresi iki kartın en son yenilenme tarihini taşır: biri yenilenince platformlar yeni görseli çeker.
+    const [left, right] = loaderData
+    const prefix = params.lang ? `/${params.lang}` : ""
+    const version = Math.max(Date.parse(left.fetchedAt), Date.parse(right.fetchedAt))
+    const path = `${left.login}/${right.login}`
+    const image = `${siteConfig.url}${prefix}/og/vs/${path}?v=${version}`
+    return {
+      meta: [
+        ...meta,
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: `${siteConfig.url}${prefix}/vs/${path}` },
+        { property: "og:image", content: image },
+        { property: "og:image:width", content: "1200" },
+        { property: "og:image:height", content: "630" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:image", content: image }
+      ],
+      links
+    }
+  },
   pendingComponent: Pending,
   notFoundComponent: DuelNotFound,
   component: DuelPage
