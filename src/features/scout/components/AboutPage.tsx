@@ -106,7 +106,7 @@ export function AboutPage() {
     >
       <div className="flex flex-col gap-3">
         <h1 className="text-4xl font-semibold tracking-tight text-balance">{m.about_title()}</h1>
-        <p className="text-pretty text-muted-foreground">{m.about_lead()}</p>
+        <p className="font-mono text-pretty text-muted-foreground">{m.about_lead()}</p>
       </div>
 
       <Section id="about-story" title={m.about_story_title()}>

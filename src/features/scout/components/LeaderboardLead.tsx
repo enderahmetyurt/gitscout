@@ -22,7 +22,7 @@ export function LeaderboardLead({ players }: { players: ListPlayer[] }) {
   let index = 0
 
   return (
-    <p className="max-w-prose text-sm text-pretty text-muted-foreground">
+    <p className="max-w-prose font-mono text-sm text-pretty text-muted-foreground">
       {m.leaderboard_lead_intro({ total: players.length })}
       <br />
       {parts.map((part) => {

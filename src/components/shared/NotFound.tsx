@@ -12,7 +12,9 @@ export function NotFound() {
       <meta name="robots" content="noindex" />
       <p className="text-sm font-medium text-muted-foreground">404</p>
       <h1 className="text-2xl font-semibold tracking-tight">{m.not_found_title()}</h1>
-      <p className="max-w-md text-sm text-muted-foreground">{m.not_found_description()}</p>
+      <p className="max-w-md font-mono text-sm text-muted-foreground">
+        {m.not_found_description()}
+      </p>
       <Button
         nativeButton={false}
         render={<Link to="/{-$lang}" params={{ lang: getLangParam() }} />}

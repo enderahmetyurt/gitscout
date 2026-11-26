@@ -46,7 +46,7 @@ export function DuelPicker() {
     >
       <div className="flex flex-col gap-3">
         <h1 className="text-4xl font-semibold tracking-tight text-balance">{m.duel_title()}</h1>
-        <p className="text-pretty text-muted-foreground">{m.duel_lead()}</p>
+        <p className="font-mono text-pretty text-muted-foreground">{m.duel_lead()}</p>
       </div>
 
       <div className="grid items-end gap-4 sm:grid-cols-[1fr_auto_1fr]">

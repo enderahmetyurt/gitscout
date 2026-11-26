@@ -61,7 +61,7 @@ function PlayerNotFound() {
     >
       <meta name="robots" content="noindex" />
       <h1 className="text-3xl font-bold">{m.player_not_found_title({ username })}</h1>
-      <p className="text-muted-foreground">{m.player_not_found_description()}</p>
+      <p className="font-mono text-muted-foreground">{m.player_not_found_description()}</p>
       <div className="w-full text-left">
         <AddPlayerForm defaultUsername={username} />
       </div>

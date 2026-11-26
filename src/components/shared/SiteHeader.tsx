@@ -8,7 +8,7 @@ import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher"
 import * as m from "@/paraglide/messages.js"
 
 const navLinkClass =
-  "inline-flex min-h-6 items-center rounded-sm text-sm text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 data-[status=active]:text-foreground"
+  "inline-flex min-h-6 items-center rounded-sm font-mono text-sm text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 data-[status=active]:text-foreground"
 
 export function SiteHeader() {
   const lang = getLangParam()

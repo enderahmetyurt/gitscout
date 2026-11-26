@@ -43,7 +43,7 @@ function DuelNotFound() {
     >
       <meta name="robots" content="noindex" />
       <h1 className="text-3xl font-bold">{m.duel_not_found_title()}</h1>
-      <p className="text-muted-foreground">{m.duel_not_found_description()}</p>
+      <p className="font-mono text-muted-foreground">{m.duel_not_found_description()}</p>
       <Link to="/{-$lang}/vs" params={{ lang: getLangParam() }} className={buttonVariants()}>
         {m.duel_pick_players()}
       </Link>

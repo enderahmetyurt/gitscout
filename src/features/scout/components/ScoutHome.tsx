@@ -49,7 +49,9 @@ export function ScoutHome() {
           <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
             {m.home_title()}
           </h1>
-          <p className="max-w-xl text-pretty text-muted-foreground sm:text-lg">{m.home_lead()}</p>
+          <p className="max-w-xl font-mono text-pretty text-muted-foreground sm:text-lg">
+            {m.home_lead()}
+          </p>
           <AddPlayerForm variant="command" />
           <ExamplePlayers players={allPlayers} />
           <HeroProof players={allPlayers} latest={data.latest} lastDayCount={data.lastDayCount} />
