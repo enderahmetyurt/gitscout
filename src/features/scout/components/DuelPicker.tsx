@@ -102,8 +102,10 @@ export function DuelPicker() {
           <div className="duel-stage-grid absolute inset-0" />
         </div>
 
-        {/* Ortadaki sütun eski VS + boşluk kadar geniş: kartlar geçişten önce yine aynı yerde durur. */}
-        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-3 lg:grid-cols-[20rem_8rem_20rem] lg:justify-center lg:gap-4">
+        {/* Ortadaki sütun eski VS + boşluk kadar geniş: kartlar geçişten önce yine aynı yerde durur.
+            Dar ekranda orta sütun yok: kılıcın yeri kartlara ve seçicilere kalır, düzen kapışma sayfasındaki
+            iki sütunla aynıdır. */}
+        <div className="grid grid-cols-2 items-start gap-3 lg:grid-cols-[20rem_8rem_20rem] lg:justify-center lg:gap-4">
           <DuelSlot
             id={LEFT_ID}
             side="left"
@@ -112,7 +114,7 @@ export function DuelPicker() {
             players={data.players.filter((player) => player.login !== right?.login)}
             onChange={(player) => choose("left", player)}
           />
-          <div className="flex flex-col items-center gap-6 self-center lg:mt-12">
+          <div className="flex flex-col items-center gap-6 self-center max-lg:hidden lg:mt-12">
             <VsMark isOpening={isOpening} />
             <StatLadder left={left} right={right} />
             <Button
@@ -121,7 +123,6 @@ export function DuelPicker() {
               size="sm"
               onClick={pickRandom}
               disabled={isOpening}
-              className="max-lg:hidden"
             >
               <Dices aria-hidden />
               {m.duel_random()}
@@ -183,10 +184,10 @@ function randomPlayer(players: ListPlayer[], except: ListPlayer | null): ListPla
 /** Ortadaki çapraz kılıçlar: kapışmanın işareti. Açılırken nabız gibi atar. */
 function VsMark({ isOpening }: { isOpening: boolean }) {
   return (
-    <span aria-hidden className="flex size-12 items-center justify-center lg:size-20">
+    <span aria-hidden className="flex size-20 items-center justify-center">
       <Swords
         strokeWidth={1.75}
-        className={cn("size-9 text-foreground lg:size-14", isOpening && "animate-pulse")}
+        className={cn("size-14 text-foreground", isOpening && "animate-pulse")}
       />
     </span>
   )

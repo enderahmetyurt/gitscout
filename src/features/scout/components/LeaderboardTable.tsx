@@ -72,6 +72,15 @@ const columns = helper.columns([
     sortFn: "text",
     cell: ({ row }) => <PlayerCell player={row.original} />
   }),
+  // İsmin hemen yanında: dar ekranda tablo yana kaymadan genel puan görünsün.
+  // Tam sayı puan gösterilir ama ondalıklı puana göre sıralanır; eşitlikte alfabe değil puan karar verir.
+  helper.accessor((player) => player.ovrExact, {
+    id: "ovr",
+    header: () => m.col_ovr(),
+    sortDescFirst: true,
+    meta: { align: "center", label: () => m.col_ovr_label() },
+    cell: ({ row }) => <RarityChip ovr={row.original.ovr} rarity={row.original.rarity} />
+  }),
   helper.accessor("position", {
     id: "position",
     header: () => m.col_position(),
@@ -85,14 +94,6 @@ const columns = helper.columns([
         {info.getValue()}
       </span>
     )
-  }),
-  // Tam sayı puan gösterilir ama ondalıklı puana göre sıralanır; eşitlikte alfabe değil puan karar verir.
-  helper.accessor((player) => player.ovrExact, {
-    id: "ovr",
-    header: () => m.col_ovr(),
-    sortDescFirst: true,
-    meta: { align: "center", label: () => m.col_ovr_label() },
-    cell: ({ row }) => <RarityChip ovr={row.original.ovr} rarity={row.original.rarity} />
   }),
   ...statColumns
 ])
@@ -326,7 +327,8 @@ export function LeaderboardTable({ players, rankPool, limit }: LeaderboardTableP
                         // Uzun adlar kesilir; tablo yana kaydığında isim sütunu tüm alanı yutmaz. Linkin tıklama
                         // alanı hücreye bağlı: eski WebKit `tr` üzerindeki `relative`i yok sayar, satıra bağlı alan
                         // sayfaya taşıp ana sayfadaki input'u son satırın linkiyle kaplıyordu.
-                        cell.column.id === "name" && "relative max-w-64"
+                        // Dar ekranda isim sütunu daha dar: #, isim ve puan ilk bakışta birlikte sığar.
+                        cell.column.id === "name" && "relative max-w-44 sm:max-w-64"
                       )}
                     >
                       <table.FlexRender cell={cell} />
