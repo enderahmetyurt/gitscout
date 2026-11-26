@@ -6,7 +6,7 @@ import type { Position, Rarity, StatKey } from "@/features/scout/types/player.ty
  * Veritabanındaki puan özetlerinin sürümü. Bu dosyadaki bir formül ya da eşik değişince bir artırılır;
  * eski sürümdeki özetler ilk okumada ham veriden yeniden hesaplanır.
  */
-export const SCORE_VERSION = 4
+export const SCORE_VERSION = 5
 
 /**
  * Saatte en fazla bu kadar yeni oyuncu eklenir: GitHub token limitini ve veritabanını korur.
