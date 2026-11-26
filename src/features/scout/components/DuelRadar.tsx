@@ -1,12 +1,7 @@
 import { cn } from "cn"
 import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart } from "recharts"
 
-import {
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip
-} from "@/components/ui/chart"
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
 import type { ChartConfig } from "@/components/ui/chart"
 import { RADAR_ORDER } from "@/features/scout/constants/scoring.constants"
 import { statLabel } from "@/features/scout/helpers/player-text"
@@ -31,16 +26,29 @@ export function DuelRadar({ left, right }: DuelRadarProps) {
   }))
 
   return (
-    <section className="surface flex flex-col px-0 pt-2 pb-3" aria-label={m.duel_radar_label()}>
+    <section className="surface flex flex-col gap-1 px-0 py-4" aria-label={m.duel_radar_label()}>
+      {/* Lejant grafiğin dışında, normal akışta: Recharts'ın mutlak konumlu lejantı dar ekranda
+          grafiğin üstüne ya da sonraki bölüme taşabiliyordu. */}
+      <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 px-4 text-xs">
+        {[
+          { name: left.name, color: "bg-chart-home" },
+          { name: right.name, color: "bg-chart-away" }
+        ].map((item) => (
+          <li key={item.color} className="flex min-w-0 items-center gap-1.5">
+            <span aria-hidden className={cn("size-2 shrink-0 rounded-sm", item.color)} />
+            <span className="truncate">{item.name}</span>
+          </li>
+        ))}
+      </ul>
       <ChartContainer
         config={chartConfig}
-        className="mx-auto aspect-square max-h-[300px] w-full"
+        className="mx-auto aspect-auto h-[220px] w-full max-w-[360px] sm:h-[260px]"
         aria-label={m.duel_radar_label()}
       >
         <RadarChart
           data={data}
-          outerRadius="68%"
-          margin={{ top: 8, right: 44, bottom: 8, left: 44 }}
+          outerRadius="85%"
+          margin={{ top: 20, right: 40, bottom: 20, left: 40 }}
         >
           <ChartTooltip
             cursor={false}
@@ -75,7 +83,6 @@ export function DuelRadar({ left, right }: DuelRadarProps) {
             fillOpacity={0.22}
             dot={{ r: 3, fillOpacity: 1 }}
           />
-          <ChartLegend content={<ChartLegendContent />} />
         </RadarChart>
       </ChartContainer>
     </section>
