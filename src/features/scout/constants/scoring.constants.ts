@@ -16,6 +16,12 @@ export const SCORE_VERSION = 5
 export const NEW_PLAYERS_PER_HOUR = 300
 
 /**
+ * Bulunamayan kullanıcı adı bu süre boyunca GitHub'a yeniden sorulmaz. Kısa tutulur: az önce açılan ya da
+ * adı değişen bir hesap en geç bu süre sonra eklenebilir.
+ */
+export const NOT_FOUND_TTL_MS = 10 * 60_000
+
+/**
  * Otomatik yenileme: verisi `maxAgeDays` günden eski kartlar en eskiden başlayarak yenilenir. Her çalışma
  * `timeBudgetMs` dolana ya da `maxPerRun` karta ulaşana kadar sürer; böylece kart sayısı arttıkça çalışma
  * başına yenilenen kart da artar, eskimiş kart yoksa hiç iş yapılmaz. Sabit 3 kartla saatlik çalışma haftada

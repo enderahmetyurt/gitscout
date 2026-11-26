@@ -6,6 +6,8 @@ import { getCurrentViewer } from "@/lib/auth.functions"
 
 import { fetchPlayerFacts } from "@/features/scout/api/fetch-player-facts.api"
 import { GithubError } from "@/features/scout/api/get-github-data.api"
+import { createLookupGuard } from "@/features/scout/api/lookup-guard"
+import type { LookupFailure } from "@/features/scout/api/lookup-guard"
 import {
   countRecentPlayers,
   getLatestAdditions,
@@ -19,7 +21,10 @@ import {
   updateAccountProfileDetails
 } from "@/features/scout/api/player-store"
 import { COUNTRIES } from "@/features/scout/constants/player-country.constants"
-import { NEW_PLAYERS_PER_HOUR } from "@/features/scout/constants/scoring.constants"
+import {
+  NEW_PLAYERS_PER_HOUR,
+  NOT_FOUND_TTL_MS
+} from "@/features/scout/constants/scoring.constants"
 import { computeBenchmarks } from "@/features/scout/helpers/benchmarks"
 import { ageOn } from "@/features/scout/helpers/birthday"
 import { isGithubStar } from "@/features/scout/helpers/github-star"
@@ -181,8 +186,30 @@ async function fetchFacts(login: string, onStage?: (stage: ScoutingStage) => voi
 }
 
 /**
+ * Sınır dolduğunda ya da token yokken GitHub'a gidilmez, kota harcanmaz. Diğer hatalarda sorgu GitHub'a
+ * ulaşmıştır; bulunamayan ad ayrıca hatırlanır.
+ */
+function classifyLookupFailure(error: unknown): LookupFailure {
+  if (!(error instanceof Error)) return "costly"
+  // Saatlik sınırın kendi hatası: nedeni yok, GitHub'a gidilmedi.
+  if (error.message === "github:rate-limit" && error.cause === undefined) return "free"
+  const { cause } = error
+  if (!(cause instanceof GithubError)) return "costly"
+  if (cause.kind === "not-found") return "not-found"
+  if (cause.kind === "rate-limit" || cause.kind === "missing-token") return "free"
+  return "costly"
+}
+
+const lookups = createLookupGuard({
+  windowMs: HOUR_MS,
+  notFoundTtlMs: NOT_FOUND_TTL_MS,
+  classify: classifyLookupFailure
+})
+
+/**
  * Oyuncu kayıtlıysa GitHub'a gitmeden döner. Değilse bir kez çekilip kaydedilir;
- * kayıtlı veri sonradan değiştirilemez.
+ * kayıtlı veri sonradan değiştirilemez. Saatlik sınıra başarısız sorgular da sayılır: yoksa var olmayan
+ * adlarla GitHub kotası sınırsızca harcanabilir ve yeni kartlar da yenileme de durur.
  */
 async function createPlayer(
   username: string,
@@ -191,18 +218,21 @@ async function createPlayer(
   const existing = await getScoredPlayer(username)
   if (existing) return existing
 
-  if ((await countRecentPlayers()) >= NEW_PLAYERS_PER_HOUR) {
-    throw new Error("github:rate-limit")
-  }
+  // Aynı ad için süren sorguya katılan istek aşama bildirimi almaz; yalnızca sonucu bekler.
+  return lookups.run(username.toLowerCase(), async () => {
+    if ((await countRecentPlayers()) + lookups.recentFailures() >= NEW_PLAYERS_PER_HOUR) {
+      throw new Error("github:rate-limit")
+    }
 
-  const facts = await fetchFacts(username, onStage)
-  const player = await insertPlayer({
-    login: facts.login,
-    fetchedAt: new Date().toISOString(),
-    facts
+    const facts = await fetchFacts(username, onStage)
+    const player = await insertPlayer({
+      login: facts.login,
+      fetchedAt: new Date().toISOString(),
+      facts
+    })
+    listCache = null
+    return player
   })
-  listCache = null
-  return player
 }
 
 export const addPlayer = createServerFn({ method: "POST" })
