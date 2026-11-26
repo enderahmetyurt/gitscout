@@ -141,7 +141,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 
   --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
-  --font-sans: var(--font-mono);
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Space Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -242,7 +242,9 @@
 
 @layer components {
   /* Dış kasa: nadirlik metalinin düz rengi, ince bir iç çizgiyle. */
+  /* Kartlar ve puan rozetleri sitenin kimliği olan mono yazıyla kalır; gövde metni Geist. */
   .scout-card {
+    font-family: var(--font-mono);
     color: var(--card-ink);
     background-color: var(--frame-2);
     box-shadow:
@@ -355,6 +357,16 @@
   .rarity-dot {
     background-image: linear-gradient(135deg, var(--bg-1), var(--bg-2));
     box-shadow: inset 0 0 0 1px var(--frame-1);
+  }
+
+  /* Tablodaki ilk üç sıranın madalyası: kart metali, koyu çerçeve ve hafif bir ışıltı. */
+  .rank-medal {
+    color: var(--card-ink);
+    background-image: linear-gradient(135deg, var(--frame-1), var(--bg-2) 60%, var(--frame-2));
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--frame-2) 70%, transparent),
+      0 0 0 2px color-mix(in oklab, var(--frame-1) 18%, transparent),
+      0 4px 12px -4px color-mix(in oklab, var(--frame-2) 60%, transparent);
   }
 
   /*
@@ -569,6 +581,11 @@
   .dark .role-tint {
     --role-l: 0.82;
     --role-c: 0.13;
+  }
+  /* Açık metal zeminli kartlarda (Gold, Silver, Bronze) koyu tema tonu solar; açık tema tonuna döner. */
+  .scout-card[data-rarity]:not([data-rarity="icon"]) .role-tint {
+    --role-l: 0.4;
+    --role-c: 0.16;
   }
 
   .role-fill {

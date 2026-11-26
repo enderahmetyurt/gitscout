@@ -30,7 +30,7 @@ export function GithubStarButton() {
       {/* Sayı gelmeden de yer ayrılır ("00" görünmez yer tutucu); gelince başlık kaymaz. */}
       <span
         aria-hidden
-        className={cn("min-w-[2ch] tabular-nums max-sm:hidden", !hasStars && "invisible")}
+        className={cn("min-w-[2ch] font-mono tabular-nums max-sm:hidden", !hasStars && "invisible")}
       >
         {hasStars ? stars.toLocaleString(getLocale()) : "00"}
       </span>

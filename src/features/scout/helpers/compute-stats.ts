@@ -101,21 +101,33 @@ export function checkSuccessRate(facts: PlayerFacts): { rate: number; total: num
   return { rate: total === 0 ? 0 : success / total, total }
 }
 
-type OrgCredit = { repo: string; stars: number; forks: number; share: number; credit: number }
+/** Son bir yılın ve bütün geçmişin commit payından büyüğü; geçmişi olmayan eski kayıtlarda yıllık pay. */
+export function orgCommitShare(repo: {
+  yearCommits: number
+  userYearCommits: number
+  allCommits?: number
+  userAllCommits?: number
+}): number {
+  const ratio = (mine: number, total: number) => (total > 0 ? clamp01(mine / total) : 0)
+  return Math.max(
+    ratio(repo.userYearCommits, repo.yearCommits),
+    ratio(repo.userAllCommits ?? 0, repo.allCommits ?? 0)
+  )
+}
 
-/** Organizasyon repolarında son bir yılın commit payı; payı yüksek olan maintainer yıldızların tamamını alır. */
+type OrgCredit = { repo: string; stars: number; forks: number; share: number }
+
+/** Organizasyon repolarında yıldızların commit payı kadarı: son bir yılın ve bütün geçmişin payından büyüğü. */
 function orgCredits(facts: PlayerFacts): OrgCredit[] {
   return facts.activeRepos
     .filter((repo) => repo.isOrg && repo.yearCommits > 0 && repo.userYearCommits > 0)
     .map((repo) => {
-      const share = Math.min(1, repo.userYearCommits / repo.yearCommits)
-      const credit = clamp01(share / IMP.orgFullShare)
+      const share = orgCommitShare(repo)
       return {
         repo: repo.nameWithOwner,
-        stars: repo.stars * credit,
-        forks: repo.forks * credit,
-        share,
-        credit
+        stars: repo.stars * share,
+        forks: repo.forks * share,
+        share
       }
     })
     .sort((a, b) => b.stars - a.stars)

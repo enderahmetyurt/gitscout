@@ -29,7 +29,7 @@ export function RarityChip({ ovr, rarity, size = "md", label }: RarityChipProps)
       {/* Liste öğeleri vurgulanınca bütün alt öğelerin rengini değiştirir; puan kart renginde kalmalı. */}
       <span
         className={cn(
-          "scout-card-inner flex items-center justify-center font-bold text-(--card-ink)! tabular-nums",
+          "scout-card-inner flex items-center justify-center font-mono font-bold text-(--card-ink)! tabular-nums",
           size === "md"
             ? "h-9 min-w-7 rounded-[5px] text-sm"
             : "h-7 min-w-5.5 rounded-[3px] text-[11px]",

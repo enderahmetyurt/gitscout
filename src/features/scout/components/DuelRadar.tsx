@@ -108,7 +108,7 @@ function DuelTooltip({ row, left, right }: { row: Row; left: string; right: stri
           <li key={line.name} className="flex items-center gap-2">
             <span aria-hidden className={cn("size-2 shrink-0 rounded-sm", line.color)} />
             <span className="min-w-0 flex-1 truncate text-muted-foreground">{line.name}</span>
-            <span className="ps-4 font-semibold tabular-nums">{line.value}</span>
+            <span className="ps-4 font-mono font-semibold tabular-nums">{line.value}</span>
           </li>
         ))}
       </ul>

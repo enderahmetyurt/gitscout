@@ -32,7 +32,9 @@ export function YearSummary({ year }: YearSummaryProps) {
         {items.map((item) => (
           <div key={item.label} className="flex flex-col gap-0.5">
             <dt className="text-xs text-muted-foreground">{item.label}</dt>
-            <dd className="text-2xl leading-tight font-semibold tabular-nums">{item.value}</dd>
+            <dd className="font-mono text-2xl leading-tight font-semibold tabular-nums">
+              {item.value}
+            </dd>
           </div>
         ))}
       </dl>

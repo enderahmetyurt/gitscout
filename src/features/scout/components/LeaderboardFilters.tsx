@@ -14,10 +14,8 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { isGithubStar } from "@/features/scout/helpers/github-star"
-import { rarityLabel } from "@/features/scout/helpers/player-text"
-import { rarityRange } from "@/features/scout/helpers/rarity-range"
 import { useLeaderboardSearch } from "@/features/scout/hooks/use-leaderboard-search"
-import { POSITIONS, RARITIES } from "@/features/scout/schemas/leaderboard-search.schema"
+import { POSITIONS } from "@/features/scout/schemas/leaderboard-search.schema"
 import type { ListPlayer } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
 
@@ -29,15 +27,14 @@ type LeaderboardFiltersProps = {
 const ALL = "all"
 const STAR = "star"
 
-/** Mevki, kart ve GitHub Star filtreleri; yalnızca tabloda gerçekten bulunan seçenekler listelenir. */
+/** Mevki ve GitHub Star filtreleri (kart türü ayrı çiplerde); yalnızca tabloda gerçekten bulunan seçenekler listelenir. */
 export function LeaderboardFilters({ players }: LeaderboardFiltersProps) {
   const { filters, setFilters } = useLeaderboardSearch()
   const positions = POSITIONS.filter((position) =>
     players.some((player) => player.position === position)
   )
-  const rarities = RARITIES.filter((rarity) => players.some((player) => player.rarity === rarity))
   const hasStars = players.some((player) => isGithubStar(player.login))
-  const activeCount = filters.positions.length + filters.rarities.length + (filters.star ? 1 : 0)
+  const activeCount = filters.positions.length + (filters.star ? 1 : 0)
 
   return (
     <DropdownMenu>
@@ -51,10 +48,10 @@ export function LeaderboardFilters({ players }: LeaderboardFiltersProps) {
           </span>
         ) : null}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-44 overscroll-contain">
+      <DropdownMenuContent align="start" className="w-44 overscroll-contain">
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>{m.filter_position()}</DropdownMenuSubTrigger>
-          <DropdownMenuSubContent side="left" className="w-48">
+          <DropdownMenuSubContent className="w-48">
             <DropdownMenuRadioGroup
               value={filters.positions[0] ?? ALL}
               onValueChange={(value) => {
@@ -76,37 +73,10 @@ export function LeaderboardFilters({ players }: LeaderboardFiltersProps) {
             </DropdownMenuRadioGroup>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>{m.filter_card()}</DropdownMenuSubTrigger>
-          <DropdownMenuSubContent side="left" className="w-48">
-            <DropdownMenuRadioGroup
-              value={filters.rarities[0] ?? ALL}
-              onValueChange={(value) => {
-                const rarity = rarities.find((item) => item === value)
-                setFilters({ rarities: rarity ? [rarity] : [] })
-              }}
-            >
-              <DropdownMenuRadioItem value={ALL}>{m.filter_all_cards()}</DropdownMenuRadioItem>
-              {rarities.map((rarity) => (
-                <DropdownMenuRadioItem key={rarity} value={rarity}>
-                  <span
-                    aria-hidden
-                    data-rarity={rarity}
-                    className="rarity-dot size-2.5 rounded-full"
-                  />
-                  {rarityLabel(rarity)}
-                  <span className="ms-auto ps-3 text-xs text-muted-foreground">
-                    {rarityRange(rarity)}
-                  </span>
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
         {hasStars ? (
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>{m.github_star()}</DropdownMenuSubTrigger>
-            <DropdownMenuSubContent side="left" className="w-44">
+            <DropdownMenuSubContent className="w-44">
               <DropdownMenuRadioGroup
                 value={filters.star ? STAR : ALL}
                 onValueChange={(value) => setFilters({ star: value === STAR })}
@@ -123,9 +93,7 @@ export function LeaderboardFilters({ players }: LeaderboardFiltersProps) {
         {activeCount > 0 ? (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => setFilters({ positions: [], rarities: [], star: false })}
-            >
+            <DropdownMenuItem onClick={() => setFilters({ positions: [], star: false })}>
               {m.filter_clear()}
             </DropdownMenuItem>
           </>

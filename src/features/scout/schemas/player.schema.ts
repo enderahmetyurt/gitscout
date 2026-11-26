@@ -64,6 +64,8 @@ const playerFactsSchema = z.object({
       languages: z.array(z.object({ name: z.string(), size: z.number() })),
       yearCommits: z.number(),
       userYearCommits: z.number(),
+      allCommits: z.number().optional(),
+      userAllCommits: z.number().optional(),
       hasTests: z.boolean(),
       hasCi: z.boolean(),
       checkStates: z.array(checkState),

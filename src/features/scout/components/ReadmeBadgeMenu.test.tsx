@@ -9,7 +9,7 @@ import { ReadmeBadgeMenu } from "@/features/scout/components/ReadmeBadgeMenu"
 async function openMenu() {
   const user = userEvent.setup()
   render(<ReadmeBadgeMenu login="octocat" ovr={82} rarity="gold" />)
-  await user.click(screen.getByRole("button", { name: /readme badge/i }))
+  await user.click(screen.getByRole("button", { name: /add to readme/i }))
   return user
 }
 

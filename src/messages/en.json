@@ -26,7 +26,16 @@
   "username_invalid": "Not a valid GitHub username",
   "home_title": "GitHub's scout report",
   "home_lead": "Type a GitHub username, get a collectible card and see where you rank on the leaderboard.",
-  "home_stats_label": "Stats",
+  "home_try": "Try:",
+  "home_proof_total": {
+    "declarations": ["input count", "local countPlural = count: plural"],
+    "selectors": ["countPlural"],
+    "match": {
+      "countPlural=one": "{count} card created",
+      "countPlural=other": "{count} cards created"
+    }
+  },
+  "home_proof_day": "{count} in the last 24 hours",
   "home_top": "Top {count}",
   "home_top_world": "World",
   "home_top_tr": "Turkey",
@@ -34,12 +43,12 @@
   "home_full_table": "Full table ({count})",
   "home_full_table_tr": "Turkish developers ({count})",
   "recent_title": "Recently added",
-  "recent_last_hour": {
+  "recent_last_day": {
     "declarations": ["input count", "local countPlural = count: plural"],
     "selectors": ["countPlural"],
     "match": {
-      "countPlural=one": "{count} developer joined in the last hour",
-      "countPlural=other": "{count} developers joined in the last hour"
+      "countPlural=one": "{count} developer joined in the last 24 hours",
+      "countPlural=other": "{count} developers joined in the last 24 hours"
     }
   },
   "just_now": "just now",
@@ -50,12 +59,13 @@
   "cta_lead": "Type your GitHub username and see where you land on the leaderboard.",
   "add_label": "GitHub username",
   "add_placeholder": "GitHub username",
+  "add_placeholder_handle": "username",
   "add_submit": "Show my card",
   "add_preparing": "Preparing",
   "add_step_profile": "Reading your profile",
   "add_step_repos": "Scanning your repos",
   "add_step_activity": "Crunching your stats",
-  "add_step_score": "Printing your card",
+  "add_step_score": "Creating your card",
   "empty_title": "The list is empty",
   "empty_description": "Be the first to get a card.",
   "leaderboard_title": "Leaderboard",
@@ -248,7 +258,7 @@
   "share": "Share",
   "share_text": "My Gitscout card: {ovr} overall, {position}. \"{title}\"",
   "duel_button": "Duel",
-  "readme_badge": "README badge",
+  "readme_badge": "Add to README",
   "readme_badge_preview": "Gitscout badge preview for {username}",
   "readme_copy_prompt": "Copy AI prompt",
   "readme_copy_markdown": "Copy Markdown",
@@ -335,7 +345,7 @@
   "about_faq_bots_q": "Do automated commits inflate the rating?",
   "about_faq_bots_a": "No. A single day counts for at most {daily} contributions. Commits beyond {repo} a year in one repo are treated as automation and deducted.",
   "about_faq_org_q": "How are organization repos counted?",
-  "about_faq_org_a": "Stars and forks go to Impact in proportion to your share of the last year's commits; at {share} or more of the commits, they count in full. PRs to an organization you maintain count at {weight} weight in Reputation.",
+  "about_faq_org_a": "Stars and forks on your own repos count in full. On organization repos, Impact gets your share of the commits: the larger of your share over the last year and over the repo's whole history. That way both the person who started a project and the one running it today get their due. Commits made with an email that isn't linked to your account aren't credited to you by GitHub. PRs to organizations where your commit share is {share} or more count at {weight} weight in Reputation.",
   "about_faq_role_q": "How are my role and badges decided?",
   "about_faq_role_a": "Your role comes from the languages in your repos: the biggest share wins, and if both Frontend and Backend are at {share} or more, you're Full Stack. Badges reward things like long streaks or lots of reviews and don't change your rating.",
   "about_privacy_title": "Data and privacy",
@@ -352,6 +362,7 @@
   "skip_to_content": "Skip to content",
   "filter_all_positions": "All roles",
   "filter_all_cards": "All cards",
+  "filter_all_cards_short": "All",
   "filter_all_people": "Everyone",
   "col_ovr": "OVR",
   "col_ovr_label": "Overall",
@@ -398,5 +409,21 @@
   "github_star_word": "star",
   "rank_overall": "Overall",
   "badges_show_all": "Show all (+{count} more)",
-  "badges_show_less": "Show less"
+  "badges_show_less": "Show less",
+  "readme_badge_hint": "Shows your rating and card tier on your profile README, and updates on its own whenever your card refreshes.",
+  "duel_presets_title": "Ready-made duels",
+  "duel_presets_lead": "Two developers from the same field and the same card tier. Click one to start the duel.",
+  "duel_presets_shuffle": "Shuffle",
+  "duel_presets_open": "Open the {left} vs {right} duel",
+  "about_badge_title": "README badge",
+  "about_badge_body": "Once you have your card, the \"Add to README\" button on your card page puts a small badge on your GitHub profile README. It shows your rating and card tier, updates on its own whenever your card refreshes, and links straight to your Gitscout card. Copy the ready-made Markdown, or grab a prompt and let your AI agent do it.",
+  "about_badge_example": "Sample Gitscout badge: Gold card, rating 84",
+  "footer_tagline": "Turns a public GitHub profile into a collectible card.",
+  "footer_made_by": "Made by",
+  "duel_presets_switch_label": "Ready-made duel list",
+  "leaderboard_show_more": "Show {count} more",
+  "leaderboard_shown": "Showing {shown} of {total} developers",
+  "leaderboard_lead_intro": "{total} developers rated from public GitHub data:",
+  "leaderboard_lead_cards": "cards.",
+  "leaderboard_lead_refresh": "Ratings refresh every {days} days."
 }

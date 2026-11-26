@@ -24,6 +24,7 @@ import {
   STAT_ORDER,
   STAT_WEIGHTS
 } from "@/features/scout/constants/scoring.constants"
+import { playerBadgeSvg, svgDataUri } from "@/features/scout/helpers/player-badge"
 import { number, percent, statLabel } from "@/features/scout/helpers/player-text"
 import type { StatKey } from "@/features/scout/types/player.types"
 import * as m from "@/paraglide/messages.js"
@@ -58,7 +59,7 @@ function faqItems() {
       id: "org",
       question: m.about_faq_org_q(),
       answer: m.about_faq_org_a({
-        share: percent(IMP.orgFullShare * 100),
+        share: percent(IMP.maintainerShare * 100),
         weight: percent(REP.ownOrgPrWeight * 100)
       })
     },
@@ -81,7 +82,8 @@ function Section({ id, title, children }: { id: string; title: string; children:
   )
 }
 
-const bodyClass = "text-sm text-pretty text-muted-foreground"
+// Uzun düzyazı Geist'le, bir boy büyük ve gri yerine yumuşatılmış ön plan renginde: okunabilirlik için.
+const bodyClass = "max-w-prose text-base/7 text-pretty text-foreground/80"
 
 export function AboutPage() {
   const hash = useLocation({ select: (location) => location.hash })
@@ -120,7 +122,7 @@ export function AboutPage() {
               className="grid grid-cols-[1fr_auto] items-baseline gap-x-3 gap-y-0.5 px-4 py-2.5 text-sm sm:grid-cols-[6.5rem_1fr_auto]"
             >
               <dt className="order-1 font-medium">{statLabel(key)}</dt>
-              <dd className="order-2 text-muted-foreground tabular-nums sm:order-3">
+              <dd className="order-2 font-mono text-muted-foreground tabular-nums sm:order-3">
                 {percent(STAT_WEIGHTS[key] * 100)}
               </dd>
               <dd className="order-3 col-span-2 text-pretty text-muted-foreground sm:order-2 sm:col-span-1">
@@ -140,12 +142,22 @@ export function AboutPage() {
           {faqItems().map((item) => (
             <AccordionItem key={item.id} value={item.id}>
               <AccordionTrigger>{item.question}</AccordionTrigger>
-              <AccordionContent className="text-pretty text-muted-foreground">
+              <AccordionContent className="text-base/7 text-pretty text-foreground/80">
                 {item.answer}
               </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
+      </Section>
+
+      <Section id="about-badge" title={m.about_badge_title()}>
+        <p className={bodyClass}>{m.about_badge_body()}</p>
+        <img
+          src={svgDataUri(playerBadgeSvg({ ovr: 84, rarity: "gold" }))}
+          alt={m.about_badge_example()}
+          height={20}
+          className="h-5 w-auto self-start"
+        />
       </Section>
 
       <Section id="about-support" title={m.about_support_title()}>

@@ -65,12 +65,15 @@ export const ACT = {
   repoYearCap: 5_000
 }
 
-/** Kendi repoları + katkı payı oranında organizasyon repoları. */
+/**
+ * Kendi repoları tam, organizasyon repoları commit payı kadar. Pay, son bir yılın ve bütün geçmişin
+ * payından büyüğüdür: projeyi kuran da bugün yürüten de payını alır.
+ */
 export const IMP = {
   stars: { max: 75, fullAt: 500_000 },
   forks: { max: 25, fullAt: 100_000 },
-  /** Org reposunda son bir yılın commit'lerinin bu kadarı kullanıcınınsa yıldızların tamamı yazılır. */
-  orgFullShare: 0.25
+  /** Bu commit payına ulaşılan organizasyon, Saygınlık'ta maintainer olunan organizasyon sayılır. */
+  maintainerShare: 0.25
 }
 
 export const COM = {

@@ -9,6 +9,7 @@ import {
 } from "@/features/scout/api/get-github-data.api"
 import { COMMIT_SAMPLE_SIZE, CON, IMP } from "@/features/scout/constants/scoring.constants"
 import { buildFacts, pickActiveRepos } from "@/features/scout/helpers/build-facts"
+import { orgCommitShare } from "@/features/scout/helpers/compute-stats"
 import type { ActiveRepoNode } from "@/features/scout/schemas/github.schema"
 import type { PlayerFacts } from "@/features/scout/types/player.types"
 
@@ -68,17 +69,21 @@ export async function fetchPlayerFacts(login: string, now = new Date()): Promise
 }
 
 /**
- * Son bir yılın commit'lerinde yeterli payı olan organizasyonlar: Etki'de yıldızları zaten kullanıcıya
- * yazılan, yani kullanıcının maintainer olduğu yerler.
+ * Yeterli commit payı olan organizasyonlar: Etki'de yıldızların büyük kısmı zaten kullanıcıya
+ * yazılan, yani kullanıcının maintainer olduğu yerler. Pay, Etki'deki kuralla aynı hesaplanır.
  */
 function maintainedOrgs(nodes: Record<string, ActiveRepoNode>): string[] {
   const orgs = new Set<string>()
   for (const node of Object.values(nodes)) {
     if (node?.owner.__typename !== "Organization") continue
     const target = node.defaultBranchRef?.target
-    const total = target?.yearTotal.totalCount ?? 0
-    const mine = target?.mineYear.totalCount ?? 0
-    if (total > 0 && mine / total >= IMP.orgFullShare) {
+    const share = orgCommitShare({
+      yearCommits: target?.yearTotal.totalCount ?? 0,
+      userYearCommits: target?.mineYear.totalCount ?? 0,
+      allCommits: target?.allTotal.totalCount ?? 0,
+      userAllCommits: target?.mineAll.totalCount ?? 0
+    })
+    if (share >= IMP.maintainerShare) {
       const [owner] = node.nameWithOwner.split("/")
       if (owner) orgs.add(owner)
     }

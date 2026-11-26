@@ -290,7 +290,7 @@ function Scoreboard({ duel, winner }: { duel: Duel; winner: ListPlayer | null })
       <p className="sr-only">{m.duel_score({ left: duel.score.left, right: duel.score.right })}</p>
       <p
         aria-hidden
-        className="flex font-display text-6xl leading-none font-semibold tracking-tight tabular-nums"
+        className="flex font-mono text-6xl leading-none font-semibold tracking-tight tabular-nums"
       >
         <span key={`left-${left}`} className="score-tick">
           {left}
@@ -342,7 +342,7 @@ function RoundValue({ value, wins, align }: { value: number; wins: boolean; alig
   return (
     <span
       className={cn(
-        "text-base",
+        "font-mono text-base",
         align === "left" ? "text-left" : "text-right",
         wins ? "font-semibold" : "opacity-60",
         STAT_TIER_TEXT[statTier(value)]
@@ -413,7 +413,7 @@ function Receipts({ left, right }: { left: ListPlayer; right: ListPlayer }) {
             <tr key={row.label}>
               <td
                 className={cn(
-                  "w-1/4 px-4 py-2",
+                  "w-1/4 px-4 py-2 font-mono",
                   row.left > row.right ? "font-semibold" : "text-muted-foreground"
                 )}
               >
@@ -427,7 +427,7 @@ function Receipts({ left, right }: { left: ListPlayer; right: ListPlayer }) {
               </th>
               <td
                 className={cn(
-                  "w-1/4 px-4 py-2 text-right",
+                  "w-1/4 px-4 py-2 text-right font-mono",
                   row.right > row.left ? "font-semibold" : "text-muted-foreground"
                 )}
               >

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 
 import { useNavigate } from "@tanstack/react-router"
-import { LoaderCircle } from "lucide-react"
+import { CornerDownLeft, LoaderCircle } from "lucide-react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { cn } from "cn"
 import { Controller, useForm } from "react-hook-form"
@@ -47,9 +47,15 @@ type AddPlayerFormProps = {
   defaultUsername?: string
   /** Dar kutularda: kısa buton, beklerken adımlar yerine tek bir yazı. */
   compact?: boolean
+  /** `command`: ana sayfa hero'su; `github.com/` önekli tek parça çubuk, buton alanın içinde. */
+  variant?: "default" | "command"
 }
 
-export function AddPlayerForm({ defaultUsername = "", compact = false }: AddPlayerFormProps) {
+export function AddPlayerForm({
+  defaultUsername = "",
+  compact = false,
+  variant = "default"
+}: AddPlayerFormProps) {
   const navigate = useNavigate()
   const addPlayer = useAddPlayer()
   const form = useForm<AddPlayerInput>({
@@ -77,6 +83,85 @@ export function AddPlayerForm({ defaultUsername = "", compact = false }: AddPlay
   })
 
   const isSubmitting = form.formState.isSubmitting
+
+  if (variant === "command") {
+    return (
+      <form onSubmit={onSubmit} noValidate className="flex w-full max-w-xl flex-col gap-2">
+        <Controller
+          name="username"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid} className="gap-1.5">
+              <FieldLabel htmlFor={field.name} className="sr-only">
+                {m.add_label()}
+              </FieldLabel>
+              {/* Çubuğun tamamı alan gibi davranır: odak halkası ve hata rengi dış kutuda. */}
+              <div
+                className={cn(
+                  "flex h-14 items-center rounded-xl bg-card py-1.5 ps-4 pe-1.5 ring-1 ring-input transition-shadow",
+                  "focus-within:ring-[3px] focus-within:ring-ring focus-within:ring-offset-0",
+                  fieldState.invalid && "ring-destructive focus-within:ring-destructive/40"
+                )}
+              >
+                {/* Dar ekranda yer açmak için önek gizlenir; placeholder ne yazılacağını söyler. */}
+                <span
+                  aria-hidden
+                  className="hidden font-mono text-[15px] text-muted-foreground sm:inline"
+                >
+                  github.com/
+                </span>
+                <Input
+                  {...field}
+                  id={field.name}
+                  placeholder={m.add_placeholder_handle()}
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  className="h-full rounded-none border-0 bg-transparent px-0 font-mono text-[15px] shadow-none focus-visible:ring-0 dark:bg-transparent"
+                  aria-invalid={fieldState.invalid}
+                  aria-describedby={fieldState.invalid ? `${field.name}-error` : undefined}
+                />
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={isSubmitting}
+                  aria-busy={isSubmitting}
+                  // Bekleme yazıları değişirken buton genişliği oynamasın.
+                  className={cn("ms-2 h-11 shrink-0 rounded-lg px-4", isSubmitting && "sm:w-56")}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <LoaderCircle
+                        aria-hidden
+                        className="animate-spin motion-reduce:animate-none"
+                      />
+                      <ScoutingLabel />
+                    </>
+                  ) : (
+                    <>
+                      {m.add_submit()}
+                      <kbd
+                        aria-hidden
+                        className="hidden size-5 place-items-center rounded-sm bg-primary-foreground/10 sm:grid"
+                      >
+                        <CornerDownLeft className="size-3" />
+                      </kbd>
+                    </>
+                  )}
+                </Button>
+              </div>
+              {fieldState.invalid ? (
+                <FieldError id={`${field.name}-error`} errors={[fieldState.error]} />
+              ) : null}
+            </Field>
+          )}
+        />
+        <p role="alert" className="text-sm text-destructive empty:hidden">
+          {form.formState.errors.root?.server?.message}
+        </p>
+      </form>
+    )
+  }
 
   return (
     <form onSubmit={onSubmit} noValidate className="flex w-full max-w-2xl flex-col gap-2">

@@ -15,13 +15,13 @@ import { getLocale } from "@/paraglide/runtime.js"
 type RecentlyAddedProps = {
   players: ListPlayer[]
   latest: { login: string; addedAt: string }[]
-  lastHourCount: number
+  lastDayCount: number
   /** Göreli zamanların hesaplandığı an; sunucu ile tarayıcı aynı metni üretsin diye veriyle gelir. */
   generatedAt: string
 }
 
 /** Ana sayfada son eklenen kartlar ve sitenin ne kadar güncel olduğu. */
-export function RecentlyAdded({ players, latest, lastHourCount, generatedAt }: RecentlyAddedProps) {
+export function RecentlyAdded({ players, latest, lastDayCount, generatedAt }: RecentlyAddedProps) {
   const locale = getLocale()
   const byLogin = new Map(players.map((player) => [player.login.toLowerCase(), player]))
   const entries = latest.flatMap((entry) => {
@@ -39,7 +39,7 @@ export function RecentlyAdded({ players, latest, lastHourCount, generatedAt }: R
           {m.recent_title()}
         </h2>
         <p className="text-sm text-muted-foreground">
-          {m.recent_last_hour({ count: lastHourCount })}
+          {m.recent_last_day({ count: lastDayCount })}
         </p>
       </div>
       {/* Dar ekranda şerit kendi içinde kayar; geniş ekranda sekiz kart tek satıra sığar. */}
@@ -90,7 +90,9 @@ export function RecentlyAdded({ players, latest, lastHourCount, generatedAt }: R
                   <span className="w-full truncate text-center text-xs font-semibold">
                     {player.name}
                   </span>
-                  <span className="text-lg leading-none font-bold tabular-nums">{player.ovr}</span>
+                  <span className="font-mono text-lg leading-none font-bold tabular-nums">
+                    {player.ovr}
+                  </span>
                 </span>
               </Link>
               <span className="text-center text-[11px] text-muted-foreground">

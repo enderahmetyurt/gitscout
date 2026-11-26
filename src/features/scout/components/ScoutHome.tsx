@@ -7,15 +7,15 @@ import { GithubStarLink } from "@/components/shared/GithubStarLink"
 import { buttonVariants } from "@/components/ui/button"
 import { AddPlayerForm } from "@/features/scout/components/AddPlayerForm"
 import { EmptyLeaderboard } from "@/features/scout/components/EmptyLeaderboard"
+import { ExamplePlayers } from "@/features/scout/components/ExamplePlayers"
 import { FeaturedCard } from "@/features/scout/components/FeaturedCard"
+import { HeroProof } from "@/features/scout/components/HeroProof"
 import { LeaderboardTable } from "@/features/scout/components/LeaderboardTable"
 import { RarityLegend } from "@/features/scout/components/RarityLegend"
 import { RecentlyAdded } from "@/features/scout/components/RecentlyAdded"
 import { TopViewSwitch } from "@/features/scout/components/TopViewSwitch"
 import type { TopView } from "@/features/scout/components/TopViewSwitch"
-import { STAT_ORDER } from "@/features/scout/constants/scoring.constants"
 import { playerCountry } from "@/features/scout/helpers/player-country"
-import { statLabel, statShort } from "@/features/scout/helpers/player-text"
 import { useLeaderboard } from "@/features/scout/hooks/use-leaderboard"
 import * as m from "@/paraglide/messages.js"
 import { getLocale } from "@/paraglide/runtime.js"
@@ -50,22 +50,10 @@ export function ScoutHome() {
             {m.home_title()}
           </h1>
           <p className="max-w-xl text-pretty text-muted-foreground sm:text-lg">{m.home_lead()}</p>
-          <div className="max-w-xl">
-            <AddPlayerForm />
-          </div>
+          <AddPlayerForm variant="command" />
+          <ExamplePlayers players={allPlayers} />
+          <HeroProof players={allPlayers} latest={data.latest} lastDayCount={data.lastDayCount} />
           <GithubStarLink placement="hero" className="self-start" />
-          {/* İki dilde de aynı düzen: kelime uzunluğu değişse de 3×2 ızgara taşmaz. */}
-          <dl
-            className="grid max-w-xl grid-cols-2 gap-x-4 gap-y-1.5 text-sm sm:grid-cols-3"
-            aria-label={m.home_stats_label()}
-          >
-            {STAT_ORDER.map((key) => (
-              <div key={key} className="flex items-baseline gap-1.5">
-                <dt className="text-xs font-semibold tracking-wide">{statShort(key)}</dt>
-                <dd className="text-muted-foreground">{statLabel(key)}</dd>
-              </div>
-            ))}
-          </dl>
         </section>
         {/* Ödül önden görünsün: geniş ekranda vitrin kartı başlığın yanında. */}
         <FeaturedCard
@@ -78,7 +66,7 @@ export function ScoutHome() {
       <RecentlyAdded
         players={allPlayers}
         latest={data.latest}
-        lastHourCount={data.lastHourCount}
+        lastDayCount={data.lastDayCount}
         generatedAt={data.generatedAt}
       />
 

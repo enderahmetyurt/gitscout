@@ -55,7 +55,7 @@ export function CountryFilterMenu({ players }: CountryFilterMenuProps) {
           </>
         )}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="max-h-80 w-auto min-w-56 overscroll-contain">
+      <DropdownMenuContent align="start" className="max-h-80 w-auto min-w-56 overscroll-contain">
         <DropdownMenuGroup>
           <DropdownMenuLabel>{m.filter_country()}</DropdownMenuLabel>
           <DropdownMenuRadioGroup
@@ -93,5 +93,9 @@ export function CountryFilterMenu({ players }: CountryFilterMenuProps) {
 }
 
 function Count({ value }: { value: number }) {
-  return <span className="ms-auto ps-3 text-xs text-muted-foreground tabular-nums">{value}</span>
+  return (
+    <span className="ms-auto ps-3 font-mono text-xs text-muted-foreground tabular-nums">
+      {value}
+    </span>
+  )
 }

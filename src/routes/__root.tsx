@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query"
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanstack/react-router"
-import monoLatin from "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url"
+import sansLatin from "@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url"
+import sansCss from "@fontsource-variable/geist/index.css?url"
 import monoCss from "@fontsource-variable/jetbrains-mono/index.css?url"
 import displayCss from "@fontsource-variable/space-grotesk/index.css?url"
 import { Analytics } from "@vercel/analytics/react"
@@ -36,11 +37,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       // Gövde yazı tipinin Latin dosyası önceden yüklenir ki ilk çizimde yazı kaymasın.
       {
         rel: "preload",
-        href: monoLatin,
+        href: sansLatin,
         as: "font",
         type: "font/woff2",
         crossOrigin: "anonymous"
       },
+      { rel: "stylesheet", href: sansCss },
       { rel: "stylesheet", href: monoCss },
       { rel: "stylesheet", href: displayCss },
       { rel: "icon", href: "/favicon.ico", sizes: "48x48" },

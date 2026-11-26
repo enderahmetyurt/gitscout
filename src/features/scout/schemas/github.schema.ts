@@ -110,6 +110,8 @@ const activeRepoNodeSchema = z
           .object({
             yearTotal: z.object({ totalCount: z.number() }),
             mineYear: z.object({ totalCount: z.number() }),
+            allTotal: z.object({ totalCount: z.number() }),
+            mineAll: z.object({ totalCount: z.number() }),
             checks: z.object({
               nodes: z.array(
                 z.object({ statusCheckRollup: z.object({ state: z.string() }).nullable() })

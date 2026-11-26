@@ -48,14 +48,14 @@ function BenchmarkRow({ item }: { item: Benchmark }) {
   return (
     <li className="grid grid-cols-[1fr_3rem] items-center gap-x-3 gap-y-1.5 text-sm">
       <span className="text-muted-foreground">{LABELS[item.key]()}</span>
-      <span className="text-end font-semibold tabular-nums">{number(item.value)}</span>
+      <span className="text-end font-mono font-semibold tabular-nums">{number(item.value)}</span>
       {/* Görünen kısım çubuk ve yüzde; cümlenin tamamı ekran okuyucu için. */}
       <span aria-hidden className="h-1.5 rounded-full bg-muted">
         {pct === null ? null : (
           <span className="block h-full rounded-full bg-chart-home" style={{ width: `${pct}%` }} />
         )}
       </span>
-      <span aria-hidden className="text-end text-xs text-muted-foreground tabular-nums">
+      <span aria-hidden className="text-end font-mono text-xs text-muted-foreground tabular-nums">
         {pct === null ? "–" : percent(pct)}
       </span>
       <span className="sr-only">{aheadText(pct)}</span>

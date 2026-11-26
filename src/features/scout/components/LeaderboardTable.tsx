@@ -47,7 +47,7 @@ const statColumns = STAT_ORDER.map((key) =>
     id: key,
     header: () => statShort(key),
     sortDescFirst: true,
-    meta: { align: "center", label: () => statLabel(key), wide: true },
+    meta: { align: "center", label: () => statLabel(key) },
     cell: (info) => {
       const value = info.getValue()
       return <span className={cn("font-medium", STAT_TIER_TEXT[statTier(value)])}>{value}</span>
@@ -61,11 +61,7 @@ const columns = helper.columns([
     header: "#",
     enableSorting: false,
     // Veri sunucudan genel puana göre sıralı gelir; sıra numarası tablo nasıl sıralanırsa sıralansın OVR sırasıdır.
-    cell: ({ row }) => (
-      <span className={row.original.rank <= 3 ? "font-semibold text-foreground" : undefined}>
-        {row.original.rank}
-      </span>
-    )
+    cell: ({ row }) => <RankCell rank={row.original.rank} />
   }),
   helper.accessor("name", {
     id: "name",
@@ -77,7 +73,6 @@ const columns = helper.columns([
     id: "position",
     header: () => m.col_position(),
     sortFn: "text",
-    meta: { wide: true },
     cell: (info) => (
       <span
         lang="en"
@@ -99,21 +94,38 @@ const columns = helper.columns([
   ...statColumns
 ])
 
-/** `wide`: dar ekranda gizlenen sütun; telefonda yalnızca sıra, oyuncu ve puan kalır. */
-type ColumnMeta = { align?: "center"; label?: string; wide: boolean }
+type ColumnMeta = { align?: "center"; label?: string }
 
 /** Sütun etiketleri fonksiyon olarak saklanır; okunduğu anda geçerli dilde yazılır. */
 function readMeta(meta: unknown): ColumnMeta {
-  if (typeof meta !== "object" || meta === null) return { wide: false }
+  if (typeof meta !== "object" || meta === null) return {}
   const align = "align" in meta && meta.align === "center" ? "center" : undefined
   const read: unknown = "label" in meta ? meta.label : undefined
   const label = typeof read === "function" ? String(read()) : undefined
-  const wide = "wide" in meta && meta.wide === true
-  return { align, label, wide }
+  return { align, label }
 }
 
 function isSortKey(id: string): id is LeaderboardSearch["sort"] {
   return LEADERBOARD_SORT_KEYS.some((key) => key === id)
+}
+
+/**
+ * İlk üç sıra madalya metaliyle durur: altın, gümüş, bronz. Renk yalnızca sıra rozetinde; satırdaki kart
+ * türü (ör. İkon) aynen kalır, gümüş madalya bir İkon kartı gümüşe çevirmez.
+ */
+const MEDALS = { 1: "gold", 2: "silver", 3: "bronze" } as const
+
+function RankCell({ rank }: { rank: number }) {
+  const medal = rank === 1 || rank === 2 || rank === 3 ? MEDALS[rank] : undefined
+  if (!medal) return <span>{rank}</span>
+  return (
+    <span
+      data-rarity={medal}
+      className="rank-medal inline-grid size-7 place-items-center rounded-full text-xs font-bold"
+    >
+      {rank}
+    </span>
+  )
 }
 
 function PlayerCell({ player }: { player: ListPlayer }) {
@@ -160,9 +172,11 @@ type LeaderboardTableProps = {
    * Sunucudan genel puana göre sıralı gelir.
    */
   rankPool: ListPlayer[]
+  /** Sıralamadan sonra en fazla bu kadar satır çizilir; verilmezse hepsi. */
+  limit?: number
 }
 
-export function LeaderboardTable({ players, rankPool }: LeaderboardTableProps) {
+export function LeaderboardTable({ players, rankPool, limit }: LeaderboardTableProps) {
   const rankOf = new Map(rankPool.map((player, index) => [player.login, index + 1]))
   const data = players.map((player) => ({ ...player, rank: rankOf.get(player.login) ?? 0 }))
   const { search, update } = useLeaderboardSearch()
@@ -184,14 +198,16 @@ export function LeaderboardTable({ players, rankPool }: LeaderboardTableProps) {
   })
 
   return (
-    <div className="surface overflow-x-auto">
-      <table className="w-full text-sm sm:min-w-180">
+    // Dar ekranda tablo kendi kutusunda yana kayar. Geniş ekranda sığdığı için taşma kapatılır;
+    // `overflow` açıkken başlık sayfaya değil kutuya yapışır ve kaydırınca kaybolur.
+    <div className="surface overflow-x-auto lg:overflow-visible">
+      <table className="w-full min-w-180 text-sm">
         <caption className="sr-only">{m.table_caption()}</caption>
-        <thead className="border-b bg-muted/40 text-xs text-muted-foreground uppercase">
+        <thead className="text-xs text-muted-foreground uppercase lg:sticky lg:top-0 lg:z-10">
           {table.getHeaderGroups().map((group) => (
             <tr key={group.id}>
               {group.headers.map((header) => {
-                const { align, label, wide } = readMeta(header.column.columnDef.meta)
+                const { align, label } = readMeta(header.column.columnDef.meta)
                 const sorted = header.column.getIsSorted()
                 const canSort = header.column.getCanSort()
                 const SortIcon =
@@ -204,13 +220,11 @@ export function LeaderboardTable({ players, rankPool }: LeaderboardTableProps) {
                       sorted === "asc" ? "ascending" : sorted === "desc" ? "descending" : undefined
                     }
                     className={cn(
+                      // Yapışan başlığın altından satırlar geçer; zemin opak olmalı. Köşeler kutuyla aynı yuvarlaklıkta.
+                      "border-b bg-[color-mix(in_oklab,var(--muted)_40%,var(--card))] first:rounded-tl-xl last:rounded-tr-xl",
                       align === "center"
                         ? "px-1 py-2 text-center font-medium"
-                        : "px-3 py-2 text-left font-medium",
-                      wide && "max-sm:hidden",
-                      // Dar ekranda sıra sütunu daralır, avatar sola yaklaşır.
-                      header.column.id === "rank" && "max-sm:pr-0 max-sm:pl-3",
-                      header.column.id === "name" && "max-sm:pl-2"
+                        : "px-3 py-2 text-left font-medium"
                     )}
                   >
                     {canSort ? (
@@ -240,34 +254,36 @@ export function LeaderboardTable({ players, rankPool }: LeaderboardTableProps) {
           ))}
         </thead>
         <tbody>
-          {table.getRowModel().rows.map((row) => (
-            <tr
-              key={row.original.login}
-              className="relative border-b transition-colors last:border-0 hover:bg-muted/40"
-            >
-              {row.getAllCells().map((cell) => {
-                const { align, wide } = readMeta(cell.column.columnDef.meta)
-                const isRank = cell.column.id === "rank"
-                return (
-                  <td
-                    key={cell.id}
-                    className={cn(
-                      isRank
-                        ? "w-12 px-3 py-3 text-muted-foreground tabular-nums max-sm:w-6 max-sm:pr-0"
-                        : align === "center"
-                          ? "px-1 py-3 text-center tabular-nums"
-                          : "px-3 py-3",
-                      wide && "max-sm:hidden",
-                      // Dar ekranda isim sütunu kalan alanı alır ve uzun adlar kesilir; tablo yana taşmaz.
-                      cell.column.id === "name" && "max-sm:w-full max-sm:max-w-0 max-sm:pl-2"
-                    )}
-                  >
-                    <table.FlexRender cell={cell} />
-                  </td>
-                )
-              })}
-            </tr>
-          ))}
+          {table
+            .getRowModel()
+            .rows.slice(0, limit)
+            .map((row) => (
+              <tr
+                key={row.original.login}
+                className="relative border-b transition-colors last:border-0 hover:bg-muted/40"
+              >
+                {row.getAllCells().map((cell) => {
+                  const { align } = readMeta(cell.column.columnDef.meta)
+                  const isRank = cell.column.id === "rank"
+                  return (
+                    <td
+                      key={cell.id}
+                      className={cn(
+                        isRank
+                          ? "w-12 px-3 py-3 font-mono text-muted-foreground tabular-nums"
+                          : align === "center"
+                            ? "px-1 py-3 text-center font-mono tabular-nums"
+                            : "px-3 py-3",
+                        // Uzun adlar kesilir; tablo yana kaydığında isim sütunu tüm alanı yutmaz.
+                        cell.column.id === "name" && "max-w-64"
+                      )}
+                    >
+                      <table.FlexRender cell={cell} />
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
         </tbody>
       </table>
     </div>

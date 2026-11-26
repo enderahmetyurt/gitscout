@@ -155,6 +155,8 @@ export function buildFacts(input: BuildFactsInput): PlayerFacts {
       })),
       yearCommits: target?.yearTotal.totalCount ?? 0,
       userYearCommits: target?.mineYear.totalCount ?? 0,
+      allCommits: target?.allTotal.totalCount ?? 0,
+      userAllCommits: target?.mineAll.totalCount ?? 0,
       hasTests: detectTests(node.pkg?.text ?? null, rootEntries),
       hasCi: detectCi(workflowEntries),
       checkStates: (target?.checks.nodes ?? [])

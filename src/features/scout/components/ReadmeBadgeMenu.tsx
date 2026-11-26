@@ -49,13 +49,16 @@ export function ReadmeBadgeMenu({ login, ovr, rarity }: ReadmeBadgeMenuProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="center" className="w-auto overscroll-contain whitespace-nowrap">
         <DropdownMenuGroup>
-          <DropdownMenuLabel className="flex justify-center">
+          <DropdownMenuLabel className="flex max-w-64 flex-col items-center gap-2 font-normal whitespace-normal">
             <img
               src={svgDataUri(playerBadgeSvg({ ovr, rarity }))}
               alt={m.readme_badge_preview({ username: login })}
               height={20}
               className="h-5 w-auto"
             />
+            <span className="text-center text-xs text-pretty text-muted-foreground">
+              {m.readme_badge_hint()}
+            </span>
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

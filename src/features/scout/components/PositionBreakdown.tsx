@@ -47,7 +47,9 @@ export function PositionBreakdown({ position, breakdown }: PositionBreakdownProp
             >
               <div className="flex justify-between">
                 <span lang="en">{role.group}</span>
-                <span className="text-muted-foreground tabular-nums">{share(role.share)}</span>
+                <span className="font-mono text-muted-foreground tabular-nums">
+                  {share(role.share)}
+                </span>
               </div>
               <span aria-hidden className="h-1.5 overflow-hidden rounded-full bg-muted">
                 <span
@@ -71,7 +73,7 @@ export function PositionBreakdown({ position, breakdown }: PositionBreakdownProp
               <span lang="en" className="font-medium">
                 {language.name}
               </span>
-              <span className="text-muted-foreground tabular-nums">
+              <span className="font-mono text-muted-foreground tabular-nums">
                 {share(language.share)}
                 {/* Dar ekranda yalnızca yüzde görünür; repo sayısı ekran okuyucuda kalır. */}
                 <span className="max-sm:sr-only">

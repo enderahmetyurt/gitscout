@@ -174,7 +174,7 @@ describe("mevki", () => {
 })
 
 describe("organizasyon yıldızları", () => {
-  const orgRepo = (userYearCommits: number) => ({
+  const orgRepo = (userYearCommits: number, history?: { all: number; mine: number }) => ({
     nameWithOwner: "acme/lib",
     isOrg: true,
     stars: 1000,
@@ -182,18 +182,34 @@ describe("organizasyon yıldızları", () => {
     languages: [],
     yearCommits: 100,
     userYearCommits,
+    allCommits: history?.all,
+    userAllCommits: history?.mine,
     hasTests: false,
     hasCi: false,
     checkStates: [],
     userCommitsLastYear: userYearCommits
   })
 
-  it("ana maintainer yıldızların tamamını alır", () => {
-    expect(creditedStars(makeFacts({ activeRepos: [orgRepo(40)] }))).toBe(1000)
+  it("katkıcı commit payı kadar yıldız alır", () => {
+    expect(creditedStars(makeFacts({ activeRepos: [orgRepo(26, { all: 1000, mine: 100 })] }))).toBe(
+      260
+    )
   })
 
-  it("küçük katkı payı oranında yıldız alır", () => {
-    expect(creditedStars(makeFacts({ activeRepos: [orgRepo(10)] }))).toBe(400)
+  it("kurucu, bu yıl az commit atsa da bütün geçmişteki payını alır", () => {
+    expect(creditedStars(makeFacts({ activeRepos: [orgRepo(5, { all: 1200, mine: 900 })] }))).toBe(
+      750
+    )
+  })
+
+  it("projeyi bugün yürüten, geçmişteki payı küçük olsa da son yılın payını alır", () => {
+    expect(creditedStars(makeFacts({ activeRepos: [orgRepo(54, { all: 3000, mine: 540 })] }))).toBe(
+      540
+    )
+  })
+
+  it("geçmişi olmayan eski kayıtta yıllık pay kullanılır", () => {
+    expect(creditedStars(makeFacts({ activeRepos: [orgRepo(40)] }))).toBe(400)
   })
 })
 

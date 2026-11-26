@@ -5,6 +5,7 @@ import { Swords } from "lucide-react"
 
 import { getLangParam } from "@/helpers/localized-url"
 
+import { DuelPresets } from "@/features/scout/components/DuelPresets"
 import { PlayerCombobox } from "@/features/scout/components/PlayerCombobox"
 import { useLeaderboard } from "@/features/scout/hooks/use-leaderboard"
 import type { ListPlayer } from "@/features/scout/types/player.types"
@@ -78,6 +79,8 @@ export function DuelPicker() {
       </div>
 
       <p className="text-sm text-muted-foreground">{m.duel_missing()}</p>
+
+      <DuelPresets players={data.players} seed={data.featuredSeed} />
     </main>
   )
 }

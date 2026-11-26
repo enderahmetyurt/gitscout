@@ -50,7 +50,7 @@ function RankCell({ label, rank, total, lang }: RankCellProps) {
       <span lang={lang} className="text-xs tracking-widest text-muted-foreground uppercase">
         {label}
       </span>
-      <span className="text-2xl leading-none font-semibold tabular-nums">
+      <span className="font-mono text-2xl leading-none font-semibold tabular-nums">
         #{rank}
         <span className="ms-1 text-xs font-normal text-muted-foreground">/ {total}</span>
       </span>

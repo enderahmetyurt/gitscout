@@ -28,7 +28,7 @@ export function GithubStarCta() {
       <Star aria-hidden className="fill-github-star text-github-star" />
       {m.github_star_button()}
       {hydrated && typeof stars === "number" ? (
-        <span className="border-s ps-2 text-muted-foreground tabular-nums">
+        <span className="border-s ps-2 font-mono text-muted-foreground tabular-nums">
           {stars.toLocaleString(getLocale())}
         </span>
       ) : null}

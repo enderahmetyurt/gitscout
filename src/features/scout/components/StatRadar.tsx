@@ -73,7 +73,7 @@ function StatTooltip({ stat }: { stat: Stat }) {
     <div className="flex w-64 flex-col gap-2 rounded-lg border bg-popover px-3 py-2.5 text-xs text-popover-foreground shadow-md">
       <div className="flex items-baseline justify-between gap-2">
         <span className="font-medium">{statLabel(stat.key)}</span>
-        <span className="text-base font-semibold">{stat.value}</span>
+        <span className="font-mono text-base font-semibold">{stat.value}</span>
       </div>
       <p className="text-pretty text-muted-foreground">{statSummary(stat.summary)}</p>
       <ul className="flex flex-col gap-1.5">
@@ -81,7 +81,7 @@ function StatTooltip({ stat }: { stat: Stat }) {
           <li key={part.id} className="flex flex-col gap-1">
             <span className="flex justify-between gap-2">
               <span>{partLabel(part.id)}</span>
-              <span className="text-muted-foreground">
+              <span className="font-mono text-muted-foreground">
                 {Math.round(part.points)}/{part.max}
               </span>
             </span>

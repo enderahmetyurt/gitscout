@@ -55,7 +55,7 @@ export function PlayerCard({ player, ref }: PlayerCardProps) {
         <div className="relative flex items-start justify-between">
           {/* Kart sabit yükseklikte: bayrak akışa girerse alt satır taşar. Avatarın kavisli köşesindeki boşluğa yerleşir. */}
           <div className="relative flex flex-col">
-            <span className="scout-card-accent text-6xl leading-none font-bold tracking-tighter tabular-nums">
+            <span className="scout-card-accent font-mono text-6xl leading-none font-bold tracking-tighter tabular-nums">
               {player.ovr}
             </span>
             <span lang="en" className="mt-1.5 text-xs font-semibold tracking-widest uppercase">
@@ -109,7 +109,7 @@ export function PlayerCard({ player, ref }: PlayerCardProps) {
                 </dt>
                 <dd
                   className={cn(
-                    "text-xl leading-none font-bold tabular-nums",
+                    "font-mono text-xl leading-none font-bold tabular-nums",
                     STAT_TIER_TEXT[statTier(stat.value)]
                   )}
                 >

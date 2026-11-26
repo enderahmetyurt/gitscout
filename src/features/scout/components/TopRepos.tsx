@@ -51,7 +51,7 @@ export function TopRepos({ repos }: TopReposProps) {
                       </span>
                     ) : null}
                   </span>
-                  <span className="flex items-center gap-3 text-xs text-muted-foreground tabular-nums">
+                  <span className="flex items-center gap-3 font-mono text-xs text-muted-foreground tabular-nums">
                     <span className="flex items-center gap-1">
                       <Star aria-hidden className="size-3.5" />
                       <span className="sr-only">{m.stars_label()}</span>

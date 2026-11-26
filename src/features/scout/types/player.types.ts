@@ -34,6 +34,9 @@ export type ActiveRepo = {
   /** Varsayılan dalda son bir yıldaki toplam commit ve bunların kullanıcıya ait olanları. */
   yearCommits: number
   userYearCommits: number
+  /** Varsayılan dalın bütün geçmişindeki toplam commit ve kullanıcınınkiler. Eski kayıtlarda yok. */
+  allCommits?: number
+  userAllCommits?: number
   hasTests: boolean
   hasCi: boolean
   checkStates: CheckState[]

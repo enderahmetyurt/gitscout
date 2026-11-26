@@ -37,7 +37,14 @@ export const POSITION_SLUGS = {
   "Game Dev": "gamedev"
 } as const satisfies Record<(typeof POSITIONS)[number], string>
 
-export const leaderboardSearchDefaults = { sort: "ovr", dir: "desc" } as const
+/** Liderlik tablosu bir seferde bu kadar satır çizer; "Daha fazla göster" bir o kadar ekler. */
+export const LEADERBOARD_PAGE_SIZE = 100
+
+export const leaderboardSearchDefaults = {
+  sort: "ovr",
+  dir: "desc",
+  limit: LEADERBOARD_PAGE_SIZE
+} as const
 
 /**
  * Liderlik tablosunun sıralaması ve filtreleri URL'de tutulur ki paylaşılan link aynı görünümü göstersin.
@@ -59,7 +66,15 @@ export const leaderboardSearchSchema = z.object({
   dir: z
     .enum(["asc", "desc"])
     .default(leaderboardSearchDefaults.dir)
-    .catch(leaderboardSearchDefaults.dir)
+    .catch(leaderboardSearchDefaults.dir),
+  /** Gösterilen satır sayısı; URL'de durur ki geri dönünce aynı yer açılsın. */
+  limit: z.coerce
+    .number()
+    .int()
+    .min(LEADERBOARD_PAGE_SIZE)
+    .max(100_000)
+    .default(leaderboardSearchDefaults.limit)
+    .catch(leaderboardSearchDefaults.limit)
 })
 
 export type LeaderboardSearch = z.infer<typeof leaderboardSearchSchema>

@@ -327,6 +327,12 @@ const ACTIVE_REPO_FIELDS = /* GraphQL */ `
           mineYear: history(since: $since, author: { id: $userId }) {
             totalCount
           }
+          allTotal: history {
+            totalCount
+          }
+          mineAll: history(author: { id: $userId }) {
+            totalCount
+          }
           checks: history(first: 10) {
             nodes {
               statusCheckRollup {

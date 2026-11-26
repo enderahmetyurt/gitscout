@@ -37,7 +37,23 @@ function scoreStored(stored: StoredPlayer): ScoredPlayer {
   return scorePlayer(stored, new Date(stored.fetchedAt))
 }
 
-/** Eski formül sürümüyle yazılmış özetleri ham veriden yeniden hesaplayıp günceller. */
+/**
+ * Bir liste isteğinde en fazla bu kadar eski özet yeniden puanlanır. Formül sürümü artınca bütün
+ * oyuncular birden eskir; hepsini tek istekte puanlamak ~11 MB ham veri okur ve rolün 8 sn'lik
+ * `statement_timeout` sınırına takılıp siteyi düşürür. Kalanlar o arada eski özetleriyle görünür.
+ */
+const RESCORE_PER_REQUEST = 25
+
+/**
+ * Yerel geliştirme canlı veritabanına bağlı. Yereldeki bir formül denemesi canlı puanların üstüne
+ * yazmasın diye yeniden puanlama yerelde yalnızca bellekte yapılır, veritabanına yazılmaz.
+ */
+const PERSIST_RESCORE = !import.meta.env.DEV
+
+/** Özet bu kodun formülünden eski mi? Daha yeni sürüm (yeni deploy) olduğu gibi kullanılır, geri puanlanmaz. */
+const isOutdated = (version: number) => version < SCORE_VERSION
+
+/** Eski formül sürümüyle yazılmış özetleri ham veriden yeniden hesaplar ve tek sorguyla günceller. */
 async function rescore(logins: string[]): Promise<ScoredPlayer[]> {
   if (logins.length === 0) return []
   const sql = getDb()
@@ -45,7 +61,7 @@ async function rescore(logins: string[]): Promise<ScoredPlayer[]> {
     .array(factsRowSchema)
     .parse(await sql`select login, facts, fetched_at from players where login in ${sql(logins)}`)
 
-  const scored: ScoredPlayer[] = []
+  const scored: { login: string; player: ScoredPlayer }[] = []
   for (const row of rows) {
     const parsed = storedPlayerSchema.safeParse({
       login: row.login,
@@ -57,15 +73,19 @@ async function rescore(logins: string[]): Promise<ScoredPlayer[]> {
       console.error("[db] puanlanamayan kayıt", row.login)
       continue
     }
-    const player = scoreStored(parsed.data)
-    await sql`
-      update players
-      set scored = ${sql.json(player)}, score_version = ${SCORE_VERSION}, ovr = ${player.ovr}
-      where login = ${row.login}
-    `
-    scored.push(player)
+    scored.push({ login: row.login, player: scoreStored(parsed.data) })
   }
-  return scored
+
+  if (PERSIST_RESCORE && scored.length > 0) {
+    const values = scored.map(({ login, player }) => [login, JSON.stringify(player), player.ovr])
+    await sql`
+      update players as p
+      set scored = v.scored::jsonb, score_version = ${SCORE_VERSION}, ovr = v.ovr::smallint
+      from (values ${sql(values)}) as v(login, scored, ovr)
+      where p.login = v.login
+    `
+  }
+  return scored.map(({ player }) => player)
 }
 
 /** Bütün oyuncular, genel puana göre sıralı. */
@@ -80,7 +100,7 @@ const listRowSchema = z.object({
  * SQL'de yapılır: veritabanı uzak bölgede olduğu için taşınan her bayt istek süresine yansır.
  * Rol dağılımı, repolar, arşetip ve stat parçaları atılır; statlardan yalnızca görünen puan kalır.
  */
-export async function getListPlayers(): Promise<ListPlayer[]> {
+export async function getListPlayers(): Promise<{ players: ListPlayer[]; pending: number }> {
   const sql = getDb()
   const rows = z.array(listRowSchema).parse(
     await sql`
@@ -95,12 +115,19 @@ export async function getListPlayers(): Promise<ListPlayer[]> {
     `
   )
 
-  const current = rows
-    .filter((row) => row.score_version === SCORE_VERSION)
-    .map((row) => row.summary)
-  const outdated = rows.filter((row) => row.score_version !== SCORE_VERSION).map((row) => row.login)
-  const players = [...current, ...(await rescore(outdated)).map(toListPlayer)]
-  return players.sort((a, b) => b.ovrExact - a.ovrExact || a.login.localeCompare(b.login))
+  const outdated = rows.filter((row) => isOutdated(row.score_version)).map((row) => row.login)
+  const rescored = new Map(
+    (await rescore(outdated.slice(0, RESCORE_PER_REQUEST))).map((player) => [
+      keyOf(player.login),
+      toListPlayer(player)
+    ])
+  )
+  const players = rows.map((row) => rescored.get(keyOf(row.login)) ?? row.summary)
+  return {
+    players: players.sort((a, b) => b.ovrExact - a.ovrExact || a.login.localeCompare(b.login)),
+    // Yerelde yazılmadığı için hiç azalmaz; önbelleği kısaltmamak için sıfır sayılır.
+    pending: PERSIST_RESCORE ? Math.max(0, outdated.length - rescored.size) : 0
+  }
 }
 
 export async function getScoredPlayer(login: string): Promise<ScoredPlayer | null> {
@@ -112,7 +139,7 @@ export async function getScoredPlayer(login: string): Promise<ScoredPlayer | nul
     )
   const row = rows[0]
   if (!row) return null
-  if (row.score_version === SCORE_VERSION) return row.scored
+  if (!isOutdated(row.score_version)) return row.scored
   return (await rescore([row.login]))[0] ?? null
 }
 
@@ -145,13 +172,13 @@ export async function getLatestAdditions(
   return rows.map((row) => ({ login: row.login, addedAt: row.created_at.toISOString() }))
 }
 
-/** Son bir saatte eklenen oyuncu sayısı; kişisel veri tutmadan toplu eklemeyi sınırlar. */
-export async function countRecentPlayers(): Promise<number> {
+/** Son `hours` saatte eklenen oyuncu sayısı. Saatlik sayım kişisel veri tutmadan toplu eklemeyi sınırlar; günlük sayım ana sayfada gösterilir. */
+export async function countRecentPlayers(hours = 1): Promise<number> {
   const sql = getDb()
   const [row] = z
     .array(z.object({ count: z.coerce.number() }))
     .parse(
-      await sql`select count(*) as count from players where created_at > now() - interval '1 hour'`
+      await sql`select count(*) as count from players where created_at > now() - make_interval(hours => ${hours})`
     )
   return row?.count ?? 0
 }

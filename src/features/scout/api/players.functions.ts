@@ -29,8 +29,8 @@ type Leaderboard = {
   featuredSeed: number
   /** En son eklenenler, yeniden eskiye. */
   latest: LatestAddition[]
-  /** Verinin üretildiği andan önceki bir saatte eklenen oyuncu sayısı. */
-  lastHourCount: number
+  /** Verinin üretildiği andan önceki 24 saatte eklenen oyuncu sayısı. */
+  lastDayCount: number
   /**
    * Verinin üretildiği an. "5 dk önce" gibi göreli zamanlar buna göre yazılır; sunucu ile
    * tarayıcı aynı metni üretir.
@@ -49,12 +49,17 @@ const LATEST_LIMIT = 8
  */
 const LIST_CACHE_MS = 5 * 60_000
 
+/** Yeniden puanlanmayı bekleyen özet varken önbellek kısa tutulur ki her istek işi biraz daha ilerletsin. */
+const PENDING_LIST_CACHE_MS = 30_000
+
 type ListSnapshot = {
   at: number
+  /** Bu süre dolunca liste yeniden yüklenir. */
+  ttl: number
   players: ListPlayer[]
   recentLogins: string[]
   latest: LatestAddition[]
-  lastHourCount: number
+  lastDayCount: number
 }
 
 let listCache: ListSnapshot | null = null
@@ -67,11 +72,12 @@ let listLoading: Promise<ListSnapshot> | null = null
  */
 function loadList(): Promise<ListSnapshot> {
   listLoading ??= (async () => {
-    const players = await getListPlayers()
+    const { players, pending } = await getListPlayers()
     const recentLogins = await getRecentLogins()
     const latest = await getLatestAdditions(LATEST_LIMIT)
-    const lastHourCount = await countRecentPlayers()
-    listCache = { at: Date.now(), players, recentLogins, latest, lastHourCount }
+    const lastDayCount = await countRecentPlayers(24)
+    const ttl = pending > 0 ? PENDING_LIST_CACHE_MS : LIST_CACHE_MS
+    listCache = { at: Date.now(), ttl, players, recentLogins, latest, lastDayCount }
     return listCache
   })().finally(() => {
     listLoading = null
@@ -80,7 +86,7 @@ function loadList(): Promise<ListSnapshot> {
 }
 
 async function cachedList(): Promise<ListSnapshot> {
-  if (listCache && Date.now() - listCache.at < LIST_CACHE_MS) return listCache
+  if (listCache && Date.now() - listCache.at < listCache.ttl) return listCache
   return loadList()
 }
 
@@ -117,12 +123,12 @@ export const getBadgePlayer = createServerOnlyFn(
 /** Kayıtlı bütün oyuncular, genel puana göre sıralı. GitHub'a istek atmaz. */
 export const getLeaderboard = createServerFn({ method: "GET" }).handler(
   async (): Promise<Leaderboard> => {
-    const { at, players, recentLogins, latest, lastHourCount } = await cachedList()
+    const { at, players, recentLogins, latest, lastDayCount } = await cachedList()
     return {
       players,
       recentLogins,
       latest,
-      lastHourCount,
+      lastDayCount,
       featuredSeed: Math.floor(Date.now() / HOUR_MS),
       generatedAt: new Date(at).toISOString()
     }

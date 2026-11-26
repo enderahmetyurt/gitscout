@@ -1,3 +1,4 @@
+import { seededRandom } from "@/features/scout/helpers/seeded-random"
 import type { ListPlayer } from "@/features/scout/types/player.types"
 
 /** Vitrine yalnızca bu kart türleri çıkar; hiçbiri yoksa herkes aday olur. */
@@ -5,18 +6,6 @@ const FEATURED_RARITIES = new Set<ListPlayer["rarity"]>(["icon", "gold"])
 
 /** Son 24 saatte eklenen bir kartın seçilme ağırlığı; diğerleri 1. */
 const RECENT_WEIGHT = 3
-
-/** Tohumdan her seferinde aynı diziyi üreten küçük rastgele sayı üreteci (mulberry32). */
-function seededRandom(seed: number): () => number {
-  let state = seed >>> 0
-  return () => {
-    state = (state + 0x6d2b79f5) >>> 0
-    let value = state
-    value = Math.imul(value ^ (value >>> 15), value | 1)
-    value ^= value + Math.imul(value ^ (value >>> 7), value | 61)
-    return ((value ^ (value >>> 14)) >>> 0) / 4294967296
-  }
-}
 
 /**
  * Vitrin sırası: Gold ve üstü kartlar, tohuma göre ağırlıklı karıştırılmış halde.
