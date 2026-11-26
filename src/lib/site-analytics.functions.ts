@@ -1,32 +1,52 @@
 import { createServerFn } from "@tanstack/react-start"
+import { getRequestHeader, getRequestIP } from "@tanstack/react-start/server"
 import { z } from "zod"
 
 import { analyticsEventSchema, pagePathSchema } from "@/schemas/analytics.schema"
 
 import { getDb } from "@/lib/db"
+import { isBot } from "@/helpers/is-bot"
 
 /**
  * Yerel geliştirme canlı veritabanına bağlı ve satırlar silinemiyor; yerel gezinti sayaçlara yazılmaz.
  */
 const PERSIST = !import.meta.env.DEV
 
+type Visitor = { ip: string; userAgent: string }
+
 /**
- * Sayfa görüntülemesini Supabase'e yazar (`source = 'site'`). Profil ve kapışma sayaçlarını
- * veritabanı fonksiyonu yoldan türetir; uygulama rolü tablolara doğrudan yazamaz.
+ * Ziyaretçiyi tanımak için IP ve tarayıcı bilgisi. Ham hâlleri hiçbir yere yazılmaz: veritabanı
+ * fonksiyonu bunları günlük tuzla hash'leyip yalnızca o gün için tekilleştirmede kullanır.
+ * Botlar ve yerel geliştirme için `null` döner, kayıt yapılmaz.
+ */
+function countableVisitor(): Visitor | null {
+  if (!PERSIST) return null
+  const userAgent = getRequestHeader("user-agent")
+  if (!userAgent || isBot(userAgent)) return null
+  // Vercel X-Forwarded-For başlığını kendisi yazar; istemcinin gönderdiği değer kullanılmaz.
+  const ip = getRequestIP({ xForwardedFor: true }) ?? ""
+  return { ip, userAgent: userAgent.slice(0, 512) }
+}
+
+/**
+ * Sayfa görüntülemesini Supabase'e yazar (`source = 'site'`). Aynı kişi aynı yolu, profili ya da
+ * kapışmayı UTC günü başına bir kez sayar; uygulama rolü tablolara doğrudan yazamaz.
  */
 export const recordPageView = createServerFn({ method: "POST" })
   .validator(z.object({ path: pagePathSchema }))
   .handler(async ({ data }) => {
-    if (!PERSIST) return
+    const visitor = countableVisitor()
+    if (!visitor) return
     const sql = getDb()
-    await sql`select gitscout.record_page_view(${data.path})`
+    await sql`select gitscout.record_page_view(${data.path}, ${visitor.ip}, ${visitor.userAgent})`
   })
 
-/** Özel olayı Supabase'e yazar; aynı gün ve aynı veriyle gelen olaylar tek satırda sayılır. */
+/** Özel olayı Supabase'e yazar; aynı kişinin aynı olayı aynı veriyle günde bir kez sayılır. */
 export const recordEvent = createServerFn({ method: "POST" })
   .validator(analyticsEventSchema)
   .handler(async ({ data: { name, ...properties } }) => {
-    if (!PERSIST) return
+    const visitor = countableVisitor()
+    if (!visitor) return
     const sql = getDb()
-    await sql`select gitscout.record_event(${name}, ${sql.json(properties)})`
+    await sql`select gitscout.record_event(${name}, ${sql.json(properties)}, ${visitor.ip}, ${visitor.userAgent})`
   })
