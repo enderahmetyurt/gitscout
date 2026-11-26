@@ -1,7 +1,10 @@
-/** Onaylı sayılmak ve profil ayarlarını değiştirebilmek için gereken en düşük GitHub hesabı koşulları. Sahte hesapları eler. */
+/**
+ * Onaylı sayılmak ve profil ayarlarını değiştirebilmek için gereken en düşük GitHub hesabı koşulu.
+ * Yeni açılmış sahte hesapları eler. Takipçi koşulu kaldırıldı: az takipçili gerçek geliştiricileri de
+ * dışarıda bırakıyordu, onay işareti ise kimseye zarar verecek bir yetki tanımıyor.
+ */
 export const ACCOUNT_ELIGIBILITY = {
-  minAgeMonths: 6,
-  minFollowers: 5
+  minAgeMonths: 6
 } as const
 
 /** Uygulamanın kendi oturumu. Tarayıcıda yalnızca httpOnly çerezde rastgele bir anahtar durur. */

@@ -53,7 +53,7 @@ export async function syncGithubAccount(identity: GithubIdentity): Promise<Synce
 
   const login = user.login.toLowerCase()
   const createdAt = new Date(user.created_at)
-  const eligible = isEligibleAccount({ createdAt, followers: user.followers }, new Date())
+  const eligible = isEligibleAccount({ createdAt }, new Date())
 
   const sql = getDb()
   await sql.begin(async (tx) => {

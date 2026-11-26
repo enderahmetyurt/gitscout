@@ -273,8 +273,7 @@ function SettingsContent({
         ) : (
           <p className="surface p-4 text-sm text-muted-foreground">
             {m.owner_not_eligible({
-              months: ACCOUNT_ELIGIBILITY.minAgeMonths,
-              followers: ACCOUNT_ELIGIBILITY.minFollowers
+              months: ACCOUNT_ELIGIBILITY.minAgeMonths
             })}
           </p>
         )}

@@ -250,8 +250,7 @@ export function SignInPanel({
             <ShieldCheck aria-hidden className="mt-px size-3.5 shrink-0" />
             <span className="text-pretty">
               {m.login_eligibility({
-                months: ACCOUNT_ELIGIBILITY.minAgeMonths,
-                followers: ACCOUNT_ELIGIBILITY.minFollowers
+                months: ACCOUNT_ELIGIBILITY.minAgeMonths
               })}
             </span>
           </li>
