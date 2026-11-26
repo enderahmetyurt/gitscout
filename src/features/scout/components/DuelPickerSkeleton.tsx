@@ -16,7 +16,7 @@ function SlotSkeleton() {
 }
 
 /**
- * Kapışma seçimi yüklenirken gösterilir. Yerleşim `DuelPicker` ile aynı: başlık, iki köşe ve ortada VS,
+ * Kapışma seçimi yüklenirken gösterilir. Yerleşim `DuelPicker` ile aynı: başlık, iki köşe ve ortada kılıçlar,
  * altında not ve popüler kapışma kartları.
  */
 export function DuelPickerSkeleton() {
@@ -25,15 +25,17 @@ export function DuelPickerSkeleton() {
       id="main-content"
       tabIndex={-1}
       aria-busy="true"
-      className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 overflow-x-clip px-4 pt-2 pb-20 outline-none sm:px-6"
+      className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 overflow-x-clip px-4 pt-6 pb-20 outline-none sm:px-6"
     >
       <p role="status" className="sr-only">
         {m.page_loading()}
       </p>
 
-      <div aria-hidden className="flex flex-col items-center gap-1.5">
-        <Skeleton className="h-4 w-32" />
-        <Skeleton className="h-9 w-80 max-w-full sm:h-10" />
+      <div aria-hidden className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-1.5">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-9 w-80 max-w-full sm:h-10" />
+        </div>
         <Skeleton className="h-5 w-[32rem] max-w-full" />
       </div>
 
@@ -43,7 +45,9 @@ export function DuelPickerSkeleton() {
       >
         <SlotSkeleton />
         <div className="flex flex-col items-center gap-6 self-center lg:mt-12">
-          <Skeleton className="size-12 rounded-full lg:size-20" />
+          <div className="flex size-12 items-center justify-center lg:size-20">
+            <Skeleton className="size-9 rounded-md lg:size-14" />
+          </div>
           <Skeleton className="h-52 w-full max-lg:hidden" />
           <Skeleton className="h-8 w-32 max-lg:hidden" />
         </div>

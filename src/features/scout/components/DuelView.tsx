@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { DuelRadar } from "@/features/scout/components/DuelRadar"
 import { GetYourCard } from "@/features/scout/components/GetYourCard"
+import { PageHeader } from "@/features/scout/components/PageHeader"
 import { PlayerCard } from "@/features/scout/components/PlayerCard"
 import { PlayerCombobox } from "@/features/scout/components/PlayerCombobox"
 import { SHARE_TARGETS } from "@/features/scout/constants/share.constants"
@@ -142,14 +143,15 @@ export function DuelView({ left: leftLogin, right: rightLogin }: DuelViewProps) 
       ref={contentRef}
       className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 overflow-x-clip px-4 pt-6 pb-20 outline-none sm:px-6"
     >
-      <div className="flex flex-col items-center gap-1 text-center">
-        <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
-          {m.duel_title()}
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-          {left.name} <span className="text-muted-foreground">vs</span> {right.name}
-        </h1>
-      </div>
+      <PageHeader
+        eyebrow={m.duel_title()}
+        title={
+          <>
+            {left.name} <span className="text-muted-foreground">vs</span> {right.name}
+          </>
+        }
+        align="center"
+      />
 
       {/* Mobilde iki taraf sayfa başında yan yana: büyük kartlar yerine mini kartlar. */}
       <div className="grid grid-cols-2 gap-3 lg:hidden">

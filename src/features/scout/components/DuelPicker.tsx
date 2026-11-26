@@ -1,7 +1,7 @@
 import { useState } from "react"
 
 import { getRouteApi, useNavigate, useRouter } from "@tanstack/react-router"
-import { Dices } from "lucide-react"
+import { Dices, Swords } from "lucide-react"
 import { cn } from "cn"
 
 import { getLangParam } from "@/helpers/localized-url"
@@ -9,6 +9,7 @@ import { getLangParam } from "@/helpers/localized-url"
 import { Button } from "@/components/ui/button"
 import { DuelPresets } from "@/features/scout/components/DuelPresets"
 import { DuelSlot } from "@/features/scout/components/DuelSlot"
+import { PageHeader } from "@/features/scout/components/PageHeader"
 import { STAT_ORDER } from "@/features/scout/constants/scoring.constants"
 import { statShort } from "@/features/scout/helpers/player-text"
 import { useLeaderboard } from "@/features/scout/hooks/use-leaderboard"
@@ -48,20 +49,22 @@ export function DuelPicker() {
       to: "/{-$lang}/vs/$left/$right",
       params: { lang: getLangParam(), left: nextLeft.login, right: nextRight.login }
     } as const
-    // Veri önce yüklenir; yoksa geçiş kartlara değil yükleniyor iskeletine kayar. Yükleme hata
+    // Veri hemen yüklenmeye başlar ama geçiş onu beklemez: kart çevrilir, açılan statlar kısa bir
+    // süre okunur, sonra geçiş başlar. Sayfanın yükleyicisi aynı istekleri yeniden atmaz, yarım kalanı bekler. Yükleme hata
     // verse de sayfa açılır ve hatayı kendisi gösterir.
     setIsOpening(true)
     void router
       .preloadRoute(target)
       .catch((error: unknown) => console.error("Could not preload the duel", error))
-      .finally(
-        () =>
-          void navigate({
-            ...target,
-            viewTransition: true,
-            state: (previous) => ({ ...previous, duelTransition: true })
-          })
-      )
+    window.setTimeout(
+      () =>
+        void navigate({
+          ...target,
+          viewTransition: true,
+          state: (previous) => ({ ...previous, duelTransition: true })
+        }),
+      flipDuration() + REVEAL_HOLD_MS
+    )
     return true
   }
 
@@ -86,17 +89,11 @@ export function DuelPicker() {
     <main
       id="main-content"
       tabIndex={-1}
-      className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 overflow-x-clip px-4 pt-2 pb-20 outline-none sm:px-6"
+      className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 overflow-x-clip px-4 pt-6 pb-20 outline-none sm:px-6"
     >
-      <div className="flex flex-col items-center gap-1.5 text-center">
-        <p className="font-mono text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-          {m.duel_title()}
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-          {m.duel_lead()}
-        </h1>
+      <PageHeader eyebrow={m.duel_title()} title={m.duel_lead()} align="center">
         <p className="max-w-xl text-sm text-balance text-muted-foreground">{m.duel_sublead()}</p>
-      </div>
+      </PageHeader>
 
       <div className="relative isolate">
         {/* Sahne: iki tarafın arkasında hafif renk. Geçişte sayfayla birlikte söner. */}
@@ -168,27 +165,29 @@ export function DuelPicker() {
   )
 }
 
+/** `.duel-flip-inner` geçişiyle aynı süre; azaltılmış harekette kart çevrilmediği için beklenmez. */
+const FLIP_MS = 700
+
+/** Kartlar açıldıktan sonra ortadaki stat karşılaştırması okunsun diye geçişten önce beklenen süre. */
+const REVEAL_HOLD_MS = 1000
+
+function flipDuration() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : FLIP_MS
+}
+
 function randomPlayer(players: ListPlayer[], except: ListPlayer | null): ListPlayer | null {
   const pool = players.filter((player) => player.login !== except?.login)
   return pool[Math.floor(Math.random() * pool.length)] ?? null
 }
 
-/** Ortadaki VS: iki tarafın renginden bir halka; arkasında renkler arasında gidip gelen ışıma. */
+/** Ortadaki çapraz kılıçlar: kapışmanın işareti. Açılırken nabız gibi atar. */
 function VsMark({ isOpening }: { isOpening: boolean }) {
   return (
-    <span aria-hidden className="relative flex size-12 items-center justify-center lg:size-20">
-      <span data-side="left" className="duel-vs-glow absolute -inset-6" />
-      <span data-side="right" className="duel-vs-glow absolute -inset-6" />
-      <span
-        className={cn(
-          "relative flex size-full items-center justify-center rounded-full bg-linear-to-br from-chart-home to-chart-away p-0.5 shadow-lg",
-          isOpening && "animate-pulse"
-        )}
-      >
-        <span className="flex size-full items-center justify-center rounded-full bg-background font-mono text-base font-bold tracking-tight lg:text-2xl">
-          VS
-        </span>
-      </span>
+    <span aria-hidden className="flex size-12 items-center justify-center lg:size-20">
+      <Swords
+        strokeWidth={1.75}
+        className={cn("size-9 text-foreground lg:size-14", isOpening && "animate-pulse")}
+      />
     </span>
   )
 }

@@ -13,17 +13,19 @@ export function SpecialCardsSkeleton() {
       id="main-content"
       tabIndex={-1}
       aria-busy="true"
-      className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-4 pt-10 pb-20 outline-none sm:px-6"
+      className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-4 pt-6 pb-20 outline-none sm:px-6"
     >
       <p role="status" className="sr-only">
         {m.page_loading()}
       </p>
 
-      <div aria-hidden className="flex max-w-3xl flex-col gap-3">
-        <Skeleton className="h-10 w-56" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-4 w-72 max-w-full" />
+      <div aria-hidden className="mx-auto flex w-full max-w-5xl flex-col gap-3">
+        <Skeleton className="h-9 w-56 sm:h-10" />
+        <div className="flex max-w-3xl flex-col gap-3">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-72 max-w-full" />
+        </div>
       </div>
 
       <ul

@@ -14,6 +14,7 @@ import { useViewer } from "@/hooks/use-viewer"
 import { Skeleton } from "@/components/ui/skeleton"
 import { playerQueryOptions } from "@/features/scout/api/players.queries"
 import { CardOccasionPicker } from "@/features/scout/components/CardOccasionPicker"
+import { PageHeader } from "@/features/scout/components/PageHeader"
 import { PlayerCard } from "@/features/scout/components/PlayerCard"
 import { ProfileForm } from "@/features/scout/components/ProfileForm"
 import { ReadmeBadgeSection } from "@/features/scout/components/ReadmeBadgeSection"
@@ -45,8 +46,7 @@ export function SettingsPage() {
       className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pt-6 pb-20 outline-none sm:px-6"
     >
       {/* Giriş yapılmamışken sayfanın ana başlığını giriş tanıtımı verir; iki başlık üst üste binmez. */}
-      <div className={cn("flex flex-col gap-2", !isPending && !viewer && "sr-only")}>
-        <h1 className="text-3xl font-bold">{m.settings_title()}</h1>
+      <PageHeader title={m.settings_title()} className={cn(!isPending && !viewer && "sr-only")}>
         {viewer ? (
           <div className="flex flex-col gap-1">
             <p className="flex items-center gap-1.5 font-mono text-sm text-muted-foreground">
@@ -64,7 +64,7 @@ export function SettingsPage() {
             ) : null}
           </div>
         ) : null}
-      </div>
+      </PageHeader>
 
       {isPending ? (
         <SettingsSkeleton />

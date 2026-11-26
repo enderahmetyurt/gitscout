@@ -13,6 +13,7 @@ import {
   AccordionItem,
   AccordionTrigger
 } from "@/components/ui/accordion"
+import { PageHeader } from "@/features/scout/components/PageHeader"
 import { RarityLegend } from "@/features/scout/components/RarityLegend"
 import {
   ACT,
@@ -73,7 +74,8 @@ function faqItems() {
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
-    <section className="flex flex-col gap-3" aria-labelledby={id}>
+    // Konteyner diğer sayfalarla aynı genişlikte; okunabilirlik için bölümler dar sütunda kalır.
+    <section className="flex max-w-3xl flex-col gap-3" aria-labelledby={id}>
       <h2 id={id} className="text-xl font-semibold">
         {title}
       </h2>
@@ -102,12 +104,11 @@ export function AboutPage() {
     <main
       id="main-content"
       tabIndex={-1}
-      className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-4 pt-10 pb-20 outline-none sm:px-6"
+      className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4 pt-6 pb-20 outline-none sm:px-6"
     >
-      <div className="flex flex-col gap-3">
-        <h1 className="text-4xl font-semibold tracking-tight text-balance">{m.about_title()}</h1>
+      <PageHeader title={m.about_title()} className="max-w-3xl">
         <p className="font-mono text-pretty text-muted-foreground">{m.about_lead()}</p>
-      </div>
+      </PageHeader>
 
       <Section id="about-story" title={m.about_story_title()}>
         <p className={bodyClass}>{m.about_story_1()}</p>

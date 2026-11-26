@@ -19,7 +19,7 @@ export function LeaderboardSkeleton() {
       </p>
 
       <div aria-hidden className="flex flex-col gap-3">
-        <Skeleton className="h-9 w-48" />
+        <Skeleton className="h-9 w-48 sm:h-10" />
         <div className="flex max-w-prose flex-col gap-2">
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-4/5" />

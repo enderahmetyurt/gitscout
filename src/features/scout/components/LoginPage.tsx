@@ -12,7 +12,7 @@ export function LoginPage({ failed }: LoginPageProps) {
     <main
       id="main-content"
       tabIndex={-1}
-      className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pt-10 pb-20 outline-none sm:px-6"
+      className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pt-6 pb-20 outline-none sm:px-6"
     >
       <SignInPanel
         headingLevel="h1"

@@ -940,20 +940,6 @@
     transform: rotateY(180deg);
   }
 
-  /* Ortadaki VS: iki tarafın rengi arasında yavaşça gidip gelen bir ışıma. */
-  .duel-vs-glow {
-    background: radial-gradient(closest-side, var(--glow), transparent);
-    opacity: 0.3;
-    filter: blur(18px);
-  }
-  .duel-vs-glow[data-side="left"] {
-    --glow: var(--chart-home);
-  }
-  .duel-vs-glow[data-side="right"] {
-    --glow: var(--chart-away);
-    opacity: 0;
-  }
-
   /* Sahnenin zemini: iki tarafın arkasında hafif renk, ortada belli belirsiz bir ızgara. */
   .duel-stage-glow {
     background:
@@ -982,6 +968,7 @@
 
   @media (prefers-reduced-motion: no-preference) {
     .duel-flip-inner {
+      /* Süre DuelPicker'daki FLIP_MS ile aynı: kapışma sayfasına geçiş çevirme bitince başlar. */
       transition: transform 700ms var(--ease-out);
     }
 
@@ -1000,13 +987,6 @@
 
     .duel-flip[data-side="right"][data-flipped="false"] .duel-card-back {
       animation-delay: -2.4s;
-    }
-
-    .duel-vs-glow {
-      animation: duel-vs-glow 4s ease-in-out infinite alternate;
-    }
-    .duel-vs-glow[data-side="right"] {
-      animation-direction: alternate-reverse;
     }
 
     .duel-ready-dot {
@@ -1037,15 +1017,6 @@
 @keyframes duel-idle {
   50% {
     transform: translateY(-6px) rotate(-0.4deg);
-  }
-}
-
-@keyframes duel-vs-glow {
-  from {
-    opacity: 0.4;
-  }
-  to {
-    opacity: 0;
   }
 }
 

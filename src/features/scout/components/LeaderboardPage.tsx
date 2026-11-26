@@ -7,6 +7,7 @@ import { EmptyLeaderboard } from "@/features/scout/components/EmptyLeaderboard"
 import { LeaderboardFilters } from "@/features/scout/components/LeaderboardFilters"
 import { LeaderboardLead } from "@/features/scout/components/LeaderboardLead"
 import { LeaderboardTable } from "@/features/scout/components/LeaderboardTable"
+import { PageHeader } from "@/features/scout/components/PageHeader"
 import { RarityFilterChips } from "@/features/scout/components/RarityFilterChips"
 import { isGithubStar } from "@/features/scout/helpers/github-star"
 import { playerCountryFilter } from "@/features/scout/helpers/player-country"
@@ -44,10 +45,9 @@ export function LeaderboardPage() {
       tabIndex={-1}
       className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pt-6 pb-20 outline-none sm:px-6"
     >
-      <div className="flex flex-col gap-3">
-        <h1 className="text-3xl font-semibold tracking-tight">{m.leaderboard_title()}</h1>
+      <PageHeader title={m.leaderboard_title()}>
         {allPlayers.length > 0 ? <LeaderboardLead players={allPlayers} /> : null}
-      </div>
+      </PageHeader>
 
       {allPlayers.length > 0 ? (
         <div className="flex flex-col gap-3">

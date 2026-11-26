@@ -8,6 +8,7 @@ import { getLangParam } from "@/helpers/localized-url"
 import { useViewer } from "@/hooks/use-viewer"
 
 import { Badge } from "@/components/ui/badge"
+import { PageHeader } from "@/features/scout/components/PageHeader"
 import { SampleCardWithActions } from "@/features/scout/components/SpecialCardSample"
 import { TeamCardShowcase } from "@/features/scout/components/TeamCardShowcase"
 import { CARD_OCCASIONS } from "@/features/scout/constants/card-occasion.constants"
@@ -112,18 +113,18 @@ export function SpecialCardsPage() {
     <main
       id="main-content"
       tabIndex={-1}
-      className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-4 pt-10 pb-20 outline-none sm:px-6"
+      className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-4 pt-6 pb-20 outline-none sm:px-6"
     >
-      <div className="flex max-w-3xl flex-col gap-3">
-        <h1 className="text-4xl font-semibold tracking-tight text-balance">
-          {m.special_cards_title()}
-        </h1>
-        <p className="font-mono text-pretty text-muted-foreground">{m.special_cards_lead()}</p>
-        {sample ? (
-          <p className="text-sm text-muted-foreground">
-            {own ? m.special_cards_sample_own() : m.special_cards_sample({ name: sample.name })}
-          </p>
-        ) : null}
+      {/* Üç sütunlu kart ızgarası 5xl'a sığmadığı için sayfa geniş; başlık yine logoyla aynı hizada. */}
+      <div className="mx-auto w-full max-w-5xl">
+        <PageHeader title={m.special_cards_title()} className="max-w-3xl">
+          <p className="font-mono text-pretty text-muted-foreground">{m.special_cards_lead()}</p>
+          {sample ? (
+            <p className="text-sm text-muted-foreground">
+              {own ? m.special_cards_sample_own() : m.special_cards_sample({ name: sample.name })}
+            </p>
+          ) : null}
+        </PageHeader>
       </div>
 
       <ul className={GRID_CLASS}>
